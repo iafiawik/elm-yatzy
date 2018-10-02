@@ -14,7 +14,12 @@ main =
 
 
 type alias Model =
-    { players : List Player, boxes : List Box, state : State, currentValue : Int }
+    { players : List Player
+    , boxes : List Box
+    , values : List Value
+    , game : Game
+    , currentValue : Int
+    }
 
 
 type BoxType
@@ -23,9 +28,11 @@ type BoxType
     | Combination
 
 
-type State
-    = Normal
-    | Input Player Box
+type Game
+    = Initializing
+    | Idle { player : Player }
+    | Input { player : Player, box : Box }
+    | Error
 
 
 type alias Box =
@@ -34,12 +41,13 @@ type alias Box =
 
 type alias Value =
     { boxId : String
+    , playerId : String
     , value : Int
     }
 
 
 type alias Player =
-    { id_ : String, name : String, values : List Value }
+    { id_ : String, name : String }
 
 
 init : Model
@@ -48,12 +56,8 @@ init =
         players =
             [ { id_ = "1"
               , name = "Adam"
-              , values =
-                    [ { boxId = "ones", value = 1 }
-                    , { boxId = "twos", value = 6 }
-                    ]
               }
-            , { id_ = "2", name = "Eva", values = [ { boxId = "ones", value = 4 }, { boxId = "twos", value = 2 } ] }
+            , { id_ = "2", name = "Eva" }
             ]
     in
     { boxes =
@@ -74,7 +78,8 @@ init =
         , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
         ]
     , players = players
-    , state = Normal
+    , values = [ { boxId = "ones", playerId = "1", value = 1 } ]
+    , game = Initializing
     , currentValue = 0
     }
 
@@ -116,30 +121,85 @@ getAcceptedValues box =
 
 
 type Msg
-    = AddValue
+    = Start
+    | AddValue
     | ShowAddValue Player Box
     | InputValueChange String
     | UpdateCurrentPlayer Player
     | NextPlayer
 
 
+
+-- getFirstPlayer : List Player -> a
+-- getFirstPlayer players =
+--     let
+--         currentPlayerMaybe =
+--             List.head players
+--     in
+--     case currentPlayerMaybe of
+--         Just currentPlayer ->
+--             -- do your logic here
+--             -- probably set or change some value on the model
+--             currentPlayer
+--
+--         Nothing ->
+--             -- handle product not found here
+--             -- likely return the model unchanged
+--             -- or set an error message on the model
+--             Nothing
+
+
 update : Msg -> Model -> Model
 update msg model =
-    case msg of
-        AddValue ->
-            { model | state = Normal, currentValue = 0 }
+    let
+        players =
+            List.map (\p -> ( getValuesByPlayer model.values p, p )) model.players
 
-        InputValueChange value ->
-            { model | currentValue = String.toInt value |> Maybe.withDefault 0 }
+        playersByNumberOfValues =
+            List.sortWith sortByValues players
 
-        ShowAddValue player box ->
-            { model | state = Input player box }
+        currentPlayerMaybe =
+            List.head playersByNumberOfValues
+    in
+    case currentPlayerMaybe of
+        Just currentPlayerComparable ->
+            let
+                currentPlayer =
+                    Tuple.second currentPlayerComparable
+            in
+            case msg of
+                Start ->
+                    { model | game = Idle { player = currentPlayer }, currentValue = 0 }
 
-        UpdateCurrentPlayer player ->
-            model
+                AddValue ->
+                    case model.game of
+                        Input { player, box } ->
+                            let
+                                _ =
+                                    Debug.log "current user is" player.name
+                            in
+                            { model | game = Idle { player = currentPlayer }, currentValue = 0 }
 
-        NextPlayer ->
-            model
+                        _ ->
+                            model
+
+                InputValueChange value ->
+                    { model | currentValue = String.toInt value |> Maybe.withDefault 0 }
+
+                ShowAddValue player box ->
+                    { model | game = Input { player = player, box = box } }
+
+                UpdateCurrentPlayer player ->
+                    model
+
+                NextPlayer ->
+                    model
+
+        Nothing ->
+            -- handle product not found here
+            -- likely return the model unchanged
+            -- or set an error message on the model
+            { model | game = Error }
 
 
 sum : List number -> number
@@ -154,8 +214,20 @@ sum list =
 --
 
 
-descending a b =
-    case compare a b of
+getValuesByPlayer : List Value -> Player -> List Value
+getValuesByPlayer values player =
+    List.filter (\v -> v.playerId == player.id_) values
+
+
+sortByValues a b =
+    let
+        playerA =
+            List.length (Tuple.first a)
+
+        playerB =
+            List.length (Tuple.first b)
+    in
+    case compare playerA playerB of
         LT ->
             GT
 
@@ -167,29 +239,23 @@ descending a b =
 
 
 
--- compareVal : ( Player, Player )
--- compareVal a b =
---     case compare (sum a.values) (sum b.values) of
---         LT ->
---             GT
+-- getCurrentPlayer : Model -> Player
+-- getCurrentPlayer model =
+--     let
+--         players =
+--             List.map (\p -> ( getValuesByPlayer model.values p, p )) model.players
 --
---         EQ ->
---             EQ
+--         playersByNumberOfValues =
+--             List.sortWith sortByValues players
 --
---         GT ->
---             LT
-
-
-playerIsActive : Player -> Model -> Bool
-playerIsActive player model =
-    let
-        numberOfValuesPerPlayer =
-            List.sortWith descending (List.map (\p -> List.length p.values) model.players)
-    in
-    sum [ 1, 2, 3 ] > 0
-
-
-
+--         currentPlayerMaybe =
+--             List.head playersByNumberOfValues
+--     in
+--     case currentPlayerMaybe of
+--         Just currentPlayer ->
+--             Tuple.second currentPlayer
+--
+--
 -- VIEW
 
 
@@ -198,8 +264,8 @@ renderBox box =
     span [] [ text <| "" ++ box.friendlyName ]
 
 
-renderTable : Model -> Html Msg
-renderTable model =
+renderTable : Player -> Model -> Html Msg
+renderTable player model =
     let
         cellStyle =
             style "border" "1px solid black"
@@ -216,9 +282,9 @@ renderTable model =
                                             List.head
                                                 (List.filter
                                                     (\v ->
-                                                        v.boxId == b.id_
+                                                        v.boxId == b.id_ && v.playerId == p.id_
                                                     )
-                                                    p.values
+                                                    model.values
                                                 )
                                     in
                                     case boxValue of
@@ -226,7 +292,11 @@ renderTable model =
                                             td [ cellStyle ] [ text (String.fromInt value.value) ]
 
                                         Nothing ->
-                                            td [ cellStyle, onClick (ShowAddValue p b) ] [ text "" ]
+                                            if player == p then
+                                                td [ cellStyle, onClick (ShowAddValue p b) ] [ text "" ]
+
+                                            else
+                                                td [ cellStyle ] [ text "" ]
                                 )
                                 model.players
                     in
@@ -253,14 +323,20 @@ renderTable model =
         )
 
 
-stateToString : State -> String
+stateToString : Game -> String
 stateToString state =
     case state of
-        Normal ->
-            "Normal"
+        Initializing ->
+            "Initializing"
 
-        Input player box ->
+        Idle { player } ->
+            "Idle"
+
+        Input { player, box } ->
             "Input" ++ player.name ++ box.friendlyName
+
+        Error ->
+            "Error"
 
 
 view : Model -> Html Msg
@@ -273,19 +349,29 @@ view model =
                 ]
 
         content =
-            case model.state of
-                Normal ->
-                    div [] [ renderTable model ]
+            case model.game of
+                Initializing ->
+                    div [] [ button [ onClick Start ] [ text "Start" ] ]
 
-                Input player box ->
+                Idle { player } ->
                     div []
-                        [ div [] [ inputDialog ]
-                        , div [] [ renderTable model ]
+                        [ div [] [ text player.name ]
+                        , div [] [ renderTable player model ]
                         ]
+
+                Input { player, box } ->
+                    div []
+                        [ div [] [ text player.name ]
+                        , div [] [ inputDialog ]
+                        , div [] [ renderTable player model ]
+                        ]
+
+                Error ->
+                    div [] [ text "An error occured" ]
     in
     div
         []
-        [ div [] [ text <| stateToString <| Debug.log "state:" model.state ]
+        [ div [] [ text <| stateToString <| Debug.log "state:" model.game ]
         , div [] [ text (String.fromInt model.currentValue) ]
         , div [] [ content ]
         ]
