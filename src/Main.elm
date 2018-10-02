@@ -4,7 +4,7 @@ import Browser
 import Element as ElmUiElement exposing (Element, alignRight, el, rgb, row, text)
 import Element.Background as Background
 import Element.Border as Border
-import Html exposing (Html, div, input, label, li, span, table, td, text, th, tr, ul)
+import Html exposing (Html, button, div, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 
@@ -14,7 +14,7 @@ main =
 
 
 type alias Model =
-    { players : List Player, boxes : List Box, state : State }
+    { players : List Player, boxes : List Box, state : State, currentValue : Int }
 
 
 type BoxType
@@ -25,7 +25,7 @@ type BoxType
 
 type State
     = Normal
-    | Input
+    | Input Player Box
 
 
 type alias Box =
@@ -75,6 +75,7 @@ init =
         ]
     , players = players
     , state = Normal
+    , currentValue = 0
     }
 
 
@@ -115,8 +116,9 @@ getAcceptedValues box =
 
 
 type Msg
-    = AddValue Player Box Value
+    = AddValue
     | ShowAddValue Player Box
+    | InputValueChange String
     | UpdateCurrentPlayer Player
     | NextPlayer
 
@@ -124,17 +126,67 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        AddValue player box value ->
-            model
+        AddValue ->
+            { model | state = Normal, currentValue = 0 }
+
+        InputValueChange value ->
+            { model | currentValue = String.toInt value |> Maybe.withDefault 0 }
 
         ShowAddValue player box ->
-            { model | state = Input }
+            { model | state = Input player box }
 
         UpdateCurrentPlayer player ->
             model
 
         NextPlayer ->
             model
+
+
+sum : List number -> number
+sum list =
+    List.foldl (\a b -> a + b) 0 list
+
+
+
+-- sortPlayersByValues : List ( comparable, b ) -> List ( comparable, b )
+-- sortPlayersByValues =
+--     List.sortBy Tuple.first
+--
+
+
+descending a b =
+    case compare a b of
+        LT ->
+            GT
+
+        EQ ->
+            EQ
+
+        GT ->
+            LT
+
+
+
+-- compareVal : ( Player, Player )
+-- compareVal a b =
+--     case compare (sum a.values) (sum b.values) of
+--         LT ->
+--             GT
+--
+--         EQ ->
+--             EQ
+--
+--         GT ->
+--             LT
+
+
+playerIsActive : Player -> Model -> Bool
+playerIsActive player model =
+    let
+        numberOfValuesPerPlayer =
+            List.sortWith descending (List.map (\p -> List.length p.values) model.players)
+    in
+    sum [ 1, 2, 3 ] > 0
 
 
 
@@ -201,20 +253,41 @@ renderTable model =
         )
 
 
+stateToString : State -> String
+stateToString state =
+    case state of
+        Normal ->
+            "Normal"
+
+        Input player box ->
+            "Input" ++ player.name ++ box.friendlyName
+
+
 view : Model -> Html Msg
 view model =
     let
-        _ =
-            Debug.log "This will log model.state" model.state
+        inputDialog =
+            div []
+                [ input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
+                , button [ onClick AddValue ] [ text "Submit" ]
+                ]
+
+        content =
+            case model.state of
+                Normal ->
+                    div [] [ renderTable model ]
+
+                Input player box ->
+                    div []
+                        [ div [] [ inputDialog ]
+                        , div [] [ renderTable model ]
+                        ]
     in
     div
         []
-        [ div []
-            []
-        , div
-            []
-            [ renderTable model
-            ]
+        [ div [] [ text <| stateToString <| Debug.log "state:" model.state ]
+        , div [] [ text (String.fromInt model.currentValue) ]
+        , div [] [ content ]
         ]
 
 
