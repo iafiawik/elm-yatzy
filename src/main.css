@@ -6,19 +6,34 @@ body {
   color: #293c4b;
 }
 
-h1 {
-  font-size: 30px;
+table {
+  border-collapse: collapse;
+  margin-right: auto;
+  margin-left: auto;
 }
 
-img {
-  margin: 20px 0;
-  max-width: 200px;
+.inactive {
+  opacity: 0.5;
+  background: #cccccc;
 }
 
 table td {
-  border: 1px solid blue;
+  border: 1px solid black;
+  padding: 10px 20px;
+  border-collapse: collapse;
+  text-align: center;
 }
 
-td.active {
-  background: blue;
+th {
+  border: 0px;
+  padding: 10px 20px;
+}
+
+td.active:hover {
+  cursor: pointer;
+  background: #666666;
+}
+
+tr:last-of-type td {
+  border-top: 2px solid black;
 }

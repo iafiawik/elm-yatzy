@@ -92,6 +92,9 @@ init =
             [ { id_ = 1
               , name = "Adam"
               }
+            , { id_ = 2
+              , name = "Eva"
+              }
             ]
       , values = []
       , game = Initializing
@@ -241,6 +244,7 @@ type Msg
     = Start
     | AddValue
     | ShowAddValue Player Box
+    | HideAddValue
     | InputValueChange String
     | CountValues
 
@@ -296,6 +300,14 @@ update msg model =
 
                 ShowAddValue player box ->
                     ( { model | game = Input { player = player, box = box } }, Cmd.none )
+
+                HideAddValue ->
+                    ( { model
+                        | game = Idle
+                        , currentValue = 0
+                      }
+                    , Cmd.none
+                    )
 
                 CountValues ->
                     ( { model | game = ShowCountedValues }, Cmd.none )
@@ -381,7 +393,7 @@ renderTable player model showCountedValues =
                                     in
                                     case boxValue of
                                         Just value ->
-                                            td [] [ text (String.fromInt value.value) ]
+                                            td [ class "inactive" ] [ text (String.fromInt value.value) ]
 
                                         Nothing ->
                                             let
@@ -389,13 +401,13 @@ renderTable player model showCountedValues =
                                                     getUpperSum model.values p
                                             in
                                             if b.boxType == UpperSum then
-                                                td [] [ text (String.fromInt upperSum) ]
+                                                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
 
                                             else if b.boxType == TotalSum then
-                                                td [] [ text (String.fromInt (getTotalSum model.values p)) ]
+                                                td [ class "inactive" ] [ text (String.fromInt (getTotalSum model.values p)) ]
 
                                             else if b.boxType == Bonus then
-                                                td [] [ text (String.fromInt (getBonusValue model.values p)) ]
+                                                td [ class "inactive" ] [ text (String.fromInt (getBonusValue model.values p)) ]
 
                                             else if player == p then
                                                 if b.category == None then
@@ -405,7 +417,7 @@ renderTable player model showCountedValues =
                                                     td [ class "active", onClick (ShowAddValue p b) ] [ text "" ]
 
                                             else
-                                                td [] [ text "" ]
+                                                td [ class "inactive" ] [ text "" ]
                                 )
                                 model.players
                     in
@@ -421,10 +433,9 @@ renderTable player model showCountedValues =
             List.map (\p -> th [] [ text (p.name ++ String.fromInt (List.length (getValuesByPlayer model.values p))) ]) model.players
     in
     div []
-        [ text "hej"
-        , table []
+        [ table []
             ([ tr []
-                ([ td []
+                ([ th []
                     [ text "" ]
                  ]
                     ++ headers
@@ -448,6 +459,7 @@ view model =
                     div []
                         [ input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
                         , button [ onClick AddValue ] [ text "Submit" ]
+                        , button [ onClick HideAddValue ] [ text "Cancel" ]
                         ]
 
                 content =
@@ -484,7 +496,6 @@ view model =
             div
                 []
                 [ div [] [ text <| stateToString <| Debug.log "state:" model.game ]
-                , div [] [ text (String.fromInt model.currentValue) ]
                 , div [] [ content ]
                 ]
 
