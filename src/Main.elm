@@ -10,7 +10,12 @@ import Html.Events exposing (onClick, onInput)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
 
 
 type alias Model =
@@ -50,38 +55,37 @@ type alias Player =
     { id_ : String, name : String }
 
 
-init : Model
-init =
-    let
-        players =
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { boxes =
+            [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1 }
+            , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
+            , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3 }
+            , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4 }
+            , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5 }
+            , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6 }
+            , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind }
+            , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination }
+            , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind }
+            , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind }
+            , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination }
+            , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination }
+            , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination }
+            , { id_ = "chance", friendlyName = "Chans", boxType = Combination }
+            , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
+            ]
+      , players =
             [ { id_ = "1"
               , name = "Adam"
               }
             , { id_ = "2", name = "Eva" }
             ]
-    in
-    { boxes =
-        [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1 }
-        , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
-        , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3 }
-        , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4 }
-        , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5 }
-        , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6 }
-        , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind }
-        , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination }
-        , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind }
-        , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind }
-        , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination }
-        , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination }
-        , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination }
-        , { id_ = "chance", friendlyName = "Chans", boxType = Combination }
-        , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
-        ]
-    , players = players
-    , values = [ { boxId = "ones", playerId = "1", value = 1 } ]
-    , game = Initializing
-    , currentValue = 0
-    }
+      , values = [ { boxId = "ones", playerId = "1", value = 1 } ]
+      , game = Initializing
+      , currentValue = 0
+      }
+    , Cmd.none
+    )
 
 
 validate : Box -> Int -> Bool
@@ -149,7 +153,7 @@ type Msg
 --             Nothing
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         players =
@@ -169,37 +173,49 @@ update msg model =
             in
             case msg of
                 Start ->
-                    { model | game = Idle { player = currentPlayer }, currentValue = 0 }
+                    ( { model | game = Idle { player = currentPlayer }, currentValue = 0 }, Cmd.none )
 
                 AddValue ->
                     case model.game of
                         Input { player, box } ->
                             let
-                                _ =
-                                    Debug.log "current user is" player.name
+                                newValue =
+                                    { boxId = box.id_
+                                    , playerId = currentPlayer.id_
+                                    , value = model.currentValue
+                                    }
+
+                                newValues =
+                                    newValue :: model.values
                             in
-                            { model | game = Idle { player = currentPlayer }, currentValue = 0 }
+                            ( { model
+                                | game = Idle { player = currentPlayer }
+                                , currentValue = 0
+                                , values = newValues
+                              }
+                            , Cmd.none
+                            )
 
                         _ ->
-                            model
+                            ( model, Cmd.none )
 
                 InputValueChange value ->
-                    { model | currentValue = String.toInt value |> Maybe.withDefault 0 }
+                    ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
 
                 ShowAddValue player box ->
-                    { model | game = Input { player = player, box = box } }
+                    ( { model | game = Input { player = player, box = box } }, Cmd.none )
 
                 UpdateCurrentPlayer player ->
-                    model
+                    ( model, Cmd.none )
 
                 NextPlayer ->
-                    model
+                    ( model, Cmd.none )
 
         Nothing ->
             -- handle product not found here
             -- likely return the model unchanged
             -- or set an error message on the model
-            { model | game = Error }
+            ( { model | game = Error }, Cmd.none )
 
 
 sum : List number -> number
@@ -227,7 +243,7 @@ sortByValues a b =
         playerB =
             List.length (Tuple.first b)
     in
-    case compare playerA playerB of
+    case compare playerB playerA of
         LT ->
             GT
 
@@ -267,9 +283,6 @@ renderBox box =
 renderTable : Player -> Model -> Html Msg
 renderTable player model =
     let
-        cellStyle =
-            style "border" "1px solid black"
-
         boxItems =
             List.map
                 (\b ->
@@ -289,19 +302,19 @@ renderTable player model =
                                     in
                                     case boxValue of
                                         Just value ->
-                                            td [ cellStyle ] [ text (String.fromInt value.value) ]
+                                            td [] [ text (String.fromInt value.value) ]
 
                                         Nothing ->
                                             if player == p then
-                                                td [ cellStyle, onClick (ShowAddValue p b) ] [ text "" ]
+                                                td [ onClick (ShowAddValue p b) ] [ text "" ]
 
                                             else
-                                                td [ cellStyle ] [ text "" ]
+                                                td [] [ text "" ]
                                 )
                                 model.players
                     in
                     tr []
-                        ([ td [ cellStyle ] [ renderBox b ]
+                        ([ td [] [ renderBox b ]
                          ]
                             ++ playerBoxes
                         )
@@ -309,11 +322,11 @@ renderTable player model =
                 model.boxes
 
         headers =
-            List.map (\p -> th [ cellStyle ] [ text p.name ]) model.players
+            List.map (\p -> th [] [ text p.name ]) model.players
     in
     table []
         ([ tr []
-            ([ td [ cellStyle ]
+            ([ td []
                 [ text "" ]
              ]
                 ++ headers
@@ -337,6 +350,11 @@ stateToString state =
 
         Error ->
             "Error"
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 view : Model -> Html Msg
