@@ -33,10 +33,19 @@ type BoxType
     = Regular Int
     | SameKind
     | Combination
+    | UpperSum
+    | TotalSum
+    | Bonus
+
+
+type BoxCategory
+    = Upper
+    | Lower
+    | None
 
 
 type alias Box =
-    { id_ : String, friendlyName : String, boxType : BoxType }
+    { id_ : String, friendlyName : String, boxType : BoxType, category : BoxCategory }
 
 
 type alias Value =
@@ -60,28 +69,29 @@ type alias PlayerAndNumberOfValues =
 init : ( Model, Cmd Msg )
 init =
     ( { boxes =
-            [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1 }
-
-            -- , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
-            -- , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3 }
-            -- , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4 }
-            -- , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5 }
-            -- , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6 }
-            -- , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind }
-            -- , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination }
-            -- , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind }
-            -- , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind }
-            -- , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination }
-            -- , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination }
-            -- , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination }
-            -- , { id_ = "chance", friendlyName = "Chans", boxType = Combination }
-            -- , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
+            [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
+            , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2, category = Upper }
+            , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3, category = Upper }
+            , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4, category = Upper }
+            , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5, category = Upper }
+            , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6, category = Upper }
+            , { id_ = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None }
+            , { id_ = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None }
+            , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower }
+            , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination, category = Lower }
+            , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower }
+            , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind, category = Lower }
+            , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination, category = Lower }
+            , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination, category = Lower }
+            , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination, category = Lower }
+            , { id_ = "chance", friendlyName = "Chans", boxType = Combination, category = Lower }
+            , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
+            , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
             ]
       , players =
             [ { id_ = 1
               , name = "Adam"
               }
-            , { id_ = 2, name = "Eva" }
             ]
       , values = []
       , game = Initializing
@@ -183,18 +193,6 @@ stateToString state =
             "Error"
 
 
-
----- UPDATE ----
-
-
-type Msg
-    = Start
-    | AddValue
-    | ShowAddValue Player Box
-    | InputValueChange String
-    | CountValues
-
-
 getCurrentPlayer : Model -> Maybe Player
 getCurrentPlayer model =
     let
@@ -218,6 +216,33 @@ getCurrentPlayer model =
 
         Nothing ->
             Nothing
+
+
+areAllUsersFinished : List Value -> List Player -> List Box -> Bool
+areAllUsersFinished values players boxes =
+    let
+        numberOfBoxes =
+            List.length (List.filter (\b -> b.category /= None) boxes)
+
+        numberOfValues =
+            List.length values
+
+        numberOfPlayers =
+            List.length players
+    in
+    numberOfValues == numberOfBoxes * numberOfPlayers
+
+
+
+---- UPDATE ----
+
+
+type Msg
+    = Start
+    | AddValue
+    | ShowAddValue Player Box
+    | InputValueChange String
+    | CountValues
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -245,7 +270,7 @@ update msg model =
                                 newValues =
                                     newValue :: model.values
                             in
-                            if List.length newValues == (List.length model.players * List.length model.boxes) then
+                            if areAllUsersFinished newValues model.players model.boxes then
                                 ( { model
                                     | game = Finished
                                     , currentValue = 0
@@ -286,13 +311,56 @@ update msg model =
 ---- VIEW ----
 
 
+getUpperSum : List Value -> Player -> Int
+getUpperSum values player =
+    let
+        playerValues =
+            getValuesByPlayer values player
+
+        upperValues =
+            List.filter (\v -> v.box.category == Upper) playerValues
+
+        upperSum =
+            sum (List.map (\v -> v.value) upperValues)
+    in
+    upperSum
+
+
+getTotalSum : List Value -> Player -> Int
+getTotalSum values player =
+    let
+        playerValues =
+            getValuesByPlayer values player
+
+        totalSum =
+            sum (List.map (\v -> v.value) playerValues)
+
+        bonusValue =
+            getBonusValue values player
+    in
+    totalSum + bonusValue
+
+
+getBonusValue : List Value -> Player -> Int
+getBonusValue values player =
+    let
+        upperSum =
+            getUpperSum values player
+    in
+    if upperSum >= 63 then
+        50
+
+    else
+        0
+
+
 renderBox : Box -> Html msg
 renderBox box =
     span [] [ text <| "" ++ box.friendlyName ]
 
 
-renderTable : Player -> Model -> Html Msg
-renderTable player model =
+renderTable : Player -> Model -> Bool -> Html Msg
+renderTable player model showCountedValues =
     let
         boxItems =
             List.map
@@ -316,8 +384,25 @@ renderTable player model =
                                             td [] [ text (String.fromInt value.value) ]
 
                                         Nothing ->
-                                            if player == p then
-                                                td [ class "active", onClick (ShowAddValue p b) ] [ text "" ]
+                                            let
+                                                upperSum =
+                                                    getUpperSum model.values p
+                                            in
+                                            if b.boxType == UpperSum then
+                                                td [] [ text (String.fromInt upperSum) ]
+
+                                            else if b.boxType == TotalSum then
+                                                td [] [ text (String.fromInt (getTotalSum model.values p)) ]
+
+                                            else if b.boxType == Bonus then
+                                                td [] [ text (String.fromInt (getBonusValue model.values p)) ]
+
+                                            else if player == p then
+                                                if b.category == None then
+                                                    td [ class "active" ] [ text "" ]
+
+                                                else
+                                                    td [ class "active", onClick (ShowAddValue p b) ] [ text "" ]
 
                                             else
                                                 td [] [ text "" ]
@@ -372,25 +457,25 @@ view model =
 
                         Idle ->
                             div []
-                                [ div [] [ renderTable currentPlayer model ]
+                                [ div [] [ renderTable currentPlayer model False ]
                                 ]
 
                         Input { player, box } ->
                             div []
                                 [ div [] [ text player.name ]
                                 , div [] [ inputDialog ]
-                                , div [] [ renderTable currentPlayer model ]
+                                , div [] [ renderTable currentPlayer model False ]
                                 ]
 
                         Finished ->
                             div []
-                                [ div [] [ renderTable currentPlayer model ]
+                                [ div [] [ renderTable currentPlayer model False ]
                                 , button [ onClick CountValues ] [ text "Count" ]
                                 ]
 
                         ShowCountedValues ->
                             div []
-                                [ div [] [ renderTable currentPlayer model ]
+                                [ div [] [ renderTable currentPlayer model True ]
                                 ]
 
                         Error ->
