@@ -1,13 +1,21 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, h1, img, input, label, li, span, table, td, text, th, tr, ul)
+import Element as ElmUiElement exposing (Element, alignRight, el, rgb, row, text)
+import Element.Background as Background
+import Element.Border as Border
+import Html exposing (Html, button, div, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 
 
-
----- MODEL ----
+main =
+    Browser.element
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
 
 
 type alias Model =
@@ -47,8 +55,8 @@ type alias Player =
     { id_ : String, name : String }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( { boxes =
             [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1 }
             , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
@@ -116,55 +124,6 @@ getAcceptedValues box =
         []
 
 
-sum : List number -> number
-sum list =
-    List.foldl (\a b -> a + b) 0 list
-
-
-getValuesByPlayer : List Value -> Player -> List Value
-getValuesByPlayer values player =
-    List.filter (\v -> v.playerId == player.id_) values
-
-
-sortByValues a b =
-    let
-        playerA =
-            List.length (Tuple.first a)
-
-        playerB =
-            List.length (Tuple.first b)
-    in
-    case compare playerB playerA of
-        LT ->
-            GT
-
-        EQ ->
-            EQ
-
-        GT ->
-            LT
-
-
-stateToString : Game -> String
-stateToString state =
-    case state of
-        Initializing ->
-            "Initializing"
-
-        Idle { player } ->
-            "Idle"
-
-        Input { player, box } ->
-            "Input" ++ player.name ++ box.friendlyName
-
-        Error ->
-            "Error"
-
-
-
----- UPDATE ----
-
-
 type Msg
     = Start
     | AddValue
@@ -172,6 +131,26 @@ type Msg
     | InputValueChange String
     | UpdateCurrentPlayer Player
     | NextPlayer
+
+
+
+-- getFirstPlayer : List Player -> a
+-- getFirstPlayer players =
+--     let
+--         currentPlayerMaybe =
+--             List.head players
+--     in
+--     case currentPlayerMaybe of
+--         Just currentPlayer ->
+--             -- do your logic here
+--             -- probably set or change some value on the model
+--             currentPlayer
+--
+--         Nothing ->
+--             -- handle product not found here
+--             -- likely return the model unchanged
+--             -- or set an error message on the model
+--             Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -239,8 +218,61 @@ update msg model =
             ( { model | game = Error }, Cmd.none )
 
 
+sum : List number -> number
+sum list =
+    List.foldl (\a b -> a + b) 0 list
 
----- VIEW ----
+
+
+-- sortPlayersByValues : List ( comparable, b ) -> List ( comparable, b )
+-- sortPlayersByValues =
+--     List.sortBy Tuple.first
+--
+
+
+getValuesByPlayer : List Value -> Player -> List Value
+getValuesByPlayer values player =
+    List.filter (\v -> v.playerId == player.id_) values
+
+
+sortByValues a b =
+    let
+        playerA =
+            List.length (Tuple.first a)
+
+        playerB =
+            List.length (Tuple.first b)
+    in
+    case compare playerB playerA of
+        LT ->
+            GT
+
+        EQ ->
+            EQ
+
+        GT ->
+            LT
+
+
+
+-- getCurrentPlayer : Model -> Player
+-- getCurrentPlayer model =
+--     let
+--         players =
+--             List.map (\p -> ( getValuesByPlayer model.values p, p )) model.players
+--
+--         playersByNumberOfValues =
+--             List.sortWith sortByValues players
+--
+--         currentPlayerMaybe =
+--             List.head playersByNumberOfValues
+--     in
+--     case currentPlayerMaybe of
+--         Just currentPlayer ->
+--             Tuple.second currentPlayer
+--
+--
+-- VIEW
 
 
 renderBox : Box -> Html msg
@@ -304,6 +336,27 @@ renderTable player model =
         )
 
 
+stateToString : Game -> String
+stateToString state =
+    case state of
+        Initializing ->
+            "Initializing"
+
+        Idle { player } ->
+            "Idle"
+
+        Input { player, box } ->
+            "Input" ++ player.name ++ box.friendlyName
+
+        Error ->
+            "Error"
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -343,14 +396,49 @@ view model =
 
 
 
----- PROGRAM ----
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { view = view
-        , init = \_ -> init
-        , update = update
-        , subscriptions = always Sub.none
-        }
+-- boxes.map((b) => <td>{renderBox(b)}</td>)
+-- R.map((b) => <td>{renderBox(b)</td>}, boxes);
+--
+-- view2 : Model -> Html Msg
+-- view2 model =
+--     let
+--         myStyle =
+--             style "border" "1px solid blue"
+--     in
+--     div []
+--         [ div [] []
+--         , div []
+--             [ text "hej" ]
+--         , div
+--             []
+--             [ table []
+--                 [ tr [ myStyle ] [ th [] [ text "Ett" ], tableCell "Hej" ]
+--                 , tr [ myStyle ] [ tableCell "Ett", tableCell "Hej" ]
+--                 , tr [ myStyle ] [ tableCell "Två" ]
+--                 , tr [ myStyle ] [ tableCell "Tre" ]
+--                 , tr [ myStyle ] [ tableCell "Fyror" ]
+--                 , tr [ myStyle ] [ tableCell "Femmor" ]
+--                 , tr [ myStyle ] [ tableCell "Sexor" ]
+--                 , tr [ myStyle ] [ tableCell "Summa" ]
+--                 , tr [ myStyle ] [ tableCell "Bonus" ]
+--                 , tr [ myStyle ] [ tableCell "1 par" ]
+--                 , tr [ myStyle ] [ tableCell "2 par" ]
+--                 , tr [ myStyle ] [ tableCell "Tretal" ]
+--                 , tr [ myStyle ] [ tableCell "Fyrtal" ]
+--                 , tr [ myStyle ] [ tableCell "Liten stege" ]
+--                 , tr [ myStyle ] [ tableCell "Stor stege" ]
+--                 , tr [ myStyle ] [ tableCell "Kåk" ]
+--                 , tr [ myStyle ] [ tableCell "Chans" ]
+--                 , tr [ myStyle ] [ tableCell "Yatzy" ]
+--                 ]
+--             ]
+--         ]
+--
+--
+-- tableCell : String -> Html msg
+-- tableCell t =
+--     let
+--         myStyle =
+--             style "border" "1px solid blue"
+--     in
+--     td [ myStyle ] [ text t ]
