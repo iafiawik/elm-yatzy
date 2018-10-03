@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h1, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Ordering exposing (Ordering)
 
 
 
@@ -19,17 +20,19 @@ type alias Model =
     }
 
 
+type Game
+    = Initializing
+    | Idle
+    | Input { player : Player, box : Box }
+    | Finished
+    | ShowCountedValues
+    | Error
+
+
 type BoxType
     = Regular Int
     | SameKind
     | Combination
-
-
-type Game
-    = Initializing
-    | Idle { player : Player }
-    | Input { player : Player, box : Box }
-    | Error
 
 
 type alias Box =
@@ -37,42 +40,50 @@ type alias Box =
 
 
 type alias Value =
-    { boxId : String
-    , playerId : String
+    { box : Box
+    , player : Player
     , value : Int
     }
 
 
 type alias Player =
-    { id_ : String, name : String }
+    { id_ : Int, name : String }
+
+
+type alias PlayerAndNumberOfValues =
+    { numberOfValues : Int
+    , player : Player
+    , playerId : Int
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { boxes =
             [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1 }
-            , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
-            , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3 }
-            , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4 }
-            , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5 }
-            , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6 }
-            , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind }
-            , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination }
-            , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind }
-            , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind }
-            , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination }
-            , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination }
-            , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination }
-            , { id_ = "chance", friendlyName = "Chans", boxType = Combination }
-            , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
+
+            -- , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2 }
+            -- , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3 }
+            -- , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4 }
+            -- , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5 }
+            -- , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6 }
+            -- , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind }
+            -- , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination }
+            -- , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind }
+            -- , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind }
+            -- , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination }
+            -- , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination }
+            -- , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination }
+            -- , { id_ = "chance", friendlyName = "Chans", boxType = Combination }
+            -- , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind }
             ]
       , players =
-            [ { id_ = "1"
+            [ { id_ = 1
               , name = "Adam"
               }
-            , { id_ = "2", name = "Eva" }
+            , { id_ = 2, name = "Eva" }
             ]
-      , values = [ { boxId = "ones", playerId = "1", value = 1 } ]
+      , values = []
       , game = Initializing
       , currentValue = 0
       }
@@ -123,26 +134,31 @@ sum list =
 
 getValuesByPlayer : List Value -> Player -> List Value
 getValuesByPlayer values player =
-    List.filter (\v -> v.playerId == player.id_) values
+    List.filter (\v -> v.player == player) values
 
 
-sortByValues a b =
-    let
-        playerA =
-            List.length (Tuple.first a)
+sortPLayers : List PlayerAndNumberOfValues -> List PlayerAndNumberOfValues
+sortPLayers players =
+    List.sortWith myOrdering players
 
-        playerB =
-            List.length (Tuple.first b)
-    in
-    case compare playerB playerA of
-        LT ->
-            GT
 
-        EQ ->
-            EQ
+myOrdering : Ordering PlayerAndNumberOfValues
+myOrdering =
+    Ordering.byField .numberOfValues
+        |> Ordering.breakTiesWith (Ordering.byField (\record -> record.player.id_))
 
-        GT ->
-            LT
+
+
+-- sortByValues a b =
+--     case compare (Tuple.first b) (Tuple.first a) of
+--         GT ->
+--             LT
+--
+--         EQ ->
+--             EQ
+--
+--         LT ->
+--             GT
 
 
 stateToString : Game -> String
@@ -151,11 +167,17 @@ stateToString state =
         Initializing ->
             "Initializing"
 
-        Idle { player } ->
+        Idle ->
             "Idle"
 
         Input { player, box } ->
             "Input" ++ player.name ++ box.friendlyName
+
+        Finished ->
+            "Finished"
+
+        ShowCountedValues ->
+            "ShowCountedValues"
 
         Error ->
             "Error"
@@ -170,52 +192,76 @@ type Msg
     | AddValue
     | ShowAddValue Player Box
     | InputValueChange String
-    | UpdateCurrentPlayer Player
-    | NextPlayer
+    | CountValues
+
+
+getCurrentPlayer : Model -> Maybe Player
+getCurrentPlayer model =
+    let
+        players =
+            List.map (\p -> { numberOfValues = List.length (getValuesByPlayer model.values p), playerId = p.id_, player = p }) model.players
+
+        playersByNumberOfValues =
+            sortPLayers players
+
+        currentPlayerMaybe =
+            List.head playersByNumberOfValues
+    in
+    -- Maybe.map .player currentPlayerMaybe
+    case currentPlayerMaybe of
+        Just currentPlayerComparable ->
+            let
+                currentPlayer =
+                    currentPlayerComparable.player
+            in
+            Just currentPlayer
+
+        Nothing ->
+            Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        players =
-            List.map (\p -> ( getValuesByPlayer model.values p, p )) model.players
-
-        playersByNumberOfValues =
-            List.sortWith sortByValues players
-
         currentPlayerMaybe =
-            List.head playersByNumberOfValues
+            getCurrentPlayer model
     in
     case currentPlayerMaybe of
-        Just currentPlayerComparable ->
-            let
-                currentPlayer =
-                    Tuple.second currentPlayerComparable
-            in
+        Just currentPlayer ->
             case msg of
                 Start ->
-                    ( { model | game = Idle { player = currentPlayer }, currentValue = 0 }, Cmd.none )
+                    ( { model | game = Idle, currentValue = 0 }, Cmd.none )
 
                 AddValue ->
                     case model.game of
                         Input { player, box } ->
                             let
                                 newValue =
-                                    { boxId = box.id_
-                                    , playerId = currentPlayer.id_
+                                    { box = box
+                                    , player = currentPlayer
                                     , value = model.currentValue
                                     }
 
                                 newValues =
                                     newValue :: model.values
                             in
-                            ( { model
-                                | game = Idle { player = currentPlayer }
-                                , currentValue = 0
-                                , values = newValues
-                              }
-                            , Cmd.none
-                            )
+                            if List.length newValues == (List.length model.players * List.length model.boxes) then
+                                ( { model
+                                    | game = Finished
+                                    , currentValue = 0
+                                    , values = newValues
+                                  }
+                                , Cmd.none
+                                )
+
+                            else
+                                ( { model
+                                    | game = Idle
+                                    , currentValue = 0
+                                    , values = newValues
+                                  }
+                                , Cmd.none
+                                )
 
                         _ ->
                             ( model, Cmd.none )
@@ -226,11 +272,8 @@ update msg model =
                 ShowAddValue player box ->
                     ( { model | game = Input { player = player, box = box } }, Cmd.none )
 
-                UpdateCurrentPlayer player ->
-                    ( model, Cmd.none )
-
-                NextPlayer ->
-                    ( model, Cmd.none )
+                CountValues ->
+                    ( { model | game = ShowCountedValues }, Cmd.none )
 
         Nothing ->
             -- handle product not found here
@@ -263,7 +306,7 @@ renderTable player model =
                                             List.head
                                                 (List.filter
                                                     (\v ->
-                                                        v.boxId == b.id_ && v.playerId == p.id_
+                                                        v.box == b && v.player == p
                                                     )
                                                     model.values
                                                 )
@@ -274,7 +317,7 @@ renderTable player model =
 
                                         Nothing ->
                                             if player == p then
-                                                td [ onClick (ShowAddValue p b) ] [ text "" ]
+                                                td [ class "active", onClick (ShowAddValue p b) ] [ text "" ]
 
                                             else
                                                 td [] [ text "" ]
@@ -290,56 +333,78 @@ renderTable player model =
                 model.boxes
 
         headers =
-            List.map (\p -> th [] [ text p.name ]) model.players
+            List.map (\p -> th [] [ text (p.name ++ String.fromInt (List.length (getValuesByPlayer model.values p))) ]) model.players
     in
-    table []
-        ([ tr []
-            ([ td []
-                [ text "" ]
+    div []
+        [ text "hej"
+        , table []
+            ([ tr []
+                ([ td []
+                    [ text "" ]
+                 ]
+                    ++ headers
+                )
              ]
-                ++ headers
+                ++ boxItems
             )
-         ]
-            ++ boxItems
-        )
+        ]
 
 
 view : Model -> Html Msg
 view model =
     let
-        inputDialog =
-            div []
-                [ input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
-                , button [ onClick AddValue ] [ text "Submit" ]
+        currentPlayerMaybe =
+            getCurrentPlayer model
+    in
+    case currentPlayerMaybe of
+        Just currentPlayer ->
+            let
+                inputDialog =
+                    div []
+                        [ input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
+                        , button [ onClick AddValue ] [ text "Submit" ]
+                        ]
+
+                content =
+                    case model.game of
+                        Initializing ->
+                            div [] [ button [ onClick Start ] [ text "Start" ] ]
+
+                        Idle ->
+                            div []
+                                [ div [] [ renderTable currentPlayer model ]
+                                ]
+
+                        Input { player, box } ->
+                            div []
+                                [ div [] [ text player.name ]
+                                , div [] [ inputDialog ]
+                                , div [] [ renderTable currentPlayer model ]
+                                ]
+
+                        Finished ->
+                            div []
+                                [ div [] [ renderTable currentPlayer model ]
+                                , button [ onClick CountValues ] [ text "Count" ]
+                                ]
+
+                        ShowCountedValues ->
+                            div []
+                                [ div [] [ renderTable currentPlayer model ]
+                                ]
+
+                        Error ->
+                            div [] [ text "An error occured" ]
+            in
+            div
+                []
+                [ div [] [ text <| stateToString <| Debug.log "state:" model.game ]
+                , div [] [ text (String.fromInt model.currentValue) ]
+                , div [] [ content ]
                 ]
 
-        content =
-            case model.game of
-                Initializing ->
-                    div [] [ button [ onClick Start ] [ text "Start" ] ]
-
-                Idle { player } ->
-                    div []
-                        [ div [] [ text player.name ]
-                        , div [] [ renderTable player model ]
-                        ]
-
-                Input { player, box } ->
-                    div []
-                        [ div [] [ text player.name ]
-                        , div [] [ inputDialog ]
-                        , div [] [ renderTable player model ]
-                        ]
-
-                Error ->
-                    div [] [ text "An error occured" ]
-    in
-    div
-        []
-        [ div [] [ text <| stateToString <| Debug.log "state:" model.game ]
-        , div [] [ text (String.fromInt model.currentValue) ]
-        , div [] [ content ]
-        ]
+        Nothing ->
+            div [] [ text "No player found" ]
 
 
 
