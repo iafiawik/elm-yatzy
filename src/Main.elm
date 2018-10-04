@@ -249,10 +249,13 @@ view model =
         Just currentPlayer ->
             let
                 inputDialog =
-                    div []
-                        [ input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
-                        , button [ onClick AddValue ] [ text "Submit" ]
-                        , button [ onClick HideAddValue ] [ text "Cancel" ]
+                    div [ class "input-dialog-wrapper" ]
+                        [ div [ class "input-dialog" ]
+                            [ button [ class "input-dialog-cancel-button", onClick HideAddValue ] [ text "X" ]
+                            , h1 [] [ text "Lägg till värde" ]
+                            , input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
+                            , button [ onClick AddValue ] [ text "Submit" ]
+                            ]
                         ]
 
                 content =
