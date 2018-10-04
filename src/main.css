@@ -1,24 +1,31 @@
 body {
-  font-family: "Source Sans Pro", "Trebuchet MS", "Lucida Grande",
-    "Bitstream Vera Sans", "Helvetica Neue", sans-serif;
+  font-family: monospace, sans-serif;
   margin: 0;
   text-align: center;
   color: #293c4b;
+  background: white;
+}
+
+.table-wrapper {
+  margin-right: auto;
+  margin-left: auto;
+  display: inline-block;
+  border: 10px solid white;
+  box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
+    5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
 }
 
 table {
   border-collapse: collapse;
-  margin-right: auto;
-  margin-left: auto;
+  border: 10px solid #4717f6;
 }
 
 .inactive {
-  opacity: 0.5;
-  background: #cccccc;
+  background: white;
 }
 
 table td {
-  border: 1px solid black;
+  border: 1px solid #4717f6;
   padding: 10px 20px;
   border-collapse: collapse;
   text-align: center;
@@ -27,13 +34,40 @@ table td {
 th {
   border: 0px;
   padding: 10px 20px;
+  color: white;
+}
+
+td.active {
+  background: #4717f6;
+  border: 1px solid white;
+}
+
+td.box {
+  background: white;
 }
 
 td.active:hover {
   cursor: pointer;
-  background: #666666;
+  background: white;
+}
+
+td:first-of-type {
+  background: white;
+  color: #4717f6;
+  font-weight: bold;
 }
 
 tr:last-of-type td {
-  border-top: 2px solid black;
+  border-top: 5px solid #4717f6;
+}
+
+tr:nth-of-type(2) td {
+  border-top: 0px;
+}
+
+tr:nth-of-type(8) td {
+  border-top: 5px solid #4717f6;
+}
+tr:nth-of-type(9) td {
+  border-bottom: 5px solid #4717f6;
 }

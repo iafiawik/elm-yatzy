@@ -4,7 +4,8 @@ import Browser
 import Html exposing (Html, button, div, h1, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Ordering exposing (Ordering)
+import Logic exposing (..)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Player, PlayerAndNumberOfValues, Value)
 
 
 
@@ -20,80 +21,15 @@ type alias Model =
     }
 
 
-type Game
-    = Initializing
-    | Idle
-    | Input { player : Player, box : Box }
-    | Finished
-    | ShowCountedValues
-    | Error
-
-
-type BoxType
-    = Regular Int
-    | SameKind
-    | Combination
-    | UpperSum
-    | TotalSum
-    | Bonus
-
-
-type BoxCategory
-    = Upper
-    | Lower
-    | None
-
-
-type alias Box =
-    { id_ : String, friendlyName : String, boxType : BoxType, category : BoxCategory }
-
-
-type alias Value =
-    { box : Box
-    , player : Player
-    , value : Int
-    }
-
-
-type alias Player =
-    { id_ : Int, name : String }
-
-
-type alias PlayerAndNumberOfValues =
-    { numberOfValues : Int
-    , player : Player
-    , playerId : Int
-    }
-
-
 init : ( Model, Cmd Msg )
 init =
-    ( { boxes =
-            [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
-            , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2, category = Upper }
-            , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3, category = Upper }
-            , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4, category = Upper }
-            , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5, category = Upper }
-            , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6, category = Upper }
-            , { id_ = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None }
-            , { id_ = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None }
-            , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower }
-            , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination, category = Lower }
-            , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower }
-            , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind, category = Lower }
-            , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination, category = Lower }
-            , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination, category = Lower }
-            , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination, category = Lower }
-            , { id_ = "chance", friendlyName = "Chans", boxType = Combination, category = Lower }
-            , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
-            , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
-            ]
+    ( { boxes = getBoxes
       , players =
             [ { id_ = 1
-              , name = "Adam"
+              , name = "Sophie"
               }
             , { id_ = 2
-              , name = "Eva"
+              , name = "Hugo"
               }
             ]
       , values = []
@@ -102,76 +38,6 @@ init =
       }
     , Cmd.none
     )
-
-
-validate : Box -> Int -> Bool
-validate box value =
-    if box.id_ == "ones" then
-        List.any (\v -> v == value) (getAcceptedValues box)
-
-    else if box.id_ == "twos" then
-        List.any (\v -> v == value) [ 2, 4, 6, 8, 10 ]
-
-    else if box.id_ == "threes" then
-        List.any (\v -> v == value) [ 3, 6, 9, 12, 15 ]
-
-    else if box.id_ == "fours" then
-        List.any (\v -> v == value) [ 4, 8, 12, 16, 20 ]
-
-    else if box.id_ == "fives" then
-        List.any (\v -> v == value) [ 5, 10, 15, 20, 25 ]
-
-    else if box.id_ == "sixes" then
-        List.any (\v -> v == value) [ 6, 12, 18, 24, 30 ]
-
-    else if box.id_ == "one_pair" then
-        List.any (\v -> v == value) (List.map (\n -> n * 2) [ 1, 2, 3, 4, 5, 6 ])
-
-    else
-        True
-
-
-getAcceptedValues : Box -> List Int
-getAcceptedValues box =
-    if box.id_ == "ones" then
-        [ 1, 2, 3, 4, 5 ]
-
-    else
-        []
-
-
-sum : List number -> number
-sum list =
-    List.foldl (\a b -> a + b) 0 list
-
-
-getValuesByPlayer : List Value -> Player -> List Value
-getValuesByPlayer values player =
-    List.filter (\v -> v.player == player) values
-
-
-sortPLayers : List PlayerAndNumberOfValues -> List PlayerAndNumberOfValues
-sortPLayers players =
-    List.sortWith myOrdering players
-
-
-myOrdering : Ordering PlayerAndNumberOfValues
-myOrdering =
-    Ordering.byField .numberOfValues
-        |> Ordering.breakTiesWith (Ordering.byField (\record -> record.player.id_))
-
-
-
--- sortByValues a b =
---     case compare (Tuple.first b) (Tuple.first a) of
---         GT ->
---             LT
---
---         EQ ->
---             EQ
---
---         LT ->
---             GT
 
 
 stateToString : Game -> String
@@ -183,8 +49,8 @@ stateToString state =
         Idle ->
             "Idle"
 
-        Input { player, box } ->
-            "Input" ++ player.name ++ box.friendlyName
+        Input { box } ->
+            "Input" ++ box.friendlyName
 
         Finished ->
             "Finished"
@@ -196,46 +62,6 @@ stateToString state =
             "Error"
 
 
-getCurrentPlayer : Model -> Maybe Player
-getCurrentPlayer model =
-    let
-        players =
-            List.map (\p -> { numberOfValues = List.length (getValuesByPlayer model.values p), playerId = p.id_, player = p }) model.players
-
-        playersByNumberOfValues =
-            sortPLayers players
-
-        currentPlayerMaybe =
-            List.head playersByNumberOfValues
-    in
-    -- Maybe.map .player currentPlayerMaybe
-    case currentPlayerMaybe of
-        Just currentPlayerComparable ->
-            let
-                currentPlayer =
-                    currentPlayerComparable.player
-            in
-            Just currentPlayer
-
-        Nothing ->
-            Nothing
-
-
-areAllUsersFinished : List Value -> List Player -> List Box -> Bool
-areAllUsersFinished values players boxes =
-    let
-        numberOfBoxes =
-            List.length (List.filter (\b -> b.category /= None) boxes)
-
-        numberOfValues =
-            List.length values
-
-        numberOfPlayers =
-            List.length players
-    in
-    numberOfValues == numberOfBoxes * numberOfPlayers
-
-
 
 ---- UPDATE ----
 
@@ -243,7 +69,7 @@ areAllUsersFinished values players boxes =
 type Msg
     = Start
     | AddValue
-    | ShowAddValue Player Box
+    | ShowAddValue Box
     | HideAddValue
     | InputValueChange String
     | CountValues
@@ -253,7 +79,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentPlayerMaybe =
-            getCurrentPlayer model
+            getCurrentPlayer model.values model.players
     in
     case currentPlayerMaybe of
         Just currentPlayer ->
@@ -263,7 +89,7 @@ update msg model =
 
                 AddValue ->
                     case model.game of
-                        Input { player, box } ->
+                        Input { box } ->
                             let
                                 newValue =
                                     { box = box
@@ -298,8 +124,8 @@ update msg model =
                 InputValueChange value ->
                     ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
 
-                ShowAddValue player box ->
-                    ( { model | game = Input { player = player, box = box } }, Cmd.none )
+                ShowAddValue box ->
+                    ( { model | game = Input { box = box } }, Cmd.none )
 
                 HideAddValue ->
                     ( { model
@@ -323,106 +149,73 @@ update msg model =
 ---- VIEW ----
 
 
-getUpperSum : List Value -> Player -> Int
-getUpperSum values player =
-    let
-        playerValues =
-            getValuesByPlayer values player
-
-        upperValues =
-            List.filter (\v -> v.box.category == Upper) playerValues
-
-        upperSum =
-            sum (List.map (\v -> v.value) upperValues)
-    in
-    upperSum
-
-
-getTotalSum : List Value -> Player -> Int
-getTotalSum values player =
-    let
-        playerValues =
-            getValuesByPlayer values player
-
-        totalSum =
-            sum (List.map (\v -> v.value) playerValues)
-
-        bonusValue =
-            getBonusValue values player
-    in
-    totalSum + bonusValue
-
-
-getBonusValue : List Value -> Player -> Int
-getBonusValue values player =
-    let
-        upperSum =
-            getUpperSum values player
-    in
-    if upperSum >= 63 then
-        50
-
-    else
-        0
-
-
 renderBox : Box -> Html msg
 renderBox box =
     span [] [ text <| "" ++ box.friendlyName ]
 
 
+renderCell : Box -> Model -> Player -> Bool -> Html Msg
+renderCell box model player isCurrentPlayer =
+    let
+        upperSum =
+            getUpperSum model.values player
+
+        totalSum =
+            getTotalSum model.values player
+
+        bonusValue =
+            getBonusValue model.values player
+
+        boxValue =
+            List.head
+                (List.filter
+                    (\v ->
+                        v.box == box && v.player == player
+                    )
+                    model.values
+                )
+    in
+    case boxValue of
+        Just value ->
+            td [ class "inactive" ] [ text (String.fromInt value.value) ]
+
+        Nothing ->
+            if box.boxType == UpperSum then
+                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
+
+            else if box.boxType == TotalSum then
+                td [ class "inactive" ] [ text (String.fromInt totalSum) ]
+
+            else if box.boxType == Bonus then
+                td [ class "inactive" ] [ text (String.fromInt bonusValue) ]
+
+            else if isCurrentPlayer then
+                if box.category == None then
+                    td [ class "active" ] [ text "" ]
+
+                else
+                    td [ class "active", onClick (ShowAddValue box) ] [ text "" ]
+
+            else
+                td [ class "inactive" ] [ text "" ]
+
+
 renderTable : Player -> Model -> Bool -> Html Msg
-renderTable player model showCountedValues =
+renderTable currentPlayer model showCountedValues =
     let
         boxItems =
             List.map
-                (\b ->
+                (\box ->
                     let
                         playerBoxes =
                             List.map
                                 (\p ->
-                                    let
-                                        boxValue =
-                                            List.head
-                                                (List.filter
-                                                    (\v ->
-                                                        v.box == b && v.player == p
-                                                    )
-                                                    model.values
-                                                )
-                                    in
-                                    case boxValue of
-                                        Just value ->
-                                            td [ class "inactive" ] [ text (String.fromInt value.value) ]
-
-                                        Nothing ->
-                                            let
-                                                upperSum =
-                                                    getUpperSum model.values p
-                                            in
-                                            if b.boxType == UpperSum then
-                                                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
-
-                                            else if b.boxType == TotalSum then
-                                                td [ class "inactive" ] [ text (String.fromInt (getTotalSum model.values p)) ]
-
-                                            else if b.boxType == Bonus then
-                                                td [ class "inactive" ] [ text (String.fromInt (getBonusValue model.values p)) ]
-
-                                            else if player == p then
-                                                if b.category == None then
-                                                    td [ class "active" ] [ text "" ]
-
-                                                else
-                                                    td [ class "active", onClick (ShowAddValue p b) ] [ text "" ]
-
-                                            else
-                                                td [ class "inactive" ] [ text "" ]
+                                    renderCell box model p (p == currentPlayer)
                                 )
                                 model.players
                     in
                     tr []
-                        ([ td [] [ renderBox b ]
+                        ([ td [ class "box" ] [ renderBox box ]
                          ]
                             ++ playerBoxes
                         )
@@ -430,9 +223,9 @@ renderTable player model showCountedValues =
                 model.boxes
 
         headers =
-            List.map (\p -> th [] [ text (p.name ++ String.fromInt (List.length (getValuesByPlayer model.values p))) ]) model.players
+            List.map (\p -> th [] [ text p.name ]) model.players
     in
-    div []
+    div [ class "table-wrapper" ]
         [ table []
             ([ tr []
                 ([ th []
@@ -450,7 +243,7 @@ view : Model -> Html Msg
 view model =
     let
         currentPlayerMaybe =
-            getCurrentPlayer model
+            getCurrentPlayer model.values model.players
     in
     case currentPlayerMaybe of
         Just currentPlayer ->
@@ -472,9 +265,9 @@ view model =
                                 [ div [] [ renderTable currentPlayer model False ]
                                 ]
 
-                        Input { player, box } ->
+                        Input { box } ->
                             div []
-                                [ div [] [ text player.name ]
+                                [ div [] [ text currentPlayer.name ]
                                 , div [] [ inputDialog ]
                                 , div [] [ renderTable currentPlayer model False ]
                                 ]
