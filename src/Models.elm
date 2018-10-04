@@ -17,7 +17,7 @@ type BoxType
 type Game
     = Initializing
     | Idle
-    | Input { box : Box }
+    | Input Box
     | Finished
     | ShowCountedValues
     | Error

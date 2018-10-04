@@ -49,7 +49,7 @@ stateToString state =
         Idle ->
             "Idle"
 
-        Input { box } ->
+        Input box ->
             "Input" ++ box.friendlyName
 
         Finished ->
@@ -89,7 +89,7 @@ update msg model =
 
                 AddValue ->
                     case model.game of
-                        Input { box } ->
+                        Input box ->
                             let
                                 newValue =
                                     { box = box
@@ -125,7 +125,7 @@ update msg model =
                     ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
 
                 ShowAddValue box ->
-                    ( { model | game = Input { box = box } }, Cmd.none )
+                    ( { model | game = Input box }, Cmd.none )
 
                 HideAddValue ->
                     ( { model
@@ -268,7 +268,7 @@ view model =
                                 [ div [] [ renderTable currentPlayer model False ]
                                 ]
 
-                        Input { box } ->
+                        Input box ->
                             div []
                                 [ div [] [ text currentPlayer.name ]
                                 , div [] [ inputDialog ]
