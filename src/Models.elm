@@ -1,4 +1,4 @@
-module Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Person, Player, PlayerAndNumberOfValues, Value)
+module Models exposing (Box, BoxCategory(..), BoxType(..), Person, Player, PlayerAndNumberOfValues, Value)
 
 
 type alias Person =
@@ -12,15 +12,6 @@ type BoxType
     | UpperSum
     | TotalSum
     | Bonus
-
-
-type Game
-    = Initializing
-    | Idle
-    | Input Box
-    | Finished
-    | ShowCountedValues
-    | Error
 
 
 type BoxCategory

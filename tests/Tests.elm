@@ -2,7 +2,7 @@ module Tests exposing (all)
 
 import Expect
 import Logic exposing (..)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 import Ordering exposing (Ordering)
 import Test exposing (..)
 
