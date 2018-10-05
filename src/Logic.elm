@@ -1,6 +1,6 @@
 module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sum, validate)
 
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 import Ordering exposing (Ordering)
 
 
@@ -14,7 +14,7 @@ getBoxes =
     , { id_ = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None }
     , { id_ = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None }
     , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower }
-    , { id_ = "two_pars", friendlyName = "Två par", boxType = Combination, category = Lower }
+    , { id_ = "two_pairs", friendlyName = "Två par", boxType = Combination, category = Lower }
     , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower }
     , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind, category = Lower }
     , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination, category = Lower }
@@ -160,7 +160,49 @@ validate box value =
 getAcceptedValues : Box -> List Int
 getAcceptedValues box =
     if box.id_ == "ones" then
-        [ 1, 2, 3, 4, 5 ]
+        List.map (\n -> n * 1) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "twos" then
+        List.map (\n -> n * 2) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "threes" then
+        List.map (\n -> n * 3) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "fours" then
+        List.map (\n -> n * 4) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "fives" then
+        List.map (\n -> n * 5) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "sixes" then
+        List.map (\n -> n * 6) [ 1, 2, 3, 4, 5 ]
+
+    else if box.id_ == "one_pair" then
+        List.map (\n -> n * 2) [ 1, 2, 3, 4, 5, 6 ]
+
+    else if box.id_ == "two_pairs" then
+        [ 6, 8, 10, 12, 14, 16, 18, 20, 22 ]
+
+    else if box.id_ == "three_of_a_kind" then
+        List.map (\n -> n * 3) [ 1, 2, 3, 4, 5, 6 ]
+
+    else if box.id_ == "four_of_a_kind" then
+        List.map (\n -> n * 4) [ 1, 2, 3, 4, 5, 6 ]
+
+    else if box.id_ == "small_straight" then
+        [ 15 ]
+
+    else if box.id_ == "large_straight" then
+        [ 20 ]
+
+    else if box.id_ == "full_house" then
+        [ 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28 ]
+
+    else if box.id_ == "chance" then
+        List.range 5 30
+
+    else if box.id_ == "yatzy" then
+        [ 50 ]
 
     else
         []
