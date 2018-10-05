@@ -43,7 +43,7 @@ init =
             ]
       , values = []
       , game = Idle
-      , currentValue = 0
+      , currentValue = -1
       }
     , Cmd.none
     )
