@@ -274,26 +274,28 @@ getMarkedValue model box =
         Nothing
 
 
+inputDialogButton : Bool -> Int -> Html Msg
+inputDialogButton isMarked value =
+    button
+        [ classList
+            [ ( "input-dialog-number-button button", True )
+            , ( "marked", isMarked )
+            ]
+        , onClick (ValueMarked value)
+        ]
+        [ text (String.fromInt value) ]
+
+
 inputDialog : Model -> Box -> Player -> Html Msg
 inputDialog model box currentPlayer =
     let
         acceptedValues =
             getAcceptedValues box
 
-        markedValue =
-            model.currentValue
-
         acceptedValuesButtons =
             List.map
                 (\v ->
-                    button
-                        [ classList
-                            [ ( "input-dialog-number-button button", True )
-                            , ( "marked", markedValue == v )
-                            ]
-                        , onClick (ValueMarked v)
-                        ]
-                        [ text (String.fromInt v) ]
+                    inputDialogButton (model.currentValue == v) v
                 )
                 acceptedValues
     in
@@ -305,11 +307,12 @@ inputDialog model box currentPlayer =
                 , h1 [] [ text box.friendlyName ]
                 , h2 [] [ text currentPlayer.name ]
                 ]
-            , div [ classList [ ( "input-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ] ([] ++ acceptedValuesButtons)
+            , div [ classList [ ( "input-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ]
+                ([] ++ acceptedValuesButtons)
             , div []
                 [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
                 ]
-            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", markedValue > 0 ) ], disabled (markedValue <= 0), onClick AddValue ] [ text "Spara" ]
+            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue > 0 ) ], disabled (model.currentValue <= 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]
 
