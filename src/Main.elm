@@ -298,7 +298,8 @@ inputDialog model box currentPlayer =
                 acceptedValues
     in
     div [ class "input-dialog-wrapper" ]
-        [ div [ class "input-dialog" ]
+        [ div [ class "input-dialog-background", onClick HideAddValue ] []
+        , div [ class "input-dialog" ]
             [ div []
                 [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
                 , h1 [] [ text box.friendlyName ]
