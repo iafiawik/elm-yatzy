@@ -113,7 +113,7 @@ update msg model =
                             if areAllUsersFinished newValues model.players model.boxes then
                                 ( { model
                                     | game = Finished
-                                    , currentValue = 0
+                                    , currentValue = -1
                                     , values = newValues
                                   }
                                 , Cmd.none
@@ -122,7 +122,7 @@ update msg model =
                             else
                                 ( { model
                                     | game = Idle
-                                    , currentValue = 0
+                                    , currentValue = -1
                                     , values = newValues
                                   }
                                 , Cmd.none
@@ -152,7 +152,7 @@ update msg model =
                 HideAddValue ->
                     ( { model
                         | game = Idle
-                        , currentValue = 0
+                        , currentValue = -1
                       }
                     , Cmd.none
                     )
@@ -274,16 +274,17 @@ getMarkedValue model box =
         Nothing
 
 
-inputDialogButton : Bool -> Int -> Html Msg
-inputDialogButton isMarked value =
+inputDialogButton : Bool -> Int -> String -> String -> Html Msg
+inputDialogButton isMarked value buttonText class =
     button
         [ classList
             [ ( "input-dialog-number-button button", True )
             , ( "marked", isMarked )
+            , ( class, True )
             ]
         , onClick (ValueMarked value)
         ]
-        [ text (String.fromInt value) ]
+        [ text buttonText ]
 
 
 inputDialog : Model -> Box -> Player -> Html Msg
@@ -295,7 +296,7 @@ inputDialog model box currentPlayer =
         acceptedValuesButtons =
             List.map
                 (\v ->
-                    inputDialogButton (model.currentValue == v) v
+                    inputDialogButton (model.currentValue == v) v (String.fromInt v) "hej"
                 )
                 acceptedValues
     in
@@ -308,11 +309,11 @@ inputDialog model box currentPlayer =
                 , h2 [] [ text currentPlayer.name ]
                 ]
             , div [ classList [ ( "input-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ]
-                ([] ++ acceptedValuesButtons)
+                (acceptedValuesButtons ++ [ inputDialogButton (model.currentValue == 0) 0 ":(" "skip-button" ])
             , div []
                 [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
                 ]
-            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue > 0 ) ], disabled (model.currentValue <= 0), onClick AddValue ] [ text "Spara" ]
+            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue >= 0 ) ], disabled (model.currentValue < 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]
 

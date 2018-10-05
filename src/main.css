@@ -145,6 +145,22 @@ body {
   transition: all 0.3s linear;
 }
 
+.input-dialog-number-button.skip-button {
+  background: white;
+  color: #4717f6;
+  border: 6px solid #4717f6;
+  transform: rotate(90deg);
+  font-size: 40px !important;
+  text-align: center;
+  letter-spacing: -8px;
+  padding-right: 5px;
+  padding-bottom: 10px;
+}
+.input-dialog-number-button.skip-button:hover,
+.input-dialog-number-button.skip-button.marked {
+  border-color: black;
+}
+
 .input-dialog-number-button:hover {
   background: black;
   color: white;
