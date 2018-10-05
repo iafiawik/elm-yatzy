@@ -1,15 +1,24 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, button, div, h1, img, input, label, li, span, table, td, text, th, tr, ul)
+import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Logic exposing (..)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 
 
 
 ---- MODEL ----
+
+
+type Game
+    = Initializing
+    | Idle
+    | Input Box
+    | Finished
+    | ShowCountedValues
+    | Error
 
 
 type alias Model =
@@ -33,7 +42,7 @@ init =
               }
             ]
       , values = []
-      , game = Initializing
+      , game = Idle
       , currentValue = 0
       }
     , Cmd.none
@@ -70,6 +79,7 @@ type Msg
     = Start
     | AddValue
     | ShowAddValue Box
+    | ValueMarked Int
     | HideAddValue
     | InputValueChange String
     | CountValues
@@ -120,6 +130,9 @@ update msg model =
 
                         _ ->
                             ( model, Cmd.none )
+
+                ValueMarked value ->
+                    ( { model | currentValue = value }, Cmd.none )
 
                 InputValueChange value ->
                     ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
@@ -239,6 +252,39 @@ renderTable currentPlayer model showCountedValues =
         ]
 
 
+inputDialog : Model -> Box -> Player -> Html Msg
+inputDialog model box currentPlayer =
+    let
+        acceptedValues =
+            List.map
+                (\v ->
+                    button
+                        [ classList
+                            [ ( "input-dialog-number-button button", True )
+                            , ( "marked", model.currentValue == v )
+                            ]
+                        , onClick (ValueMarked v)
+                        ]
+                        [ text (String.fromInt v) ]
+                )
+                (getAcceptedValues box)
+    in
+    div [ class "input-dialog-wrapper" ]
+        [ div [ class "input-dialog" ]
+            [ div []
+                [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
+                , h1 [] [ text box.friendlyName ]
+                , h2 [] [ text currentPlayer.name ]
+                ]
+            , div [ class "input-dialog-number-buttons" ] ([] ++ acceptedValues)
+            , div []
+                [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
+                ]
+            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "disabled", model.currentValue <= 0 ) ], disabled (model.currentValue <= 0), onClick AddValue ] [ text "Spara" ]
+            ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -248,16 +294,6 @@ view model =
     case currentPlayerMaybe of
         Just currentPlayer ->
             let
-                inputDialog =
-                    div [ class "input-dialog-wrapper" ]
-                        [ div [ class "input-dialog" ]
-                            [ button [ class "input-dialog-cancel-button", onClick HideAddValue ] [ text "X" ]
-                            , h1 [] [ text "Lägg till värde" ]
-                            , input [ type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
-                            , button [ onClick AddValue ] [ text "Submit" ]
-                            ]
-                        ]
-
                 content =
                     case model.game of
                         Initializing ->
@@ -270,8 +306,7 @@ view model =
 
                         Input box ->
                             div []
-                                [ div [] [ text currentPlayer.name ]
-                                , div [] [ inputDialog ]
+                                [ div [] [ inputDialog model box currentPlayer ]
                                 , div [] [ renderTable currentPlayer model False ]
                                 ]
 
@@ -291,8 +326,8 @@ view model =
             in
             div
                 []
-                [ div [] [ text <| stateToString <| Debug.log "state:" model.game ]
-                , div [] [ content ]
+                [ div [] [ content ]
+                , div [] [ text <| stateToString <| Debug.log "state:" model.game ]
                 ]
 
         Nothing ->
