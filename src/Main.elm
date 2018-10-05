@@ -138,7 +138,16 @@ update msg model =
                     ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
 
                 ShowAddValue box ->
-                    ( { model | game = Input box }, Cmd.none )
+                    let
+                        markedValueMaybe =
+                            getMarkedValue model box
+                    in
+                    case markedValueMaybe of
+                        Just markedValue ->
+                            ( { model | game = Input box, currentValue = markedValue }, Cmd.none )
+
+                        Nothing ->
+                            ( { model | game = Input box }, Cmd.none )
 
                 HideAddValue ->
                     ( { model
@@ -252,22 +261,41 @@ renderTable currentPlayer model showCountedValues =
         ]
 
 
+getMarkedValue : Model -> Box -> Maybe Int
+getMarkedValue model box =
+    let
+        acceptedValues =
+            getAcceptedValues box
+    in
+    if List.length (getAcceptedValues box) == 1 then
+        List.head acceptedValues
+
+    else
+        Nothing
+
+
 inputDialog : Model -> Box -> Player -> Html Msg
 inputDialog model box currentPlayer =
     let
         acceptedValues =
+            getAcceptedValues box
+
+        markedValue =
+            model.currentValue
+
+        acceptedValuesButtons =
             List.map
                 (\v ->
                     button
                         [ classList
                             [ ( "input-dialog-number-button button", True )
-                            , ( "marked", model.currentValue == v )
+                            , ( "marked", markedValue == v )
                             ]
                         , onClick (ValueMarked v)
                         ]
                         [ text (String.fromInt v) ]
                 )
-                (getAcceptedValues box)
+                acceptedValues
     in
     div [ class "input-dialog-wrapper" ]
         [ div [ class "input-dialog" ]
@@ -276,11 +304,11 @@ inputDialog model box currentPlayer =
                 , h1 [] [ text box.friendlyName ]
                 , h2 [] [ text currentPlayer.name ]
                 ]
-            , div [ class "input-dialog-number-buttons" ] ([] ++ acceptedValues)
+            , div [ class "input-dialog-number-buttons" ] ([] ++ acceptedValuesButtons)
             , div []
                 [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
                 ]
-            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "disabled", model.currentValue <= 0 ) ], disabled (model.currentValue <= 0), onClick AddValue ] [ text "Spara" ]
+            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "disabled", markedValue <= 0 ) ], disabled (markedValue <= 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]
 
