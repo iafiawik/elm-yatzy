@@ -199,7 +199,7 @@ renderCell box model player isCurrentPlayer =
     in
     case boxValue of
         Just value ->
-            td [ class "inactive" ] [ text (String.fromInt value.value) ]
+            td [ class "inactive" ] [ text (getValueText value.value) ]
 
         Nothing ->
             if box.boxType == UpperSum then
@@ -301,7 +301,7 @@ inputDialog model box currentPlayer =
                 acceptedValues
     in
     div [ class "input-dialog-wrapper" ]
-        [ div [ class "input-dialog-background", onClick HideAddValue ] []
+        [ div [ class "input-dialog-background animated fadeIn", onClick HideAddValue ] []
         , div [ class "input-dialog animated jackInTheBox" ]
             [ div []
                 [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
@@ -316,6 +316,16 @@ inputDialog model box currentPlayer =
             , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue >= 0 ) ], disabled (model.currentValue < 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]
+
+
+getValueText : Int -> String
+getValueText value =
+    case value of
+        0 ->
+            "-"
+
+        _ ->
+            String.fromInt value
 
 
 view : Model -> Html Msg
