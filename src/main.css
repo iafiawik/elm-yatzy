@@ -21,6 +21,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 .input-dialog-background {
   position: fixed;
   top: 0px;
@@ -45,6 +46,7 @@ body {
   flex-direction: column;
   box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
     5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
+  animation-duration: 0.5s !important;
 }
 
 .input-dialog h1 {
@@ -68,7 +70,63 @@ body {
   outline: inherit;
 }
 
-.input-dialog-number-buttons {
+.input-dialog-number-buttons.full_house {
+  margin-top: 20px;
+}
+.input-dialog-number-buttons.full_house .input-dialog-number-button {
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+}
+
+.input-dialog-number-buttons.chance .input-dialog-number-button {
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+}
+
+.input-dialog-number-buttons.ones,
+.input-dialog-number-buttons.twos,
+.input-dialog-number-buttons.threes,
+.input-dialog-number-buttons.fours,
+.input-dialog-number-buttons.fives,
+.input-dialog-number-buttons.sixes,
+.input-dialog-number-buttons.one_pair,
+.input-dialog-number-buttons.four_of_a_kind,
+.input-dialog-number-buttons.three_of_a_kind {
+  padding: 20px;
+}
+
+.input-dialog-number-buttons.ones .input-dialog-number-button,
+.input-dialog-number-buttons.twos .input-dialog-number-button,
+.input-dialog-number-buttons.threes .input-dialog-number-button,
+.input-dialog-number-buttons.fours .input-dialog-number-button,
+.input-dialog-number-buttons.fives .input-dialog-number-button,
+.input-dialog-number-buttons.sixes .input-dialog-number-button,
+.input-dialog-number-buttons.one_pair .input-dialog-number-button,
+.input-dialog-number-buttons.four_of_a_kind .input-dialog-number-button,
+.input-dialog-number-buttons.three_of_a_kind .input-dialog-number-button {
+  width: 90px;
+  height: 90px;
+  font-size: 23px;
+}
+
+.input-dialog-number-buttons.yatzy,
+.input-dialog-number-buttons.small_straight,
+.input-dialog-number-buttons.large_straight {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  margin-top: -40px;
+}
+
+.input-dialog-number-buttons.yatzy .input-dialog-number-button,
+.input-dialog-number-buttons.small_straight .input-dialog-number-button,
+.input-dialog-number-buttons.large_straight .input-dialog-number-button {
+  width: 120px;
+  height: 120px;
+  font-size: 50px;
 }
 
 .input-dialog-number-button {
@@ -84,7 +142,6 @@ body {
   font-size: 25px;
   font-weight: bold;
   display: inline-block;
-  margin-top: 30px;
   transition: all 0.3s linear;
 }
 
@@ -103,6 +160,7 @@ body {
   padding: 10px 20px;
   margin: 10px;
   font-size: 20px;
+  margin: 0px 20px;
   font-weight: bold;
   display: inline-block;
   margin-top: auto;
@@ -111,7 +169,7 @@ body {
     5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
 }
 
-.input-dialog-submit-button.disabled {
+.input-dialog-submit-button:not(.enabled) {
   opacity: 0.2;
   cursor: default;
 }

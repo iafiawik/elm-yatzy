@@ -299,17 +299,17 @@ inputDialog model box currentPlayer =
     in
     div [ class "input-dialog-wrapper" ]
         [ div [ class "input-dialog-background", onClick HideAddValue ] []
-        , div [ class "input-dialog" ]
+        , div [ class "input-dialog animated jackInTheBox" ]
             [ div []
                 [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
                 , h1 [] [ text box.friendlyName ]
                 , h2 [] [ text currentPlayer.name ]
                 ]
-            , div [ class "input-dialog-number-buttons" ] ([] ++ acceptedValuesButtons)
+            , div [ classList [ ( "input-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ] ([] ++ acceptedValuesButtons)
             , div []
                 [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
                 ]
-            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "disabled", markedValue <= 0 ) ], disabled (markedValue <= 0), onClick AddValue ] [ text "Spara" ]
+            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", markedValue > 0 ) ], disabled (markedValue <= 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]
 
