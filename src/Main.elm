@@ -374,7 +374,7 @@ view model =
                 ]
 
         Nothing ->
-            div [] [ text "No player foundd" ]
+            div [] [ text "No player found" ]
 
 
 
