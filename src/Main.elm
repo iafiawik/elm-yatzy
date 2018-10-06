@@ -394,8 +394,8 @@ view model =
 
                         Input box ->
                             div []
-                                [ div [] [ inputDialog model box currentPlayer ]
-                                , div [] [ renderTable currentPlayer model False ]
+                                [ div [] [ renderTable currentPlayer model False ]
+                                , div [] [ inputDialog model box currentPlayer ]
                                 ]
 
                         Finished ->
