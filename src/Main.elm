@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Html.Keyed as Keyed exposing (..)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 
@@ -190,10 +191,17 @@ getUpperSumText boxes values player =
 
         totalSum =
             sum (List.map (\v -> v.value) upperValues)
+
+        bonusValue =
+            getBonusValue values player
     in
-    case List.length upperBoxes == List.length upperValues || List.length upperValues == 0 of
+    case List.length upperBoxes == List.length upperValues || List.length upperValues == 0 || bonusValue > 0 of
         True ->
-            span [ class "upper-sum neutral" ] [ text (String.fromInt totalSum) ]
+            if bonusValue > 0 then
+                span [ class "upper-sum bonus" ] [ text (String.fromInt bonusValue) ]
+
+            else
+                span [ class "upper-sum" ] [ text "-" ]
 
         False ->
             let
@@ -212,7 +220,7 @@ getUpperSumText boxes values player =
                         )
             in
             if totalDelta == 0 then
-                span [ class "upper-sum neutral" ] [ text (String.fromInt totalSum) ]
+                span [ class "upper-sum neutral" ] [ text "+/-0" ]
 
             else if totalDelta > 0 then
                 span [ class "upper-sum positive" ] [ text ("+" ++ String.fromInt totalDelta) ]
@@ -229,6 +237,9 @@ renderCell box model player isCurrentPlayer =
 
         totalSum =
             getTotalSum model.values player
+
+        upperSum =
+            getUpperSum model.values player
 
         bonusValue =
             getBonusValue model.values player
@@ -248,13 +259,13 @@ renderCell box model player isCurrentPlayer =
 
         Nothing ->
             if box.boxType == UpperSum then
-                td [ class "inactive" ] [ upperSumText ]
+                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
 
             else if box.boxType == TotalSum then
                 td [ class "inactive" ] [ text (String.fromInt totalSum) ]
 
             else if box.boxType == Bonus then
-                td [ class "inactive" ] [ text (String.fromInt bonusValue) ]
+                td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
 
             else if isCurrentPlayer then
                 if box.category == None then
