@@ -176,11 +176,56 @@ renderBox box =
     span [] [ text <| "" ++ box.friendlyName ]
 
 
+getUpperSumText : List Box -> List Value -> Player -> Html Msg
+getUpperSumText boxes values player =
+    let
+        playerValues =
+            getValuesByPlayer values player
+
+        upperBoxes =
+            List.filter (\b -> b.category == Upper) boxes
+
+        upperValues =
+            List.filter (\v -> v.box.category == Upper) playerValues
+
+        totalSum =
+            sum (List.map (\v -> v.value) upperValues)
+    in
+    case List.length upperBoxes == List.length upperValues || List.length upperValues == 0 of
+        True ->
+            span [ class "upper-sum neutral" ] [ text (String.fromInt totalSum) ]
+
+        False ->
+            let
+                totalDelta =
+                    sum
+                        (List.map
+                            (\v ->
+                                case v.box.boxType of
+                                    Regular numberValue ->
+                                        v.value - numberValue * 3
+
+                                    _ ->
+                                        0
+                            )
+                            upperValues
+                        )
+            in
+            if totalDelta == 0 then
+                span [ class "upper-sum neutral" ] [ text (String.fromInt totalSum) ]
+
+            else if totalDelta > 0 then
+                span [ class "upper-sum positive" ] [ text ("+" ++ String.fromInt totalDelta) ]
+
+            else
+                span [ class "upper-sum negative" ] [ text ("" ++ String.fromInt totalDelta) ]
+
+
 renderCell : Box -> Model -> Player -> Bool -> Html Msg
 renderCell box model player isCurrentPlayer =
     let
-        upperSum =
-            getUpperSum model.values player
+        upperSumText =
+            getUpperSumText model.boxes model.values player
 
         totalSum =
             getTotalSum model.values player
@@ -203,7 +248,7 @@ renderCell box model player isCurrentPlayer =
 
         Nothing ->
             if box.boxType == UpperSum then
-                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
+                td [ class "inactive" ] [ upperSumText ]
 
             else if box.boxType == TotalSum then
                 td [ class "inactive" ] [ text (String.fromInt totalSum) ]

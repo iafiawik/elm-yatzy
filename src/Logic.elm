@@ -80,11 +80,8 @@ getUpperSum values player =
 
         upperValues =
             List.filter (\v -> v.box.category == Upper) playerValues
-
-        upperSum =
-            sum (List.map (\v -> v.value) upperValues)
     in
-    upperSum
+    sum (List.map (\v -> v.value) upperValues)
 
 
 getTotalSum : List Value -> Player -> Int

@@ -285,3 +285,9 @@ tr:nth-of-type(8) td {
 tr:nth-of-type(9) td {
   border-bottom: 5px solid #4717f6;
 }
+
+.upper-sum.negative,
+.upper-sum.positive {
+  font-style: italic;
+  font-weight: bold;
+}
