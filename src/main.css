@@ -47,6 +47,7 @@ body {
   box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
     5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
   animation-duration: 0.5s !important;
+  animation-fill-mode: backwards !important;
 }
 
 .input-dialog h1 {
