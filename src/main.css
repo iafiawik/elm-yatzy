@@ -286,8 +286,28 @@ tr:nth-of-type(9) td {
   border-bottom: 5px solid #4717f6;
 }
 
+.bonus-cell {
+  font-weight: bold;
+  animation: tada 1s linear forwards, bonus 1.5s linear forwards !important;
+}
+
+@keyframes bonus {
+  0% {
+    background: #4717f6;
+    color: white;
+  }
+  70% {
+    color: black;
+  }
+  90% {
+    background: #ffffff;
+    color: black;
+  }
+}
+
+.upper-sum.neutral,
 .upper-sum.negative,
 .upper-sum.positive {
-  font-style: italic;
   font-weight: bold;
+  opacity: 0.5;
 }
