@@ -15,6 +15,7 @@ import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumb
 
 type Game
     = Initializing
+    | AddPlayers
     | Idle
     | Input Box
     | Finished
@@ -43,7 +44,7 @@ init =
               }
             ]
       , values = []
-      , game = Idle
+      , game = AddPlayers
       , currentValue = -1
       }
     , Cmd.none
@@ -55,6 +56,9 @@ stateToString state =
     case state of
         Initializing ->
             "Initializing"
+
+        AddPlayers ->
+            "AddPlayers"
 
         Idle ->
             "Idle"
@@ -384,6 +388,14 @@ getValueText value =
             String.fromInt value
 
 
+addPlayers : List Player -> Html Msg
+addPlayers players =
+    div [ class "add-players-dialog-wrapper" ]
+        [ div [ class "add-players-dialog-background animated fadeIn", onClick HideAddValue ] []
+        , div [ class "add-players-dialog animated jackInTheBox" ] []
+        ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -397,6 +409,9 @@ view model =
                     case model.game of
                         Initializing ->
                             div [] [ button [ onClick Start ] [ text "Start" ] ]
+
+                        AddPlayers ->
+                            div [] [ addPlayers model.players ]
 
                         Idle ->
                             div []
