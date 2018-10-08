@@ -201,6 +201,24 @@ body {
   transition: all 0.1s linear;
 }
 
+.large-button {
+  background: #4717f6;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 20px;
+  margin: 0px 20px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: auto;
+  transition: all 0.3s linear;
+  box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
+    5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+}
+
 .input-dialog-submit-button {
   background: #4717f6;
   color: white;
@@ -352,3 +370,5 @@ tr:nth-of-type(9) td {
   font-weight: bold;
   opacity: 0.5;
 }
+
+/* Show results */

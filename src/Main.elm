@@ -481,6 +481,12 @@ addPlayers model =
         ]
 
 
+showResultsButton =
+    div [ class "show-results" ]
+        [ div [ class "show-results-content" ] [ h1 [] [ text "OK, all done!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Show results" ] ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -511,7 +517,8 @@ view model =
 
                         Finished ->
                             div []
-                                [ div [] [ renderTable currentPlayer model False ]
+                                [ div [] [ showResultsButton ]
+                                , div [] [ renderTable currentPlayer model False ]
                                 , button [ onClick CountValues ] [ text "Count" ]
                                 ]
 
