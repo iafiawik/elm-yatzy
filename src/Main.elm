@@ -7,6 +7,8 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra exposing (findIndex, removeAt)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
+import Random exposing (Seed, initialSeed, step)
+import Uuid
 
 
 
@@ -30,27 +32,40 @@ type alias Model =
     , game : Game
     , currentNewPlayerName : String
     , currentValue : Int
+    , currentSeed : Seed
+    , currentUuid : Maybe Uuid.Uuid
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Int -> ( Model, Cmd Msg )
+init seed =
+    let
+        currentSeed =
+            initialSeed seed
+
+        ( newUuid, newSeed ) =
+            step Uuid.uuidGenerator currentSeed
+    in
     ( { boxes = getBoxes
       , players =
-            [ { id_ = 0
+            [ { id_ = getUniqueId currentSeed
+              , order = 0
               , name = "Sophie"
-              }
-            , { id_ = 1
-              , name = "Hugo"
               }
             ]
       , values = []
       , game = AddPlayers
       , currentValue = -1
       , currentNewPlayerName = ""
+      , currentSeed = newSeed
+      , currentUuid = Just newUuid
       }
     , Cmd.none
     )
+
+
+getUniqueId currentSeed =
+    Uuid.toString (Tuple.first (step Uuid.uuidGenerator currentSeed))
 
 
 stateToString : Game -> String
@@ -106,13 +121,23 @@ update msg model =
             case msg of
                 AddPlayer ->
                     let
+                        ( newUuid, newSeed ) =
+                            step Uuid.uuidGenerator model.currentSeed
+
                         newPlayer =
-                            { id_ = List.length model.players, name = model.currentNewPlayerName }
+                            { id_ = getUniqueId model.currentSeed, order = List.length model.players, name = model.currentNewPlayerName }
 
                         newPlayers =
-                            newPlayer :: model.players
+                            sortPlayersByOrder (newPlayer :: model.players)
                     in
-                    ( { model | players = newPlayers }, Cmd.none )
+                    ( { model
+                        | players = newPlayers
+                        , currentNewPlayerName = ""
+                        , currentUuid = Just newUuid
+                        , currentSeed = newSeed
+                      }
+                    , Cmd.none
+                    )
 
                 RemovePlayer player ->
                     let
@@ -508,11 +533,11 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Int Model Msg
 main =
     Browser.element
-        { view = view
-        , init = \_ -> init
+        { init = init
         , update = update
-        , subscriptions = always Sub.none
+        , view = view
+        , subscriptions = \_ -> Sub.none
         }

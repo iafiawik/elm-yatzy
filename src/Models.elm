@@ -32,11 +32,11 @@ type alias Value =
 
 
 type alias Player =
-    { id_ : Int, name : String, order : Int }
+    { id_ : String, name : String, order : Int }
 
 
 type alias PlayerAndNumberOfValues =
     { numberOfValues : Int
     , player : Player
-    , playerId : Int
+    , playerId : String
     }
