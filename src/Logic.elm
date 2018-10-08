@@ -1,4 +1,4 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sum, validate)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum, validate)
 
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 import Ordering exposing (Ordering)
@@ -30,7 +30,7 @@ getCurrentPlayer : List Value -> List Player -> Maybe Player
 getCurrentPlayer values players =
     let
         sortablePlayers =
-            List.map (\p -> { numberOfValues = List.length (getValuesByPlayer values p), playerId = p.id_, player = p }) players
+            List.map (\p -> { numberOfValues = List.length (getValuesByPlayer values p), player = p }) players
 
         playersByNumberOfValues =
             sortPLayers sortablePlayers
@@ -56,6 +56,11 @@ getValuesByPlayer values player =
     List.filter (\v -> v.player == player) values
 
 
+sortPlayersByOrder : List Player -> List Player
+sortPlayersByOrder players =
+    List.sortBy .order players
+
+
 sortPLayers : List PlayerAndNumberOfValues -> List PlayerAndNumberOfValues
 sortPLayers players =
     List.sortWith playerOrdering players
@@ -64,7 +69,7 @@ sortPLayers players =
 playerOrdering : Ordering PlayerAndNumberOfValues
 playerOrdering =
     Ordering.byField .numberOfValues
-        |> Ordering.breakTiesWith (Ordering.byField .playerId)
+        |> Ordering.breakTiesWith (Ordering.byField (.player >> .order))
 
 
 sum : List number -> number

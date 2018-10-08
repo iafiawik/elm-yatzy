@@ -48,9 +48,13 @@ init seed =
     in
     ( { boxes = getBoxes
       , players =
-            [ { id_ = getUniqueId currentSeed
+            [ { id_ = getUniqueId currentSeed ++ "_sophie"
               , order = 0
               , name = "Sophie"
+              }
+            , { id_ = getUniqueId currentSeed ++ "_hugo"
+              , order = 1
+              , name = "Hugo"
               }
             ]
       , values = []
@@ -449,7 +453,7 @@ getValueText value =
 
 playerButton : Player -> List (Html Msg) -> Html Msg
 playerButton player content =
-    button [ class "add-players-dialog-player-button" ] [ span [] [ text player.name ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
+    button [ class "add-players-dialog-player-button" ] [ span [] [ text (player.name ++ player.id_) ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
 
 
 addPlayers : Model -> Html Msg

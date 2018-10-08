@@ -38,5 +38,4 @@ type alias Player =
 type alias PlayerAndNumberOfValues =
     { numberOfValues : Int
     , player : Player
-    , playerId : String
     }
