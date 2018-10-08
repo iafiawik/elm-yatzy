@@ -11,7 +11,7 @@ body {
   align-items: center;
 }
 
-.input-dialog-wrapper {
+.dialog-wrapper {
   position: fixed;
   top: 0px;
   left: 0px;
@@ -22,7 +22,7 @@ body {
   align-items: center;
 }
 
-.input-dialog-background {
+.dialog-background {
   position: fixed;
   top: 0px;
   left: 0px;
@@ -34,7 +34,7 @@ body {
   background: rgba(0, 0, 0, 0.4);
 }
 
-.input-dialog {
+.dialog-content {
   background: white;
   width: 500px;
   height: 500px;
@@ -48,6 +48,39 @@ body {
     5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
   animation-duration: 0.5s !important;
   animation-fill-mode: backwards !important;
+}
+
+/* Add players */
+
+.add-players-dialog-player-buttons {
+}
+
+.add-players-dialog-player-button {
+  background: #4717f6;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px 10px 20px;
+  font-size: 20px;
+  margin: 10px 0px;
+  font-weight: bold;
+  display: block;
+  transition: all 0.3s linear;
+  position: relative;
+}
+
+.add-players-dialog-player-button-delete {
+  color: #4717f6;
+  width: 25px;
+  height: 25px;
+  margin-left: 20px;
+  background: white;
+}
+
+.add-players-dialog-player-button-delete:hover {
+  background: #4717f6;
+  color: white;
 }
 
 .input-dialog h1 {
@@ -217,6 +250,14 @@ body {
   position: absolute;
   top: 20px;
   right: 20px;
+}
+
+button {
+  border: none;
+  padding: 0px;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
 }
 
 .table-wrapper {

@@ -4,7 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Html.Keyed as Keyed exposing (..)
+import List.Extra exposing (findIndex, removeAt)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 
@@ -28,6 +28,7 @@ type alias Model =
     , boxes : List Box
     , values : List Value
     , game : Game
+    , currentNewPlayerName : String
     , currentValue : Int
     }
 
@@ -36,16 +37,17 @@ init : ( Model, Cmd Msg )
 init =
     ( { boxes = getBoxes
       , players =
-            [ { id_ = 1
+            [ { id_ = 0
               , name = "Sophie"
               }
-            , { id_ = 2
+            , { id_ = 1
               , name = "Hugo"
               }
             ]
       , values = []
       , game = AddPlayers
       , currentValue = -1
+      , currentNewPlayerName = ""
       }
     , Cmd.none
     )
@@ -82,6 +84,9 @@ stateToString state =
 
 type Msg
     = Start
+    | AddPlayer
+    | RemovePlayer Player
+    | NewPlayerInputValueChange String
     | AddValue
     | ShowAddValue Box
     | ValueMarked Int
@@ -99,6 +104,32 @@ update msg model =
     case currentPlayerMaybe of
         Just currentPlayer ->
             case msg of
+                AddPlayer ->
+                    let
+                        newPlayer =
+                            { id_ = List.length model.players, name = model.currentNewPlayerName }
+
+                        newPlayers =
+                            newPlayer :: model.players
+                    in
+                    ( { model | players = newPlayers }, Cmd.none )
+
+                RemovePlayer player ->
+                    let
+                        playerIndexMaybe =
+                            findIndex (\a -> a.id_ == player.id_) model.players
+                    in
+                    case playerIndexMaybe of
+                        Just playerIndex ->
+                            let
+                                newPlayers =
+                                    removeAt playerIndex model.players
+                            in
+                            ( { model | players = newPlayers }, Cmd.none )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
                 Start ->
                     ( { model | game = Idle, currentValue = 0 }, Cmd.none )
 
@@ -141,6 +172,9 @@ update msg model =
 
                 InputValueChange value ->
                     ( { model | currentValue = String.toInt value |> Maybe.withDefault 0 }, Cmd.none )
+
+                NewPlayerInputValueChange value ->
+                    ( { model | currentNewPlayerName = value }, Cmd.none )
 
                 ShowAddValue box ->
                     let
@@ -360,9 +394,9 @@ inputDialog model box currentPlayer =
                 )
                 acceptedValues
     in
-    div [ class "input-dialog-wrapper" ]
-        [ div [ class "input-dialog-background animated fadeIn", onClick HideAddValue ] []
-        , div [ class "input-dialog animated jackInTheBox" ]
+    div [ class "input-dialog-wrapper dialog-wrapper" ]
+        [ div [ class "input-dialog-background dialog-background  animated fadeIn", onClick HideAddValue ] []
+        , div [ class "input-dialog dialog-content animated jackInTheBox" ]
             [ div []
                 [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
                 , h1 [] [ text box.friendlyName ]
@@ -388,11 +422,33 @@ getValueText value =
             String.fromInt value
 
 
-addPlayers : List Player -> Html Msg
-addPlayers players =
-    div [ class "add-players-dialog-wrapper" ]
-        [ div [ class "add-players-dialog-background animated fadeIn", onClick HideAddValue ] []
-        , div [ class "add-players-dialog animated jackInTheBox" ] []
+playerButton : Player -> List (Html Msg) -> Html Msg
+playerButton player content =
+    button [ class "add-players-dialog-player-button" ] [ span [] [ text player.name ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
+
+
+addPlayers : Model -> Html Msg
+addPlayers model =
+    let
+        playerButtons =
+            List.map
+                (\p ->
+                    playerButton p
+                        []
+                )
+                model.players
+    in
+    div [ class "add-players-dialog-wrapper dialog-wrapper" ]
+        [ div [ class "add-players-dialog-background dialog-background animated fadeIn", onClick HideAddValue ] []
+        , div [ class "add-players-dialog dialog-content a animated jackInTheBox" ]
+            [ div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Add players" ] ]
+            , div [ class "add-players-dialog-player-buttons" ] playerButtons
+            , div []
+                [ input [ class "add-players-dialog-input-field", type_ "text", onInput NewPlayerInputValueChange, value model.currentNewPlayerName ] []
+                , button [ onClick AddPlayer ] [ text "Add new player" ]
+                ]
+            , button [ onClick Start ] [ text "Start" ]
+            ]
         ]
 
 
@@ -411,7 +467,7 @@ view model =
                             div [] [ button [ onClick Start ] [ text "Start" ] ]
 
                         AddPlayers ->
-                            div [] [ addPlayers model.players ]
+                            div [] [ addPlayers model ]
 
                         Idle ->
                             div []
