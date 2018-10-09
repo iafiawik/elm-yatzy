@@ -435,7 +435,11 @@ renderCell box model player isCurrentPlayer =
                 td [ class "inactive" ] [ text (String.fromInt upperSum) ]
 
             else if box.boxType == TotalSum then
-                td [ class "inactive" ] [ text (String.fromInt totalSum) ]
+                if model.game == ShowResults || model.game == ShowCountedValues then
+                    td [ class "inactive" ] [ text (String.fromInt (getTotalSum model.values player)) ]
+
+                else
+                    td [ class "inactive" ] [ text "" ]
 
             else if box.boxType == Bonus then
                 td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
