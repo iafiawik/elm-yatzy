@@ -132,33 +132,6 @@ areAllUsersFinished values players boxes =
     numberOfValues == numberOfBoxes * numberOfPlayers
 
 
-validate : Box -> Int -> Bool
-validate box value =
-    if box.id_ == "ones" then
-        List.any (\v -> v == value) (getAcceptedValues box)
-
-    else if box.id_ == "twos" then
-        List.any (\v -> v == value) [ 2, 4, 6, 8, 10 ]
-
-    else if box.id_ == "threes" then
-        List.any (\v -> v == value) [ 3, 6, 9, 12, 15 ]
-
-    else if box.id_ == "fours" then
-        List.any (\v -> v == value) [ 4, 8, 12, 16, 20 ]
-
-    else if box.id_ == "fives" then
-        List.any (\v -> v == value) [ 5, 10, 15, 20, 25 ]
-
-    else if box.id_ == "sixes" then
-        List.any (\v -> v == value) [ 6, 12, 18, 24, 30 ]
-
-    else if box.id_ == "one_pair" then
-        List.any (\v -> v == value) (List.map (\n -> n * 2) [ 1, 2, 3, 4, 5, 6 ])
-
-    else
-        True
-
-
 getAcceptedValues : Box -> List Int
 getAcceptedValues box =
     if box.id_ == "ones" then
