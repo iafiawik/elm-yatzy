@@ -1,4 +1,4 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getNextValueToAnimate, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
 import List.Extra exposing (find, findIndex, removeAt)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
@@ -25,6 +25,21 @@ getBoxes =
     , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
     , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
     ]
+
+
+getRoundHighscore : List Player -> List Value -> List ( Player, Int )
+getRoundHighscore players values =
+    let
+        playerValues =
+            List.map (\player -> ( player, getTotalSum values player )) players
+
+        sortedPlayers =
+            sortTupleBySecond playerValues
+
+        _ =
+            Debug.log "sortedPlayers" sortedPlayers
+    in
+    sortedPlayers
 
 
 getNextValueToAnimate : List Player -> List Value -> Maybe Value
