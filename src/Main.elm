@@ -656,7 +656,7 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     if model.game == ShowCountedValues then
-        Time.every 200 CountValuesTick
+        Time.every 100 CountValuesTick
 
     else
         Sub.none
