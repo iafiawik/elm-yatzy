@@ -1,5 +1,6 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum, validate)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getNextValueToAnimate, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
+import List.Extra exposing (find, findIndex, removeAt)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 import Ordering exposing (Ordering)
 
@@ -24,6 +25,51 @@ getBoxes =
     , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
     , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
     ]
+
+
+getNextValueToAnimate : List Player -> List Value -> Maybe Value
+getNextValueToAnimate players values =
+    let
+        allPlayers =
+            sortPlayersByOrder players
+
+        nextPlayerMaybe =
+            find
+                (\player ->
+                    let
+                        playerValues =
+                            getValuesByPlayer values player
+                    in
+                    List.any (\v -> v.counted == False) playerValues
+                )
+                players
+
+        _ =
+            Debug.log "NextPlayer:" nextPlayerMaybe
+    in
+    case nextPlayerMaybe of
+        Just nextPlayer ->
+            let
+                _ =
+                    Debug.log ("NextPlayer: " ++ nextPlayer.name)
+
+                playerValues =
+                    getValuesByPlayer values nextPlayer
+
+                nextValueMaybe =
+                    find
+                        (\v -> v.counted == False)
+                        playerValues
+            in
+            case nextValueMaybe of
+                Just nextValue ->
+                    Just nextValue
+
+                Nothing ->
+                    Nothing
+
+        Nothing ->
+            Nothing
 
 
 getCurrentPlayer : List Value -> List Player -> Maybe Player
