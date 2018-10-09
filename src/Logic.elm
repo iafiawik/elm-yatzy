@@ -112,6 +112,14 @@ sortPLayers players =
     List.sortWith playerOrdering players
 
 
+sortTupleBySecond : List ( a, comparable ) -> List ( a, comparable )
+sortTupleBySecond =
+    (\f lst ->
+        List.sortWith (\a b -> compare (f b) (f a)) lst
+    )
+        Tuple.second
+
+
 playerOrdering : Ordering PlayerAndNumberOfValues
 playerOrdering =
     Ordering.byField .numberOfValues
