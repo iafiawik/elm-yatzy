@@ -1,5 +1,6 @@
 import "./main.css";
 import "./show-results.css";
+import "./round-highscore.css";
 import "./animate.css";
 import { Elm } from "./Main.elm";
 import { unregister } from "./registerServiceWorker";
