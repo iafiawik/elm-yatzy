@@ -4,10 +4,12 @@ import Browser
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import List.Extra exposing (findIndex, removeAt)
+import List.Extra exposing (find, findIndex, getAt, removeAt)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
 import Random exposing (Seed, initialSeed, step)
+import Task
+import Time
 import Uuid
 
 
@@ -22,6 +24,7 @@ type Game
     | Input Box
     | Finished
     | ShowCountedValues
+    | ShowResults
     | Error
 
 
@@ -30,6 +33,8 @@ type alias Model =
     , boxes : List Box
     , values : List Value
     , game : Game
+    , countedPlayers : List Player
+    , countedValues : List Value
     , currentNewPlayerName : String
     , currentValue : Int
     , currentSeed : Seed
@@ -45,20 +50,70 @@ init seed =
 
         ( newUuid, newSeed ) =
             step Uuid.uuidGenerator currentSeed
+
+        boxes =
+            getBoxes
+
+        valueBoxes =
+            List.filter (\b -> b.id_ /= "ones" && b.category /= None) boxes
+
+        sophie =
+            { id_ = getUniqueId currentSeed ++ "_sophie", order = 0, name = "Sophie" }
+
+        hugo =
+            { id_ = getUniqueId currentSeed ++ "_hugo", order = 1, name = "Hugo" }
     in
-    ( { boxes = getBoxes
+    ( { boxes = boxes
       , players =
-            [ { id_ = getUniqueId currentSeed ++ "_sophie"
-              , order = 0
-              , name = "Sophie"
-              }
-            , { id_ = getUniqueId currentSeed ++ "_hugo"
-              , order = 1
-              , name = "Hugo"
-              }
+            [ sophie
+            , hugo
             ]
-      , values = []
-      , game = AddPlayers
+      , values =
+            List.concat
+                [ List.map
+                    (\b ->
+                        { box = b
+                        , player = sophie
+                        , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
+                        , counted = False
+                        }
+                    )
+                    valueBoxes
+                , List.map
+                    (\b ->
+                        { box = b
+                        , player = hugo
+                        , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+                        , counted = False
+                        }
+                    )
+                    valueBoxes
+                ]
+
+      -- [ { box = ones
+      --   , player = sophie
+      --   , value = 1
+      --   , counted = False
+      --   }
+      -- , { box = ones
+      --   , player = hugo
+      --   , value = 3
+      --   , counted = False
+      --   }
+      -- , { box = twos
+      --   , player = sophie
+      --   , value = 2
+      --   , counted = False
+      --   }
+      -- , { box = twos
+      --   , player = hugo
+      --   , value = 4
+      --   , counted = False
+      --   }
+      -- ]
+      , game = Idle
+      , countedPlayers = []
+      , countedValues = []
       , currentValue = -1
       , currentNewPlayerName = ""
       , currentSeed = newSeed
@@ -93,6 +148,9 @@ stateToString state =
         ShowCountedValues ->
             "ShowCountedValues"
 
+        ShowResults ->
+            "ShowResults"
+
         Error ->
             "Error"
 
@@ -112,11 +170,15 @@ type Msg
     | HideAddValue
     | InputValueChange String
     | CountValues
+    | CountValuesTick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        _ =
+            Debug.log "state2:" msg
+
         currentPlayerMaybe =
             getCurrentPlayer model.values model.players
     in
@@ -170,6 +232,7 @@ update msg model =
                                     { box = box
                                     , player = currentPlayer
                                     , value = model.currentValue
+                                    , counted = False
                                     }
 
                                 newValues =
@@ -228,7 +291,38 @@ update msg model =
                 CountValues ->
                     ( { model | game = ShowCountedValues }, Cmd.none )
 
+                CountValuesTick newTime ->
+                    let
+                        _ =
+                            Debug.log "Update(), CountValuesTick:" newTime
+
+                        nextValueToAnimateMaybe =
+                            getNextValueToAnimate model.players model.values
+                    in
+                    case nextValueToAnimateMaybe of
+                        Just nextValue ->
+                            let
+                                updatedValues =
+                                    List.map
+                                        (\v ->
+                                            if v.box == nextValue.box && v.player == nextValue.player then
+                                                { v | counted = True }
+
+                                            else
+                                                v
+                                        )
+                                        model.values
+                            in
+                            ( { model | values = updatedValues }, Cmd.none )
+
+                        Nothing ->
+                            ( { model | game = ShowResults }, Cmd.none )
+
         Nothing ->
+            let
+                _ =
+                    Debug.log "Nothing returned from Update:" msg
+            in
             -- handle product not found here
             -- likely return the model unchanged
             -- or set an error message on the model
@@ -236,6 +330,20 @@ update msg model =
 
 
 
+--
+-- updateElement2 : List Value -> Box -> Player -> List Value
+-- updateElement2 list box player =
+--     let
+--         toggle idx value =
+--             if id == idx then
+--                 { value | counted = True }
+--
+--             else
+--                 value
+--     in
+--     List.indexedMap toggle list
+--
+--
 ---- VIEW ----
 
 
@@ -322,7 +430,7 @@ renderCell box model player isCurrentPlayer =
     in
     case boxValue of
         Just value ->
-            td [ class "inactive" ] [ text (getValueText value.value) ]
+            td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ] ] [ text (getValueText value.value) ]
 
         Nothing ->
             if box.boxType == UpperSum then
@@ -336,7 +444,7 @@ renderCell box model player isCurrentPlayer =
 
             else if isCurrentPlayer then
                 if box.category == None then
-                    td [ class "active" ] [ text "" ]
+                    td [ classList [ ( "active", True ) ] ] [ text "" ]
 
                 else
                     td [ class "active", onClick (ShowAddValue box) ] [ text "" ]
@@ -527,6 +635,11 @@ view model =
                                 [ div [] [ renderTable currentPlayer model True ]
                                 ]
 
+                        ShowResults ->
+                            div []
+                                [ div [] [ renderTable currentPlayer model True ]
+                                ]
+
                         Error ->
                             div [] [ text "An error occured" ]
             in
@@ -540,6 +653,15 @@ view model =
             div [] [ text "No player found" ]
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    if model.game == ShowCountedValues then
+        Time.every 200 CountValuesTick
+
+    else
+        Sub.none
+
+
 
 ---- PROGRAM ----
 
@@ -550,5 +672,5 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
