@@ -287,63 +287,63 @@ button {
     5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
 }
 
-table {
+.pad table {
   border-collapse: collapse;
   border: 10px solid #4717f6;
 }
 
-.inactive {
+.pad .inactive {
   background: white;
 }
 
-table td {
+.pad table td {
   border: 1px solid #4717f6;
   padding: 10px 20px;
   border-collapse: collapse;
   text-align: center;
 }
 
-th {
+.pad th {
   border: 0px;
   padding: 10px 20px;
   color: white;
   background: #4717f6;
 }
 
-td.active {
+.pad td.active {
   background: #4717f6;
   border: 1px solid white;
 }
 
-td.box {
+.pad td.box {
   background: white;
 }
 
-td.active:hover {
+.pad td.active:hover {
   cursor: pointer;
   background: white;
 }
 
-td:first-of-type {
+.pad td:first-of-type {
   background: white;
   color: #4717f6;
   font-weight: bold;
 }
-td.counted {
+.pad td.counted {
   animation: bonus 1.5s linear forwards !important;
 }
-tr:last-of-type td {
+.pad tr:last-of-type td {
   border-top: 5px solid #4717f6;
 }
 
-tr:nth-of-type(2) td {
+.pad tr:nth-of-type(2) td {
   border-top: 0px;
 }
 
-tr:nth-of-type(8) td {
+.pad tr:nth-of-type(8) td {
   border-top: 5px solid #4717f6;
 }
-tr:nth-of-type(9) td {
+.pad tr:nth-of-type(9) td {
   border-bottom: 5px solid #4717f6;
 }
 

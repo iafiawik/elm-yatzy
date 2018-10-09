@@ -478,7 +478,7 @@ renderTable currentPlayer model showCountedValues =
         headers =
             List.map (\p -> th [] [ text p.name ]) model.players
     in
-    div [ class "table-wrapper" ]
+    div [ class "table-wrapper pad" ]
         [ table []
             ([ tr []
                 ([ th []
