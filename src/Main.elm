@@ -593,11 +593,36 @@ showResultsButton =
         ]
 
 
+roundHighscore model =
+    let
+        playerButtons =
+            List.map
+                (\playerScore ->
+                    let
+                        name =
+                            .name (Tuple.first playerScore)
+
+                        score =
+                            Tuple.second playerScore
+                    in
+                    tr [] [ td [] [ text name ], td [] [ text (String.fromInt score) ] ]
+                )
+                (getRoundHighscore model.players model.values)
+    in
+    div
+        [ class "round-highscore" ]
+        [ div [ class "round-highscore-content" ] [ h1 [] [ text "Results are in" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button animated pulse infinite" ] [ text "Play again" ] ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     let
         currentPlayerMaybe =
             getCurrentPlayer model.values model.players
+
+        gameState =
+            stateToString model.game
     in
     case currentPlayerMaybe of
         Just currentPlayer ->
