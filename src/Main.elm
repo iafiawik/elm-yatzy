@@ -408,9 +408,6 @@ renderCell box model player isCurrentPlayer =
         upperSumText =
             getUpperSumText model.boxes model.values player
 
-        totalSum =
-            getTotalSum model.values player
-
         upperSum =
             getUpperSum model.values player
 
