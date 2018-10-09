@@ -171,6 +171,7 @@ type Msg
     | InputValueChange String
     | CountValues
     | CountValuesTick Time.Posix
+    | Restart
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -317,6 +318,9 @@ update msg model =
 
                         Nothing ->
                             ( { model | game = ShowResults }, Cmd.none )
+
+                Restart ->
+                    ( { model | game = Idle, values = [] }, Cmd.none )
 
         Nothing ->
             let
