@@ -661,7 +661,8 @@ view model =
 
                         ShowResults ->
                             div []
-                                [ div [] [ renderTable currentPlayer model True ]
+                                [ div [] [ roundHighscore model ]
+                                , div [] [ renderTable currentPlayer model True ]
                                 ]
 
                         Error ->
