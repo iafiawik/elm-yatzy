@@ -28,6 +28,7 @@ type alias Value =
     { box : Box
     , player : Player
     , value : Int
+    , counted : Bool
     }
 
 
