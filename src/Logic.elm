@@ -95,8 +95,11 @@ getTotalSum values player =
         playerValues =
             getValuesByPlayer values player
 
+        countedValues =
+            List.filter (\v -> v.counted == True) playerValues
+
         totalSum =
-            sum (List.map (\v -> v.value) playerValues)
+            sum (List.map (\v -> v.value) countedValues)
 
         bonusValue =
             getBonusValue values player
