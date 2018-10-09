@@ -131,28 +131,28 @@ stateToString : Game -> String
 stateToString state =
     case state of
         Initializing ->
-            "Initializing"
+            "initializing"
 
         AddPlayers ->
-            "AddPlayers"
+            "add-players"
 
         Idle ->
-            "Idle"
+            "idle"
 
         Input box ->
-            "Input" ++ box.friendlyName
+            "input"
 
         Finished ->
-            "Finished"
+            "finished"
 
         ShowCountedValues ->
-            "ShowCountedValues"
+            "show-counted-values"
 
         ShowResults ->
-            "ShowResults"
+            "show-results"
 
         Error ->
-            "Error"
+            "error"
 
 
 
@@ -645,8 +645,8 @@ view model =
             in
             div
                 []
-                [ div [] [ content ]
-                , div [] [ text <| stateToString <| Debug.log "state:" model.game ]
+                [ div [ classList [ ( gameState, True ) ] ] [ content ]
+                , div [] [ text <| gameState ]
                 ]
 
         Nothing ->
