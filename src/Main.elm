@@ -359,17 +359,11 @@ renderBox box =
 getUpperSumText : List Box -> List Value -> Player -> Html Msg
 getUpperSumText boxes values player =
     let
-        playerValues =
-            getValuesByPlayer values player
-
         upperBoxes =
             List.filter (\b -> b.category == Upper) boxes
 
         upperValues =
-            List.filter (\v -> v.box.category == Upper) playerValues
-
-        totalSum =
-            sum (List.map (\v -> v.value) upperValues)
+            List.filter (\v -> v.box.category == Upper) (getValuesByPlayer values player)
 
         bonusValue =
             getBonusValue values player
