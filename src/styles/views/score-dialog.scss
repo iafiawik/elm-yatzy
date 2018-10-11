@@ -1,1 +1,219 @@
 @import "../colors";
+
+.score-dialog h1 {
+  margin: 0px;
+  padding: 0px;
+}
+
+.score-dialog h2 {
+  font-size: 12px;
+}
+
+.score-dialog-number-button.skip-button {
+  background: white;
+  color: $primary-color;
+  border: 6px solid $primary-color;
+  transform: rotate(90deg);
+
+  text-align: center;
+  letter-spacing: -8px;
+  padding: 0px;
+
+  span {
+    // background: red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: -3px;
+    left: -1px;
+  }
+}
+
+.score-dialog-number-button.skip-button:hover,
+.score-dialog-number-button.skip-button.marked {
+  border-color: black;
+}
+
+.score-dialog-number-buttons.full_house {
+  margin-top: 10px;
+  padding: 0px 20px;
+
+  .score-dialog-number-button {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+    margin: 5px;
+  }
+  .score-dialog-number-button.skip-button {
+    font-size: 25px;
+    letter-spacing: -6px;
+
+    span {
+      left: -2px;
+      top: -4px;
+    }
+  }
+}
+
+.score-dialog-number-buttons.chance {
+  .score-dialog-number-button {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  .score-dialog-number-button.skip-button {
+    font-size: 20px;
+    letter-spacing: -5px;
+  }
+}
+
+.score-dialog-number-buttons.one_pair,
+.score-dialog-number-buttons.four_of_a_kind,
+.score-dialog-number-buttons.three_of_a_kind {
+  padding: 15px;
+
+  .score-dialog-number-button {
+    width: 80px;
+    height: 80px;
+    font-size: 20px;
+  }
+
+  .score-dialog-number-button.skip-button {
+    font-size: 35px;
+  }
+}
+
+.score-dialog-number-buttons.ones,
+.score-dialog-number-buttons.twos,
+.score-dialog-number-buttons.threes,
+.score-dialog-number-buttons.fours,
+.score-dialog-number-buttons.fives,
+.score-dialog-number-buttons.sixes {
+  padding: 20px;
+
+  .score-dialog-number-button {
+    width: 90px;
+    height: 90px;
+    font-size: 23px;
+  }
+
+  .score-dialog-number-button.skip-button {
+    font-size: 40px;
+
+    span {
+      top: -5px;
+      left: -1px;
+    }
+  }
+}
+
+.score-dialog-number-buttons.yatzy,
+.score-dialog-number-buttons.small_straight,
+.score-dialog-number-buttons.large_straight {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  margin-top: -40px;
+
+  .score-dialog-number-button {
+    width: 120px;
+    height: 120px;
+    font-size: 50px;
+  }
+
+  .score-dialog-number-button.skip-button {
+    font-size: 50px;
+
+    span {
+      top: -6px;
+      left: 0px;
+    }
+  }
+}
+
+.score-dialog-number-button {
+  background: $primary-color;
+  color: white;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  margin: 10px;
+  font-size: 25px;
+  line-height: 25px;
+  font-weight: bold;
+  display: inline-block;
+  vertical-align: middle;
+  transition: all 0.3s linear;
+  // float: left;
+  text-align: center;
+}
+
+.score-dialog-number-button:hover {
+  background: black;
+  color: white;
+  transition: all 0.1s linear;
+}
+
+.score-dialog-submit-button {
+  background: $primary-color;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 20px;
+  margin: 0px 20px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: auto;
+  transition: all 0.3s linear;
+  box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
+    5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+}
+
+.score-dialog-submit-button:not(.enabled) {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.score-dialog-submit-button:not(.disabled):hover {
+  background: black;
+  color: white;
+  transition: all 0.1s linear;
+  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
+    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
+    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
+}
+
+.score-dialog-number-button.marked {
+  background: black;
+  color: white;
+}
+
+.score-dialog-cancel-button {
+  background: $primary-color;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border: none;
+  padding: 0px;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.score-dialog-input-field {
+  display: none;
+}
