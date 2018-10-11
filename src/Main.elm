@@ -357,7 +357,6 @@ view model =
             div
                 []
                 [ div [ classList [ ( gameState, True ) ] ] [ content ]
-                , div [] [ text <| gameState ]
                 ]
 
         Nothing ->
