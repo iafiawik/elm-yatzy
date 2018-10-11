@@ -1,6 +1,6 @@
 @import "../colors";
 
-.game-fished {
+.game-finished {
   background: #4717f6;
   position: fixed;
   top: 0px;
@@ -13,7 +13,7 @@
   z-index: 1;
 }
 
-.game-fished-content {
+.game-finished-content {
   width: 800px;
   max-width: 100%;
   margin-right: auto;
@@ -23,13 +23,13 @@
   min-height: 300px;
 }
 
-.game-fished-content .large-button {
+.game-finished-content .large-button {
   background: white;
   color: black;
   margin-top: 100px;
 }
 
-.game-fished-content .large-button:hover {
+.game-finished-content .large-button:hover {
   background: black;
   color: white;
   box-shadow: 2px 2px 0px white, 3px 3px 0px white, 4px 4px 0px white,
