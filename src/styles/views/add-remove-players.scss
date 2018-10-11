@@ -1,1 +1,32 @@
 @import "../colors";
+
+.add-players-dialog-player-buttons {
+}
+
+.add-players-dialog-player-button {
+  background: $primary-color;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px 10px 20px;
+  font-size: 20px;
+  margin: 10px 0px;
+  font-weight: bold;
+  display: block;
+  transition: all 0.3s linear;
+  position: relative;
+}
+
+.add-players-dialog-player-button-delete {
+  color: $primary-color;
+  width: 25px;
+  height: 25px;
+  margin-left: 20px;
+  background: white;
+}
+
+.add-players-dialog-player-button-delete:hover {
+  background: $primary-color;
+  color: white;
+}
