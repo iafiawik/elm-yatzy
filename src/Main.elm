@@ -50,27 +50,26 @@ init seed =
             ]
       , values = []
 
-      -- [ { box = ones
-      --   , player = sophie
-      --   , value = 1
-      --   , counted = False
-      --   }
-      -- , { box = ones
-      --   , player = hugo
-      --   , value = 3
-      --   , counted = False
-      --   }
-      -- , { box = twos
-      --   , player = sophie
-      --   , value = 2
-      --   , counted = False
-      --   }
-      -- , { box = twos
-      --   , player = hugo
-      --   , value = 4
-      --   , counted = False
-      --   }
-      -- ]
+      -- List.concat
+      --     [ List.map
+      --         (\b ->
+      --             { box = b
+      --             , player = sophie
+      --             , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
+      --             , counted = False
+      --             }
+      --         )
+      --         valueBoxes
+      --     , List.map
+      --         (\b ->
+      --             { box = b
+      --             , player = hugo
+      --             , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+      --             , counted = False
+      --             }
+      --         )
+      --         valueBoxes
+      --     ]
       , game = Idle
       , countedPlayers = []
       , countedValues = []
