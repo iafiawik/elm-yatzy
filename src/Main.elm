@@ -70,7 +70,7 @@ init seed =
       --         )
       --         valueBoxes
       --     ]
-      , game = Idle
+      , game = Initializing
       , countedPlayers = []
       , countedValues = []
       , currentValue = -1
@@ -92,7 +92,7 @@ stateToString state =
         Initializing ->
             "initializing"
 
-        AddPlayers ->
+        ShowAddRemovePlayers ->
             "add-players"
 
         Idle ->
@@ -130,6 +130,9 @@ update msg model =
     case currentPlayerMaybe of
         Just currentPlayer ->
             case msg of
+                AddRemovePlayers ->
+                    ( { model | game = ShowAddRemovePlayers }, Cmd.none )
+
                 AddPlayer ->
                     let
                         ( newUuid, newSeed ) =
@@ -264,7 +267,7 @@ update msg model =
                             ( { model | game = ShowResults }, Cmd.none )
 
                 Restart ->
-                    ( { model | game = AddPlayers, values = [] }, Cmd.none )
+                    ( { model | game = ShowAddRemovePlayers, values = [] }, Cmd.none )
 
         Nothing ->
             let
@@ -296,9 +299,9 @@ view model =
                 content =
                     case model.game of
                         Initializing ->
-                            div [] [ button [ onClick Start ] [ text "Start" ] ]
+                            div [] [ button [ onClick AddRemovePlayers ] [ text "Start" ] ]
 
-                        AddPlayers ->
+                        ShowAddRemovePlayers ->
                             div [] [ addRemovePlayers model ]
 
                         Idle ->

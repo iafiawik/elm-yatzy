@@ -7,6 +7,7 @@ import Uuid
 
 type Msg
     = Start
+    | AddRemovePlayers
     | AddPlayer
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -36,7 +37,7 @@ type alias Model =
 
 type Game
     = Initializing
-    | AddPlayers
+    | ShowAddRemovePlayers
     | Idle
     | Input Box
     | Finished
