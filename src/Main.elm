@@ -48,27 +48,7 @@ init seed =
             [ sophie
             , hugo
             ]
-      , values =
-            List.concat
-                [ List.map
-                    (\b ->
-                        { box = b
-                        , player = sophie
-                        , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
-                        , counted = False
-                        }
-                    )
-                    valueBoxes
-                , List.map
-                    (\b ->
-                        { box = b
-                        , player = hugo
-                        , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
-                        , counted = False
-                        }
-                    )
-                    valueBoxes
-                ]
+      , values = []
 
       -- [ { box = ones
       --   , player = sophie
