@@ -285,7 +285,7 @@ update msg model =
                             ( { model | game = ShowResults }, Cmd.none )
 
                 Restart ->
-                    ( { model | game = Idle, values = [] }, Cmd.none )
+                    ( { model | game = AddPlayers, values = [] }, Cmd.none )
 
         Nothing ->
             let
