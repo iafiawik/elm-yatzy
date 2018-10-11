@@ -46,14 +46,16 @@
     background: white;
   }
 
+  td.counted {
+    animation: bonus 1.5s linear forwards !important;
+  }
+
   td:first-of-type {
     background: white;
     color: $primary-color;
     font-weight: bold;
   }
-  td.counted {
-    animation: bonus 1.5s linear forwards !important;
-  }
+
   tr:last-of-type td {
     border-top: 5px solid $primary-color;
   }
@@ -79,5 +81,15 @@
   .upper-sum.positive {
     font-weight: bold;
     opacity: 0.5;
+  }
+}
+
+.show-results {
+  td.counted {
+    animation: none !important;
+  }
+
+  .bonus-cell {
+    animation: none !important;
   }
 }
