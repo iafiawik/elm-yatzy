@@ -23,7 +23,7 @@ addRemovePlayers model =
                 model.players
     in
     div [ class "add-players-dialog-wrapper dialog-wrapper" ]
-        [ div [ class "add-players-dialog-background dialog-background animated fadeIn", onClick HideAddValue ] []
+        [ div [ class "add-players-dialog-background dialog-background animated fadeIn" ] []
         , div [ class "add-players-dialog dialog-content a animated jackInTheBox" ]
             [ div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Add players" ] ]
             , div [ class "add-players-dialog-player-buttons" ] playerButtons
