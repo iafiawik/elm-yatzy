@@ -8,5 +8,5 @@ import Models exposing (Model, Msg(..))
 
 gameFinished =
     div [ class "game-finished" ]
-        [ div [ class "game-finished-content" ] [ h1 [] [ text "OK, all done!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Show results" ] ]
+        [ div [ class "game-finished-content" ] [ h1 [] [ text "Spelet är slut!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Visa resultat" ] ]
         ]

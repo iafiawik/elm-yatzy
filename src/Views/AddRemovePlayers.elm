@@ -8,7 +8,7 @@ import Models exposing (Model, Msg(..), Player)
 
 playerButton : Player -> List (Html Msg) -> Html Msg
 playerButton player content =
-    button [ class "add-players-dialog-player-button" ] [ span [] [ text (player.name ++ player.id_) ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
+    button [ class "add-players-dialog-player-button" ] [ span [] [ text player.name ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
 
 
 addRemovePlayers : Model -> Html Msg
@@ -31,6 +31,6 @@ addRemovePlayers model =
                 [ input [ class "add-players-dialog-input-field", type_ "text", onInput NewPlayerInputValueChange, value model.currentNewPlayerName ] []
                 , button [ onClick AddPlayer ] [ text "Add new player" ]
                 ]
-            , button [ onClick Start ] [ text "Start" ]
+            , button [ class "large-button  ", onClick Start ] [ text "Start" ]
             ]
         ]
