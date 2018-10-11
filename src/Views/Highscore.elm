@@ -10,8 +10,8 @@ import Models exposing (Model, Msg(..), Player)
 highscore model =
     let
         playerButtons =
-            List.map
-                (\playerScore ->
+            List.indexedMap
+                (\index playerScore ->
                     let
                         name =
                             .name (Tuple.first playerScore)
@@ -19,11 +19,11 @@ highscore model =
                         score =
                             Tuple.second playerScore
                     in
-                    tr [] [ td [] [ text name ], td [] [ text (String.fromInt score) ] ]
+                    tr [] [ td [] [ text (String.fromInt (index + 1) ++ ". " ++ name) ], td [] [ text (String.fromInt score) ] ]
                 )
                 (getRoundHighscore model.players model.values)
     in
     div
         [ class "highscore" ]
-        [ div [ class "highscore-content" ] [ h1 [] [ text "Results are in" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button animated pulse infinite" ] [ text "Play again" ] ]
+        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button animated pulse infinite" ] [ text "Spela en gång till" ] ]
         ]
