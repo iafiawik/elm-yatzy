@@ -1,3 +1,4 @@
+@import "colors";
 @import "round-highscore";
 @import "show-results";
 
@@ -47,8 +48,9 @@ body {
   display: flex;
   position: relative;
   flex-direction: column;
-  box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
-    5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
+  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
+    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
+    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
   animation-duration: 0.5s !important;
   animation-fill-mode: backwards !important;
 }
@@ -59,7 +61,7 @@ body {
 }
 
 .add-players-dialog-player-button {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
   display: flex;
   justify-content: center;
@@ -74,7 +76,7 @@ body {
 }
 
 .add-players-dialog-player-button-delete {
-  color: #4717f6;
+  color: $primary-color;
   width: 25px;
   height: 25px;
   margin-left: 20px;
@@ -82,7 +84,7 @@ body {
 }
 
 .add-players-dialog-player-button-delete:hover {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
 }
 
@@ -167,7 +169,7 @@ body {
 }
 
 .input-dialog-number-button {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
   width: 70px;
   height: 70px;
@@ -184,8 +186,8 @@ body {
 
 .input-dialog-number-button.skip-button {
   background: white;
-  color: #4717f6;
-  border: 6px solid #4717f6;
+  color: $primary-color;
+  border: 6px solid $primary-color;
   transform: rotate(90deg);
   font-size: 40px !important;
   text-align: center;
@@ -205,7 +207,7 @@ body {
 }
 
 .large-button {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
   display: flex;
   justify-content: center;
@@ -223,7 +225,7 @@ body {
 }
 
 .input-dialog-submit-button {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
   display: flex;
   justify-content: center;
@@ -249,8 +251,9 @@ body {
   background: black;
   color: white;
   transition: all 0.1s linear;
-  box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
-    5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
+  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
+    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
+    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
 }
 
 .input-dialog-number-button.marked {
@@ -259,7 +262,7 @@ body {
 }
 
 .input-dialog-cancel-button {
-  background: #4717f6;
+  background: $primary-color;
   color: white;
   width: 30px;
   height: 30px;
@@ -286,13 +289,14 @@ button {
   margin-left: auto;
   display: inline-block;
   border: 10px solid white;
-  box-shadow: 2px 2px 0px #4717f6, 3px 3px 0px #4717f6, 4px 4px 0px #4717f6,
-    5px 5px 0px #4717f6, 6px 6px 0px #4717f6, 7px 7px 0px #4717f6;
+  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
+    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
+    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
 }
 
 .pad table {
   border-collapse: collapse;
-  border: 10px solid #4717f6;
+  border: 10px solid $primary-color;
 }
 
 .pad .inactive {
@@ -300,7 +304,7 @@ button {
 }
 
 .pad table td {
-  border: 1px solid #4717f6;
+  border: 1px solid $primary-color;
   padding: 10px 20px;
   border-collapse: collapse;
   text-align: center;
@@ -310,11 +314,11 @@ button {
   border: 0px;
   padding: 10px 20px;
   color: white;
-  background: #4717f6;
+  background: $primary-color;
 }
 
 .pad td.active {
-  background: #4717f6;
+  background: $primary-color;
   border: 1px solid white;
 }
 
@@ -329,14 +333,14 @@ button {
 
 .pad td:first-of-type {
   background: white;
-  color: #4717f6;
+  color: $primary-color;
   font-weight: bold;
 }
 .pad td.counted {
   animation: bonus 1.5s linear forwards !important;
 }
 .pad tr:last-of-type td {
-  border-top: 5px solid #4717f6;
+  border-top: 5px solid $primary-color;
 }
 
 .pad tr:nth-of-type(2) td {
@@ -344,10 +348,10 @@ button {
 }
 
 .pad tr:nth-of-type(8) td {
-  border-top: 5px solid #4717f6;
+  border-top: 5px solid $primary-color;
 }
 .pad tr:nth-of-type(9) td {
-  border-bottom: 5px solid #4717f6;
+  border-bottom: 5px solid $primary-color;
 }
 
 .bonus-cell {
@@ -357,7 +361,7 @@ button {
 
 @keyframes bonus {
   0% {
-    background: #4717f6;
+    background: $primary-color;
     color: white;
   }
   70% {
