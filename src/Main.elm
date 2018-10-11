@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+module Main exposing (init, main, update, view)
 
 import Browser
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
@@ -6,40 +6,20 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra exposing (find, findIndex, getAt, removeAt)
 import Logic exposing (..)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
 import Random exposing (Seed, initialSeed, step)
 import Task
 import Time
 import Uuid
+import Views.AddRemovePlayers exposing (addRemovePlayers)
+import Views.GameFinished exposing (gameFinished)
+import Views.Highscore exposing (highscore)
+import Views.ScoreCard exposing (scoreCard)
+import Views.ScoreDialog exposing (scoreDialog)
 
 
 
 ---- MODEL ----
-
-
-type Game
-    = Initializing
-    | AddPlayers
-    | Idle
-    | Input Box
-    | Finished
-    | ShowCountedValues
-    | ShowResults
-    | Error
-
-
-type alias Model =
-    { players : List Player
-    , boxes : List Box
-    , values : List Value
-    , game : Game
-    , countedPlayers : List Player
-    , countedValues : List Value
-    , currentNewPlayerName : String
-    , currentValue : Int
-    , currentSeed : Seed
-    , currentUuid : Maybe Uuid.Uuid
-    }
 
 
 init : Int -> ( Model, Cmd Msg )
@@ -159,21 +139,6 @@ stateToString state =
 ---- UPDATE ----
 
 
-type Msg
-    = Start
-    | AddPlayer
-    | RemovePlayer Player
-    | NewPlayerInputValueChange String
-    | AddValue
-    | ShowAddValue Box
-    | ValueMarked Int
-    | HideAddValue
-    | InputValueChange String
-    | CountValues
-    | CountValuesTick Time.Posix
-    | Restart
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -272,7 +237,7 @@ update msg model =
                 ShowAddValue box ->
                     let
                         markedValueMaybe =
-                            getMarkedValue model box
+                            getDefaultMarkedValue model box
                     in
                     case markedValueMaybe of
                         Just markedValue ->
@@ -334,286 +299,7 @@ update msg model =
 
 
 
---
--- updateElement2 : List Value -> Box -> Player -> List Value
--- updateElement2 list box player =
---     let
---         toggle idx value =
---             if id == idx then
---                 { value | counted = True }
---
---             else
---                 value
---     in
---     List.indexedMap toggle list
---
---
 ---- VIEW ----
-
-
-renderBox : Box -> Html msg
-renderBox box =
-    span [] [ text <| "" ++ box.friendlyName ]
-
-
-getUpperSumText : List Box -> List Value -> Player -> Html Msg
-getUpperSumText boxes values player =
-    let
-        upperBoxes =
-            List.filter (\b -> b.category == Upper) boxes
-
-        upperValues =
-            List.filter (\v -> v.box.category == Upper) (getValuesByPlayer values player)
-
-        bonusValue =
-            getBonusValue values player
-    in
-    case List.length upperBoxes == List.length upperValues || List.length upperValues == 0 || bonusValue > 0 of
-        True ->
-            if bonusValue > 0 then
-                span [ class "upper-sum bonus" ] [ text (String.fromInt bonusValue) ]
-
-            else
-                span [ class "upper-sum" ] [ text "-" ]
-
-        False ->
-            let
-                totalDelta =
-                    sum
-                        (List.map
-                            (\v ->
-                                case v.box.boxType of
-                                    Regular numberValue ->
-                                        v.value - numberValue * 3
-
-                                    _ ->
-                                        0
-                            )
-                            upperValues
-                        )
-            in
-            if totalDelta == 0 then
-                span [ class "upper-sum neutral" ] [ text "+/-0" ]
-
-            else if totalDelta > 0 then
-                span [ class "upper-sum positive" ] [ text ("+" ++ String.fromInt totalDelta) ]
-
-            else
-                span [ class "upper-sum negative" ] [ text ("" ++ String.fromInt totalDelta) ]
-
-
-renderCell : Box -> Model -> Player -> Bool -> Html Msg
-renderCell box model player isCurrentPlayer =
-    let
-        upperSumText =
-            getUpperSumText model.boxes model.values player
-
-        upperSum =
-            getUpperSum model.values player
-
-        bonusValue =
-            getBonusValue model.values player
-
-        boxValue =
-            List.head
-                (List.filter
-                    (\v ->
-                        v.box == box && v.player == player
-                    )
-                    model.values
-                )
-    in
-    case boxValue of
-        Just value ->
-            td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ] ] [ text (getValueText value.value) ]
-
-        Nothing ->
-            if box.boxType == UpperSum then
-                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
-
-            else if box.boxType == TotalSum then
-                if model.game == ShowResults || model.game == ShowCountedValues then
-                    td [ class "inactive" ] [ text (String.fromInt (getTotalSum model.values player)) ]
-
-                else
-                    td [ class "inactive" ] [ text "" ]
-
-            else if box.boxType == Bonus then
-                td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
-
-            else if isCurrentPlayer then
-                if box.category == None then
-                    td [ classList [ ( "active", True ) ] ] [ text "" ]
-
-                else
-                    td [ class "active", onClick (ShowAddValue box) ] [ text "" ]
-
-            else
-                td [ class "inactive" ] [ text "" ]
-
-
-renderTable : Player -> Model -> Bool -> Html Msg
-renderTable currentPlayer model showCountedValues =
-    let
-        boxItems =
-            List.map
-                (\box ->
-                    let
-                        playerBoxes =
-                            List.map
-                                (\p ->
-                                    renderCell box model p (p == currentPlayer)
-                                )
-                                model.players
-                    in
-                    tr []
-                        ([ td [ class "box" ] [ renderBox box ]
-                         ]
-                            ++ playerBoxes
-                        )
-                )
-                model.boxes
-
-        headers =
-            List.map (\p -> th [] [ text p.name ]) model.players
-    in
-    div [ class "table-wrapper pad" ]
-        [ table []
-            ([ tr []
-                ([ th []
-                    [ text "" ]
-                 ]
-                    ++ headers
-                )
-             ]
-                ++ boxItems
-            )
-        ]
-
-
-getMarkedValue : Model -> Box -> Maybe Int
-getMarkedValue model box =
-    let
-        acceptedValues =
-            getAcceptedValues box
-    in
-    if List.length (getAcceptedValues box) == 1 then
-        List.head acceptedValues
-
-    else
-        Nothing
-
-
-inputDialogButton : Bool -> Int -> String -> String -> Html Msg
-inputDialogButton isMarked value buttonText class =
-    button
-        [ classList
-            [ ( "input-dialog-number-button button", True )
-            , ( "marked", isMarked )
-            , ( class, True )
-            ]
-        , onClick (ValueMarked value)
-        ]
-        [ text buttonText ]
-
-
-inputDialog : Model -> Box -> Player -> Html Msg
-inputDialog model box currentPlayer =
-    let
-        acceptedValues =
-            getAcceptedValues box
-
-        acceptedValuesButtons =
-            List.map
-                (\v ->
-                    inputDialogButton (model.currentValue == v) v (String.fromInt v) "hej"
-                )
-                acceptedValues
-    in
-    div [ class "input-dialog-wrapper dialog-wrapper" ]
-        [ div [ class "input-dialog-background dialog-background  animated fadeIn", onClick HideAddValue ] []
-        , div [ class "input-dialog dialog-content animated jackInTheBox" ]
-            [ div []
-                [ button [ class "input-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
-                , h1 [] [ text box.friendlyName ]
-                , h2 [] [ text currentPlayer.name ]
-                ]
-            , div [ classList [ ( "input-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ]
-                (acceptedValuesButtons ++ [ inputDialogButton (model.currentValue == 0) 0 ":(" "skip-button" ])
-            , div []
-                [ input [ class "input-dialog-input-field", type_ "number", onInput InputValueChange, value (String.fromInt model.currentValue) ] []
-                ]
-            , button [ classList [ ( "input-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue >= 0 ) ], disabled (model.currentValue < 0), onClick AddValue ] [ text "Spara" ]
-            ]
-        ]
-
-
-getValueText : Int -> String
-getValueText value =
-    case value of
-        0 ->
-            "-"
-
-        _ ->
-            String.fromInt value
-
-
-playerButton : Player -> List (Html Msg) -> Html Msg
-playerButton player content =
-    button [ class "add-players-dialog-player-button" ] [ span [] [ text (player.name ++ player.id_) ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
-
-
-addPlayers : Model -> Html Msg
-addPlayers model =
-    let
-        playerButtons =
-            List.map
-                (\p ->
-                    playerButton p
-                        []
-                )
-                model.players
-    in
-    div [ class "add-players-dialog-wrapper dialog-wrapper" ]
-        [ div [ class "add-players-dialog-background dialog-background animated fadeIn", onClick HideAddValue ] []
-        , div [ class "add-players-dialog dialog-content a animated jackInTheBox" ]
-            [ div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Add players" ] ]
-            , div [ class "add-players-dialog-player-buttons" ] playerButtons
-            , div []
-                [ input [ class "add-players-dialog-input-field", type_ "text", onInput NewPlayerInputValueChange, value model.currentNewPlayerName ] []
-                , button [ onClick AddPlayer ] [ text "Add new player" ]
-                ]
-            , button [ onClick Start ] [ text "Start" ]
-            ]
-        ]
-
-
-showResultsButton =
-    div [ class "show-results" ]
-        [ div [ class "show-results-content" ] [ h1 [] [ text "OK, all done!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Show results" ] ]
-        ]
-
-
-roundHighscore model =
-    let
-        playerButtons =
-            List.map
-                (\playerScore ->
-                    let
-                        name =
-                            .name (Tuple.first playerScore)
-
-                        score =
-                            Tuple.second playerScore
-                    in
-                    tr [] [ td [] [ text name ], td [] [ text (String.fromInt score) ] ]
-                )
-                (getRoundHighscore model.players model.values)
-    in
-    div
-        [ class "round-highscore" ]
-        [ div [ class "round-highscore-content" ] [ h1 [] [ text "Results are in" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button animated pulse infinite" ] [ text "Play again" ] ]
-        ]
 
 
 view : Model -> Html Msg
@@ -634,35 +320,35 @@ view model =
                             div [] [ button [ onClick Start ] [ text "Start" ] ]
 
                         AddPlayers ->
-                            div [] [ addPlayers model ]
+                            div [] [ addRemovePlayers model ]
 
                         Idle ->
                             div []
-                                [ div [] [ renderTable currentPlayer model False ]
+                                [ div [] [ scoreCard currentPlayer model False ]
                                 ]
 
                         Input box ->
                             div []
-                                [ div [] [ renderTable currentPlayer model False ]
-                                , div [] [ inputDialog model box currentPlayer ]
+                                [ div [] [ scoreCard currentPlayer model False ]
+                                , div [] [ scoreDialog model box currentPlayer ]
                                 ]
 
                         Finished ->
                             div []
-                                [ div [] [ showResultsButton ]
-                                , div [] [ renderTable currentPlayer model False ]
+                                [ div [] [ gameFinished ]
+                                , div [] [ scoreCard currentPlayer model False ]
                                 , button [ onClick CountValues ] [ text "Count" ]
                                 ]
 
                         ShowCountedValues ->
                             div []
-                                [ div [] [ renderTable currentPlayer model True ]
+                                [ div [] [ scoreCard currentPlayer model True ]
                                 ]
 
                         ShowResults ->
                             div []
-                                [ div [] [ roundHighscore model ]
-                                , div [] [ renderTable currentPlayer model True ]
+                                [ div [] [ highscore model ]
+                                , div [] [ scoreCard currentPlayer model True ]
                                 ]
 
                         Error ->

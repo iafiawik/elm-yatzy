@@ -1,7 +1,7 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
 import List.Extra exposing (find, findIndex, removeAt)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Model, Player, PlayerAndNumberOfValues, Value)
 import Ordering exposing (Ordering)
 
 
@@ -25,6 +25,19 @@ getBoxes =
     , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
     , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
     ]
+
+
+getDefaultMarkedValue : Model -> Box -> Maybe Int
+getDefaultMarkedValue model box =
+    let
+        acceptedValues =
+            getAcceptedValues box
+    in
+    if List.length (getAcceptedValues box) == 1 then
+        List.head acceptedValues
+
+    else
+        Nothing
 
 
 getRoundHighscore : List Player -> List Value -> List ( Player, Int )

@@ -1,6 +1,11 @@
+@import "animations";
 @import "colors";
-@import "round-highscore";
-@import "show-results";
+
+@import "./views/add-remove-players";
+@import "./views/game-finished";
+@import "./views/score-card";
+@import "./views/score-dialog";
+@import "./views/highscore";
 
 html,
 body {
@@ -282,102 +287,6 @@ button {
   font: inherit;
   cursor: pointer;
   outline: inherit;
-}
-
-.table-wrapper {
-  margin-right: auto;
-  margin-left: auto;
-  display: inline-block;
-  border: 10px solid white;
-  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
-    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
-    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
-}
-
-.pad table {
-  border-collapse: collapse;
-  border: 10px solid $primary-color;
-}
-
-.pad .inactive {
-  background: white;
-}
-
-.pad table td {
-  border: 1px solid $primary-color;
-  padding: 10px 20px;
-  border-collapse: collapse;
-  text-align: center;
-}
-
-.pad th {
-  border: 0px;
-  padding: 10px 20px;
-  color: white;
-  background: $primary-color;
-}
-
-.pad td.active {
-  background: $primary-color;
-  border: 1px solid white;
-}
-
-.pad td.box {
-  background: white;
-}
-
-.pad td.active:hover {
-  cursor: pointer;
-  background: white;
-}
-
-.pad td:first-of-type {
-  background: white;
-  color: $primary-color;
-  font-weight: bold;
-}
-.pad td.counted {
-  animation: bonus 1.5s linear forwards !important;
-}
-.pad tr:last-of-type td {
-  border-top: 5px solid $primary-color;
-}
-
-.pad tr:nth-of-type(2) td {
-  border-top: 0px;
-}
-
-.pad tr:nth-of-type(8) td {
-  border-top: 5px solid $primary-color;
-}
-.pad tr:nth-of-type(9) td {
-  border-bottom: 5px solid $primary-color;
-}
-
-.bonus-cell {
-  font-weight: bold;
-  animation: tada 1s linear forwards, bonus 1.5s linear forwards !important;
-}
-
-@keyframes bonus {
-  0% {
-    background: $primary-color;
-    color: white;
-  }
-  70% {
-    color: black;
-  }
-  90% {
-    background: #ffffff;
-    color: black;
-  }
-}
-
-.upper-sum.neutral,
-.upper-sum.negative,
-.upper-sum.positive {
-  font-weight: bold;
-  opacity: 0.5;
 }
 
 /* Show results */

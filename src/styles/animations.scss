@@ -1,0 +1,15 @@
+@import "colors";
+
+@keyframes bonus {
+  0% {
+    background: $primary-color;
+    color: white;
+  }
+  70% {
+    color: black;
+  }
+  90% {
+    background: #ffffff;
+    color: black;
+  }
+}
