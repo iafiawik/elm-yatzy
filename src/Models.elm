@@ -66,7 +66,7 @@ type BoxCategory
 
 
 type alias Box =
-    { id_ : String, friendlyName : String, boxType : BoxType, category : BoxCategory }
+    { id_ : String, friendlyName : String, boxType : BoxType, category : BoxCategory, order : Int }
 
 
 type alias Value =
