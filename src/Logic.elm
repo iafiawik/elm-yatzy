@@ -6,24 +6,24 @@ import Ordering exposing (Ordering)
 
 
 getBoxes =
-    [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
-    , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2, category = Upper }
-    , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3, category = Upper }
-    , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4, category = Upper }
-    , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5, category = Upper }
-    , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6, category = Upper }
-    , { id_ = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None }
-    , { id_ = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None }
-    , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower }
-    , { id_ = "two_pairs", friendlyName = "Två par", boxType = Combination, category = Lower }
-    , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower }
-    , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind, category = Lower }
-    , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination, category = Lower }
-    , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination, category = Lower }
-    , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination, category = Lower }
-    , { id_ = "chance", friendlyName = "Chans", boxType = Combination, category = Lower }
-    , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower }
-    , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None }
+    [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 }
+    , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2, category = Upper, order = 1 }
+    , { id_ = "threes", friendlyName = "Treor", boxType = Regular 3, category = Upper, order = 2 }
+    , { id_ = "fours", friendlyName = "Fyror", boxType = Regular 4, category = Upper, order = 3 }
+    , { id_ = "fives", friendlyName = "Femmor", boxType = Regular 5, category = Upper, order = 4 }
+    , { id_ = "sixes", friendlyName = "Sexor", boxType = Regular 6, category = Upper, order = 5 }
+    , { id_ = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None, order = -1 }
+    , { id_ = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None, order = -1 }
+    , { id_ = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower, order = 6 }
+    , { id_ = "two_pairs", friendlyName = "Två par", boxType = Combination, category = Lower, order = 7 }
+    , { id_ = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower, order = 8 }
+    , { id_ = "four_of_a_kind", friendlyName = "Fyrtal", boxType = SameKind, category = Lower, order = 9 }
+    , { id_ = "small_straight", friendlyName = "Liten stege", boxType = Combination, category = Lower, order = 10 }
+    , { id_ = "large_straight", friendlyName = "Stor stege", boxType = Combination, category = Lower, order = 11 }
+    , { id_ = "full_house", friendlyName = "Kåk", boxType = Combination, category = Lower, order = 12 }
+    , { id_ = "chance", friendlyName = "Chans", boxType = Combination, category = Lower, order = 13 }
+    , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower, order = 14 }
+    , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None, order = -1 }
     ]
 
 
@@ -84,10 +84,13 @@ getNextValueToAnimate players values =
                 playerValues =
                     getValuesByPlayer values nextPlayer
 
+                sortedPlayerValues =
+                    List.sortBy (\v -> v.box.order) playerValues
+
                 nextValueMaybe =
                     find
                         (\v -> v.counted == False)
-                        playerValues
+                        sortedPlayerValues
             in
             case nextValueMaybe of
                 Just nextValue ->
