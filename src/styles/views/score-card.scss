@@ -1,6 +1,6 @@
 @import "../colors";
 
-.pad-wrapper {
+.score-card-wrapper {
   margin-right: auto;
   margin-left: auto;
   display: inline-block;
@@ -10,7 +10,7 @@
     6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
 }
 
-.pad {
+.score-card {
   border-collapse: collapse;
   border: 10px solid $primary-color;
 

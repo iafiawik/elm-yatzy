@@ -42,8 +42,8 @@ scoreCard currentPlayer model showCountedValues =
         headers =
             List.map (\p -> th [] [ text p.name ]) model.players
     in
-    div [ class "pad-wrapper" ]
-        [ table [ class "pad" ]
+    div [ class "score-card-wrapper" ]
+        [ table [ class "score-card" ]
             ([ tr []
                 ([ th []
                     [ text "" ]
