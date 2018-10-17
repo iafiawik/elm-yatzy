@@ -59,15 +59,6 @@ scoreCard currentPlayer model showCountedValues =
 renderCell : Box -> Model -> Player -> Bool -> Html Msg
 renderCell box model player isCurrentPlayer =
     let
-        upperSumText =
-            getUpperSumText model.boxes model.values player
-
-        upperSum =
-            getUpperSum model.values player
-
-        bonusValue =
-            getBonusValue model.values player
-
         boxValue =
             List.head
                 (List.filter
@@ -79,10 +70,18 @@ renderCell box model player isCurrentPlayer =
     in
     case boxValue of
         Just value ->
-            td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ] ] [ text (getValueText value.value) ]
+            if isCurrentPlayer then
+                td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ], onClick (ShowEditValue value) ] [ text (getValueText value.value) ]
+
+            else
+                td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ] ] [ text (getValueText value.value) ]
 
         Nothing ->
             if box.boxType == UpperSum then
+                let
+                    upperSum =
+                        getUpperSum model.values player
+                in
                 td [ class "inactive" ] [ text (String.fromInt upperSum) ]
 
             else if box.boxType == TotalSum then
@@ -93,6 +92,13 @@ renderCell box model player isCurrentPlayer =
                     td [ class "inactive" ] [ text "" ]
 
             else if box.boxType == Bonus then
+                let
+                    upperSumText =
+                        getUpperSumText model.boxes model.values player
+
+                    bonusValue =
+                        getBonusValue model.values player
+                in
                 td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
 
             else if isCurrentPlayer then

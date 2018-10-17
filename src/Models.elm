@@ -13,6 +13,7 @@ type Msg
     | NewPlayerInputValueChange String
     | AddValue
     | ShowAddValue Box
+    | ShowEditValue Value
     | ValueMarked Int
     | HideAddValue
     | InputValueChange String
@@ -39,7 +40,7 @@ type Game
     = Initializing
     | ShowAddRemovePlayers
     | Idle
-    | Input Box
+    | Input Box Bool
     | Finished
     | ShowCountedValues
     | ShowResults

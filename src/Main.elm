@@ -1,10 +1,11 @@
 module Main exposing (init, main, update, view)
 
 import Browser
+import Browser.Dom exposing (getViewport)
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import List.Extra exposing (find, findIndex, getAt, removeAt)
+import List.Extra exposing (find, findIndex, getAt, removeAt, updateIf)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
 import Random exposing (Seed, initialSeed, step)
@@ -35,7 +36,7 @@ init seed =
             getBoxes
 
         valueBoxes =
-            List.filter (\b -> b.id_ /= "ones" && b.category /= None) boxes
+            List.filter (\b -> b.id_ /= "yatzy" && b.category /= None) boxes
 
         sophie =
             { id_ = getUniqueId currentSeed ++ "_sophie", order = 0, name = "Sophie" }
@@ -48,29 +49,28 @@ init seed =
             [ sophie
             , hugo
             ]
-      , values = []
-
-      -- List.concat
-      --     [ List.map
-      --         (\b ->
-      --             { box = b
-      --             , player = sophie
-      --             , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
-      --             , counted = False
-      --             }
-      --         )
-      --         valueBoxes
-      --     , List.map
-      --         (\b ->
-      --             { box = b
-      --             , player = hugo
-      --             , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
-      --             , counted = False
-      --             }
-      --         )
-      --         valueBoxes
-      --     ]
-      , game = Initializing
+      , values =
+            List.concat
+                [ List.map
+                    (\b ->
+                        { box = b
+                        , player = sophie
+                        , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
+                        , counted = False
+                        }
+                    )
+                    valueBoxes
+                , List.map
+                    (\b ->
+                        { box = b
+                        , player = hugo
+                        , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+                        , counted = False
+                        }
+                    )
+                    valueBoxes
+                ]
+      , game = Idle
       , countedPlayers = []
       , countedValues = []
       , currentValue = -1
@@ -98,7 +98,7 @@ stateToString state =
         Idle ->
             "idle"
 
-        Input box ->
+        Input box isEdit ->
             "input"
 
         Finished ->
@@ -174,35 +174,58 @@ update msg model =
 
                 AddValue ->
                     case model.game of
-                        Input box ->
-                            let
-                                newValue =
-                                    { box = box
-                                    , player = currentPlayer
-                                    , value = model.currentValue
-                                    , counted = False
-                                    }
-
-                                newValues =
-                                    newValue :: model.values
-                            in
-                            if areAllUsersFinished newValues model.players model.boxes then
+                        Input box isEdit ->
+                            if isEdit then
                                 ( { model
-                                    | game = Finished
+                                    | game = Idle
                                     , currentValue = -1
-                                    , values = newValues
+                                    , values =
+                                        List.map
+                                            (\item ->
+                                                if (\v -> v.box == box && v.player == currentPlayer) item then
+                                                    { box = box
+                                                    , player = currentPlayer
+                                                    , value = model.currentValue
+                                                    , counted = False
+                                                    }
+
+                                                else
+                                                    item
+                                            )
+                                            model.values
                                   }
                                 , Cmd.none
                                 )
 
                             else
-                                ( { model
-                                    | game = Idle
-                                    , currentValue = -1
-                                    , values = newValues
-                                  }
-                                , Cmd.none
-                                )
+                                let
+                                    newValue =
+                                        { box = box
+                                        , player = currentPlayer
+                                        , value = model.currentValue
+                                        , counted = False
+                                        }
+
+                                    newValues =
+                                        newValue :: model.values
+                                in
+                                if areAllUsersFinished newValues model.players model.boxes then
+                                    ( { model
+                                        | game = Finished
+                                        , currentValue = -1
+                                        , values = newValues
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                else
+                                    ( { model
+                                        | game = Idle
+                                        , currentValue = -1
+                                        , values = newValues
+                                      }
+                                    , Cmd.none
+                                    )
 
                         _ ->
                             ( model, Cmd.none )
@@ -223,10 +246,13 @@ update msg model =
                     in
                     case markedValueMaybe of
                         Just markedValue ->
-                            ( { model | game = Input box, currentValue = markedValue }, Cmd.none )
+                            ( { model | game = Input box False, currentValue = markedValue }, Cmd.none )
 
                         Nothing ->
-                            ( { model | game = Input box }, Cmd.none )
+                            ( { model | game = Input box False }, Cmd.none )
+
+                ShowEditValue value ->
+                    ( { model | game = Input value.box True, currentValue = value.value }, Cmd.none )
 
                 HideAddValue ->
                     ( { model
@@ -309,7 +335,7 @@ view model =
                                 [ div [] [ scoreCard currentPlayer model False ]
                                 ]
 
-                        Input box ->
+                        Input box isEdit ->
                             div []
                                 [ div [] [ scoreCard currentPlayer model False ]
                                 , div [] [ scoreDialog model box currentPlayer ]
