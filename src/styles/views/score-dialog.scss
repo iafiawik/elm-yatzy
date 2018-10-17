@@ -3,6 +3,17 @@
 .score-dialog h1 {
   margin: 0px;
   padding: 0px;
+  // display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .score-dialog-delete-button {
+    text-align: center;
+    margin-right: auto;
+    margin-left: auto;
+    color: red;
+    font-size: 12px;
+  }
 }
 
 .score-dialog h2 {
@@ -43,8 +54,8 @@
   padding: 0px 20px;
 
   .score-dialog-number-button {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     font-size: 18px;
     margin: 5px;
   }
@@ -61,9 +72,10 @@
 
 .score-dialog-number-buttons.chance {
   .score-dialog-number-button {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     font-size: 18px;
+    margin: 5px;
   }
   .score-dialog-number-button.skip-button {
     font-size: 20px;
@@ -80,6 +92,21 @@
     width: 80px;
     height: 80px;
     font-size: 20px;
+  }
+
+  .score-dialog-number-button.skip-button {
+    font-size: 35px;
+  }
+}
+
+.score-dialog-number-buttons.two_pairs {
+  padding: 15px;
+
+  .score-dialog-number-button {
+    width: 70px;
+    height: 70px;
+    font-size: 20px;
+    margin: 5px;
   }
 
   .score-dialog-number-button.skip-button {
@@ -193,6 +220,13 @@
     6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
 }
 
+.score-dialog-delete-button {
+  display: none;
+
+  &.visible {
+    display: block;
+  }
+}
 .score-dialog-number-button.marked {
   background: black;
   color: white;

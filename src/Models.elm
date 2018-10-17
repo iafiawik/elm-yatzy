@@ -12,6 +12,7 @@ type Msg
     | RemovePlayer Player
     | NewPlayerInputValueChange String
     | AddValue
+    | RemoveValue
     | ShowAddValue Box
     | ShowEditValue Value
     | ValueMarked Int

@@ -20,8 +20,8 @@ scoreDialogNumberButton isMarked value buttonText class =
         [ span [] [ text buttonText ] ]
 
 
-scoreDialog : Model -> Box -> Player -> Html Msg
-scoreDialog model box currentPlayer =
+scoreDialog : Model -> Box -> Player -> Bool -> Html Msg
+scoreDialog model box currentPlayer isEdit =
     let
         acceptedValues =
             getAcceptedValues box
@@ -38,7 +38,7 @@ scoreDialog model box currentPlayer =
         , div [ class "score-dialog dialog-content animated jackInTheBox" ]
             [ div []
                 [ button [ class "score-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
-                , h1 [] [ text box.friendlyName ]
+                , h1 [] [ span [] [ text box.friendlyName ], button [ classList [ ( "score-dialog-delete-button button", True ), ( "enabled", model.currentValue >= 0 ), ( "visible", isEdit ) ], disabled (model.currentValue < 0), onClick RemoveValue ] [ text "(ta bort)" ] ]
                 , h2 [] [ text currentPlayer.name ]
                 ]
             , div [ classList [ ( "score-dialog-number-buttons", True ), ( "" ++ box.id_, True ) ] ]

@@ -5,7 +5,7 @@ import Browser.Dom exposing (getViewport)
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import List.Extra exposing (find, findIndex, getAt, removeAt, updateIf)
+import List.Extra exposing (find, findIndex, getAt, removeAt)
 import Logic exposing (..)
 import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
 import Random exposing (Seed, initialSeed, step)
@@ -230,6 +230,20 @@ update msg model =
                         _ ->
                             ( model, Cmd.none )
 
+                RemoveValue ->
+                    case model.game of
+                        Input box isEdit ->
+                            ( { model
+                                | game = Idle
+                                , currentValue = -1
+                                , values = List.filter (not << (\v -> v.box == box && v.player == currentPlayer)) model.values
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
                 ValueMarked value ->
                     ( { model | currentValue = value }, Cmd.none )
 
@@ -338,7 +352,7 @@ view model =
                         Input box isEdit ->
                             div []
                                 [ div [] [ scoreCard currentPlayer model False ]
-                                , div [] [ scoreDialog model box currentPlayer ]
+                                , div [] [ scoreDialog model box currentPlayer isEdit ]
                                 ]
 
                         Finished ->
