@@ -9,6 +9,9 @@ import Models exposing (Model, Msg(..), Player)
 
 highscore model =
     let
+        numberOfPlayers =
+            List.length model.players
+
         playerButtons =
             List.indexedMap
                 (\index playerScore ->
@@ -24,6 +27,16 @@ highscore model =
                 (getRoundHighscore model.players model.values)
     in
     div
-        [ class "highscore" ]
-        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button animated pulse infinite" ] [ text "Spela en gång till" ] ]
+        [ classList
+            [ ( "highscore", True )
+            , ( "two-players", numberOfPlayers == 2 )
+            , ( "three-players", numberOfPlayers == 3 )
+            , ( "four-players", numberOfPlayers == 4 )
+            , ( "five-players", numberOfPlayers == 5 )
+            , ( "six-players", numberOfPlayers == 6 )
+            , ( "seven-players", numberOfPlayers == 7 )
+            , ( "eight-players", numberOfPlayers == 8 )
+            ]
+        ]
+        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button \n        " ] [ text "Spela en gång till" ] ]
         ]
