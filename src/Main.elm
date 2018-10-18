@@ -2,12 +2,16 @@ module Main exposing (init, main, update, view)
 
 import Browser
 import Browser.Dom exposing (getViewport)
+import Debug
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Json.Decode exposing (Decoder, field, int, map3, string)
+import Json.Encode as E
 import List.Extra exposing (find, findIndex, getAt, removeAt)
 import Logic exposing (..)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
+import Model.User exposing (usersDecoder)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
 import Random exposing (Seed, initialSeed, step)
 import Task
 import Time
@@ -19,67 +23,136 @@ import Views.ScoreCard exposing (scoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
 
 
+errorToHtml : Json.Decode.Error -> String
+errorToHtml error =
+    "Error in decoder: " ++ Json.Decode.errorToString error
+
+
 
 ---- MODEL ----
 
 
-init : Int -> ( Model, Cmd Msg )
-init seed =
+type alias Flags =
+    { users : Json.Decode.Value
+    , random : Int
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         currentSeed =
-            initialSeed seed
+            initialSeed flags.random
 
         ( newUuid, newSeed ) =
             step Uuid.uuidGenerator currentSeed
 
-        boxes =
-            getBoxes
+        usersMaybe =
+            Json.Decode.decodeValue usersDecoder flags.users
 
-        valueBoxes =
-            List.filter (\b -> b.id_ /= "yatzy" && b.category /= None) boxes
-
-        sophie =
-            { id_ = getUniqueId currentSeed ++ "_sophie", order = 0, name = "Sophie" }
-
-        hugo =
-            { id_ = getUniqueId currentSeed ++ "_hugo", order = 1, name = "Hugo" }
+        _ =
+            Debug.log "flags.users" flags
     in
-    ( { boxes = boxes
-      , players =
-            [ sophie
-            , hugo
-            ]
-      , values =
-            List.concat
-                [ List.map
-                    (\b ->
-                        { box = b
-                        , player = sophie
-                        , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
-                        , counted = False
-                        }
-                    )
-                    valueBoxes
-                , List.map
-                    (\b ->
-                        { box = b
-                        , player = hugo
-                        , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
-                        , counted = False
-                        }
-                    )
-                    valueBoxes
-                ]
-      , game = Idle
-      , countedPlayers = []
-      , countedValues = []
-      , currentValue = -1
-      , currentNewPlayerName = ""
-      , currentSeed = newSeed
-      , currentUuid = Just newUuid
-      }
-    , Cmd.none
-    )
+    case usersMaybe of
+        Err err ->
+            let
+                _ =
+                    Debug.log "" (errorToHtml err)
+            in
+            ( { game = Initializing
+              , users = []
+              , values = []
+              , players = []
+              , boxes = []
+              , countedPlayers = []
+              , countedValues = []
+              , currentValue = -1
+              , currentNewPlayerName = ""
+              , currentSeed = newSeed
+              , currentUuid = Just newUuid
+              , error = Just (UnableToDecodeUsers (errorToHtml err))
+              }
+            , Cmd.none
+            )
+
+        Ok users ->
+            let
+                boxes =
+                    getBoxes
+
+                valueBoxes =
+                    List.filter (\b -> b.id_ /= "yatzy" && b.category /= None) boxes
+
+                sophie =
+                    { id_ = getUniqueId currentSeed ++ "_sophie", order = 0, name = "Sophie" }
+
+                hugo =
+                    { id_ = getUniqueId currentSeed ++ "_hugo", order = 1, name = "Hugo" }
+
+                phoenix =
+                    { id_ = getUniqueId currentSeed ++ "_phoenix", order = 0, name = "Phoenix" }
+
+                louise =
+                    { id_ = getUniqueId currentSeed ++ "_louise", order = 1, name = "Louise" }
+            in
+            ( { boxes = boxes
+              , players =
+                    [ sophie
+                    , hugo
+                    , phoenix
+                    , louise
+                    ]
+              , values =
+                    List.concat
+                        [ List.map
+                            (\b ->
+                                { box = b
+                                , player = sophie
+                                , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
+                                , counted = False
+                                }
+                            )
+                            valueBoxes
+                        , List.map
+                            (\b ->
+                                { box = b
+                                , player = hugo
+                                , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+                                , counted = False
+                                }
+                            )
+                            valueBoxes
+                        , List.map
+                            (\b ->
+                                { box = b
+                                , player = phoenix
+                                , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+                                , counted = False
+                                }
+                            )
+                            valueBoxes
+                        , List.map
+                            (\b ->
+                                { box = b
+                                , player = louise
+                                , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
+                                , counted = False
+                                }
+                            )
+                            valueBoxes
+                        ]
+              , game = ShowAddRemovePlayers
+              , users = []
+              , countedPlayers = []
+              , countedValues = []
+              , currentValue = -1
+              , currentNewPlayerName = ""
+              , currentSeed = newSeed
+              , currentUuid = Just newUuid
+              , error = Nothing
+              }
+            , Cmd.none
+            )
 
 
 getUniqueId currentSeed =
@@ -110,8 +183,15 @@ stateToString state =
         ShowResults ->
             "show-results"
 
-        Error ->
-            "error"
+
+errorToString : Error -> String
+errorToString error =
+    case error of
+        UnableToDecodeUsers message ->
+            "Unable to decode users from the database. Can not to continue without users."
+
+        NoCurrentPlayer ->
+            "No current player found. Unable to proceed from this state."
 
 
 
@@ -317,7 +397,7 @@ update msg model =
             -- handle product not found here
             -- likely return the model unchanged
             -- or set an error message on the model
-            ( { model | game = Error }, Cmd.none )
+            ( { model | error = Just NoCurrentPlayer }, Cmd.none )
 
 
 
@@ -327,62 +407,68 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        currentPlayerMaybe =
-            getCurrentPlayer model.values model.players
-
-        gameState =
-            stateToString model.game
+        errorMaybe =
+            model.error
     in
-    case currentPlayerMaybe of
-        Just currentPlayer ->
-            let
-                content =
-                    case model.game of
-                        Initializing ->
-                            div [] [ button [ onClick AddRemovePlayers ] [ text "Start" ] ]
-
-                        ShowAddRemovePlayers ->
-                            div [] [ addRemovePlayers model ]
-
-                        Idle ->
-                            div []
-                                [ div [] [ scoreCard currentPlayer model False ]
-                                ]
-
-                        Input box isEdit ->
-                            div []
-                                [ div [] [ scoreCard currentPlayer model False ]
-                                , div [] [ scoreDialog model box currentPlayer isEdit ]
-                                ]
-
-                        Finished ->
-                            div []
-                                [ div [] [ gameFinished ]
-                                , div [] [ scoreCard currentPlayer model False ]
-                                , button [ onClick CountValues ] [ text "Count" ]
-                                ]
-
-                        ShowCountedValues ->
-                            div []
-                                [ div [] [ scoreCard currentPlayer model True ]
-                                ]
-
-                        ShowResults ->
-                            div []
-                                [ div [] [ highscore model ]
-                                , div [] [ scoreCard currentPlayer model True ]
-                                ]
-
-                        Error ->
-                            div [] [ text "An error occured" ]
-            in
-            div
-                []
-                [ div [ classList [ ( gameState, True ) ] ] [ content ]
-                ]
+    case errorMaybe of
+        Just error ->
+            div [] [ text (errorToString error) ]
 
         Nothing ->
-            div [] [ text "No player found" ]
+            let
+                currentPlayerMaybe =
+                    getCurrentPlayer model.values model.players
+
+                gameState =
+                    stateToString model.game
+            in
+            case currentPlayerMaybe of
+                Just currentPlayer ->
+                    let
+                        content =
+                            case model.game of
+                                Initializing ->
+                                    div [] [ button [ onClick AddRemovePlayers ] [ text "Start" ] ]
+
+                                ShowAddRemovePlayers ->
+                                    div [] [ addRemovePlayers model ]
+
+                                Idle ->
+                                    div []
+                                        [ div [] [ scoreCard currentPlayer model False ]
+                                        ]
+
+                                Input box isEdit ->
+                                    div []
+                                        [ div [] [ scoreCard currentPlayer model False ]
+                                        , div [] [ scoreDialog model box currentPlayer isEdit ]
+                                        ]
+
+                                Finished ->
+                                    div []
+                                        [ div [] [ gameFinished ]
+                                        , div [] [ scoreCard currentPlayer model False ]
+                                        , button [ onClick CountValues ] [ text "Count" ]
+                                        ]
+
+                                ShowCountedValues ->
+                                    div []
+                                        [ div [] [ scoreCard currentPlayer model True ]
+                                        ]
+
+                                ShowResults ->
+                                    div []
+                                        [ div [] [ highscore model ]
+                                        , div [] [ scoreCard currentPlayer model True ]
+                                        ]
+                    in
+                    div
+                        []
+                        [ div [ classList [ ( gameState, True ) ] ] [ content ]
+                        ]
+
+                Nothing ->
+                    div [] [ text "No player found" ]
 
 
 subscriptions : Model -> Sub Msg
@@ -398,7 +484,7 @@ subscriptions model =
 ---- PROGRAM ----
 
 
-main : Program Int Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { init = init

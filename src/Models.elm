@@ -1,5 +1,6 @@
-module Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Person, Player, PlayerAndNumberOfValues, Value)
+module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game(..), Model, Msg(..), Person, Player, PlayerAndNumberOfValues, Value)
 
+import Model.User exposing (User)
 import Random exposing (Seed, initialSeed, step)
 import Time
 import Uuid
@@ -23,8 +24,20 @@ type Msg
     | Restart
 
 
+
+-- type Error a b
+--     = Just a b
+--     | Nothing
+
+
+type Error
+    = NoCurrentPlayer
+    | UnableToDecodeUsers String
+
+
 type alias Model =
     { players : List Player
+    , users : List User
     , boxes : List Box
     , values : List Value
     , game : Game
@@ -34,6 +47,7 @@ type alias Model =
     , currentValue : Int
     , currentSeed : Seed
     , currentUuid : Maybe Uuid.Uuid
+    , error : Maybe Error
     }
 
 
@@ -45,7 +59,6 @@ type Game
     | Finished
     | ShowCountedValues
     | ShowResults
-    | Error
 
 
 type alias Person =
