@@ -2,13 +2,9 @@ import firebase from "firebase";
 
 require("firebase/firestore");
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDpLTMW0O94t-OKm6tTMxD2Ww0zOyFsw9c",
-  authDomain: "elm-yatzy.firebaseapp.com",
-  projectId: "elm-yatzy"
-};
+import config from "./config";
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(config);
 
 // Initialize Cloud Firestore through Firebase
 var db = firebase.firestore();
