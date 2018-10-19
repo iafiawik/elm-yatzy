@@ -1,7 +1,6 @@
-module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game(..), Model, Msg(..), Person, Player, PlayerAndNumberOfValues, Value)
+module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game, GameResult, GameResultState(..), GameSetup, GameState(..), Model(..), Msg(..), Player, PlayerAndNumberOfValues, Value)
 
 import Model.User exposing (User)
-import Random exposing (Seed, initialSeed, step)
 import Time
 import Uuid
 
@@ -9,7 +8,8 @@ import Uuid
 type Msg
     = Start
     | AddRemovePlayers
-    | AddPlayer
+    | AddUser
+    | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
     | AddValue
@@ -35,34 +35,50 @@ type Error
     | UnableToDecodeUsers String
 
 
-type alias Model =
-    { players : List Player
-    , users : List User
-    , boxes : List Box
-    , values : List Value
-    , game : Game
-    , countedPlayers : List Player
-    , countedValues : List Value
+type Model
+    = PreGame GameSetup
+    | Playing Game
+    | PostGame GameResult
+
+
+type alias GameSetup =
+    { users : List User
     , currentNewPlayerName : String
-    , currentValue : Int
-    , currentSeed : Seed
-    , currentUuid : Maybe Uuid.Uuid
+    , players : List Player
     , error : Maybe Error
     }
 
 
-type Game
-    = Initializing
-    | ShowAddRemovePlayers
-    | Idle
-    | Input Box Bool
-    | Finished
+type alias Game =
+    { players : List Player
+    , boxes : List Box
+    , values : List Value
+    , state : GameState
+    , currentValue : Int
+    , error : Maybe Error
+    }
+
+
+type alias GameResult =
+    { players : List Player
+    , boxes : List Box
+    , values : List Value
+    , state : GameResultState
+    , countedPlayers : List Player
+    , countedValues : List Value
+    , error : Maybe Error
+    }
+
+
+type GameResultState
+    = GameFinished
     | ShowCountedValues
     | ShowResults
 
 
-type alias Person =
-    { name : String }
+type GameState
+    = Idle
+    | Input Box Bool
 
 
 type BoxType
@@ -93,7 +109,7 @@ type alias Value =
 
 
 type alias Player =
-    { id_ : String, name : String, order : Int }
+    { user : User, order : Int }
 
 
 type alias PlayerAndNumberOfValues =

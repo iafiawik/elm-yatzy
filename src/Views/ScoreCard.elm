@@ -1,10 +1,10 @@
-module Views.ScoreCard exposing (scoreCard)
+module Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Logic exposing (getBonusValue, getTotalSum, getUpperSum, getValuesByPlayer, sum)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game(..), Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
+import Models exposing (Box, BoxCategory(..), BoxType(..), Game, Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
 
 
 getValueText : Int -> String
@@ -17,8 +17,8 @@ getValueText value =
             String.fromInt value
 
 
-scoreCard : Player -> Model -> Bool -> Html Msg
-scoreCard currentPlayer model showCountedValues =
+scoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Bool -> Bool -> Html Msg
+scoreCard currentPlayer boxes values players showCountedValues allowInteraction showTotalSum =
     let
         boxItems =
             List.map
@@ -27,9 +27,9 @@ scoreCard currentPlayer model showCountedValues =
                         playerBoxes =
                             List.map
                                 (\p ->
-                                    renderCell box model p (p == currentPlayer)
+                                    renderCell box boxes values p (p == currentPlayer) allowInteraction showTotalSum
                                 )
-                                model.players
+                                players
                     in
                     tr []
                         ([ td [ class "box" ] [ renderBox box ]
@@ -37,10 +37,10 @@ scoreCard currentPlayer model showCountedValues =
                             ++ playerBoxes
                         )
                 )
-                model.boxes
+                boxes
 
         headers =
-            List.map (\p -> th [] [ text p.name ]) model.players
+            List.map (\p -> th [] [ text p.user.name ]) players
     in
     div [ class "score-card-wrapper" ]
         [ table [ class "score-card" ]
@@ -56,8 +56,18 @@ scoreCard currentPlayer model showCountedValues =
         ]
 
 
-renderCell : Box -> Model -> Player -> Bool -> Html Msg
-renderCell box model player isCurrentPlayer =
+staticScoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Bool -> Html Msg
+staticScoreCard currentPlayer boxes values players showCountedValues showTotalSum =
+    scoreCard currentPlayer boxes values players showCountedValues False showTotalSum
+
+
+interactiveScoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Html Msg
+interactiveScoreCard currentPlayer boxes values players showCountedValues =
+    scoreCard currentPlayer boxes values players showCountedValues True False
+
+
+renderCell : Box -> List Box -> List Value -> Player -> Bool -> Bool -> Bool -> Html Msg
+renderCell box boxes values player isCurrentPlayer allowInteraction showTotalSum =
     let
         boxValue =
             List.head
@@ -65,12 +75,12 @@ renderCell box model player isCurrentPlayer =
                     (\v ->
                         v.box == box && v.player == player
                     )
-                    model.values
+                    values
                 )
     in
     case boxValue of
         Just value ->
-            if isCurrentPlayer then
+            if isCurrentPlayer && allowInteraction then
                 td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ], onClick (ShowEditValue value) ] [ text (getValueText value.value) ]
 
             else
@@ -80,13 +90,13 @@ renderCell box model player isCurrentPlayer =
             if box.boxType == UpperSum then
                 let
                     upperSum =
-                        getUpperSum model.values player
+                        getUpperSum values player
                 in
                 td [ class "inactive" ] [ text (String.fromInt upperSum) ]
 
             else if box.boxType == TotalSum then
-                if model.game == ShowResults || model.game == ShowCountedValues then
-                    td [ class "inactive" ] [ text (String.fromInt (getTotalSum model.values player)) ]
+                if showTotalSum then
+                    td [ class "inactive" ] [ text (String.fromInt (getTotalSum values player)) ]
 
                 else
                     td [ class "inactive" ] [ text "" ]
@@ -94,10 +104,10 @@ renderCell box model player isCurrentPlayer =
             else if box.boxType == Bonus then
                 let
                     upperSumText =
-                        getUpperSumText model.boxes model.values player
+                        getUpperSumText boxes values player
 
                     bonusValue =
-                        getBonusValue model.values player
+                        getBonusValue values player
                 in
                 td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
 
@@ -105,8 +115,11 @@ renderCell box model player isCurrentPlayer =
                 if box.category == None then
                     td [ classList [ ( "active", True ) ] ] [ text "" ]
 
-                else
+                else if allowInteraction then
                     td [ class "active", onClick (ShowAddValue box) ] [ text "" ]
+
+                else
+                    td [ class "active" ] [ text "" ]
 
             else
                 td [ class "inactive" ] [ text "" ]

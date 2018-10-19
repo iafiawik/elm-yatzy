@@ -4,31 +4,33 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Logic exposing (getRoundHighscore)
-import Models exposing (Model, Msg(..), Player)
+import Models exposing (Msg(..), Player, Value)
 
 
-highscore model =
+highscore : List Player -> List Value -> Html Msg
+highscore players values =
     let
         numberOfPlayers =
-            List.length model.players
+            List.length players
 
         playerButtons =
             List.indexedMap
                 (\index playerScore ->
                     let
                         name =
-                            .name (Tuple.first playerScore)
+                            (\p -> p.user.name) (Tuple.first playerScore)
 
                         score =
                             Tuple.second playerScore
                     in
                     tr [] [ td [] [ text (String.fromInt (index + 1) ++ ". " ++ name) ], td [] [ text (String.fromInt score) ] ]
                 )
-                (getRoundHighscore model.players model.values)
+                (getRoundHighscore players values)
     in
     div
         [ classList
             [ ( "highscore", True )
+            , ( "one-player", numberOfPlayers == 1 )
             , ( "two-players", numberOfPlayers == 2 )
             , ( "three-players", numberOfPlayers == 3 )
             , ( "four-players", numberOfPlayers == 4 )

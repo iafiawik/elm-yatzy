@@ -67,6 +67,10 @@ $initial-animation-delay: 7;
 }
 
 .highscore {
+  &.one-player {
+    @include playerAnimations(1);
+    @include replayButton(1);
+  }
   &.two-players {
     @include playerAnimations(2);
     @include replayButton(2);

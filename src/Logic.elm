@@ -27,8 +27,8 @@ getBoxes =
     ]
 
 
-getDefaultMarkedValue : Model -> Box -> Maybe Int
-getDefaultMarkedValue model box =
+getDefaultMarkedValue : Box -> Maybe Int
+getDefaultMarkedValue box =
     let
         acceptedValues =
             getAcceptedValues box
@@ -79,7 +79,7 @@ getNextValueToAnimate players values =
         Just nextPlayer ->
             let
                 _ =
-                    Debug.log ("NextPlayer: " ++ nextPlayer.name)
+                    Debug.log ("NextPlayer: " ++ nextPlayer.user.name)
 
                 playerValues =
                     getValuesByPlayer values nextPlayer
