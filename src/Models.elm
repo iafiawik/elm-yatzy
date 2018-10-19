@@ -1,5 +1,6 @@
 module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game, GameResult, GameResultState(..), GameSetup, GameState(..), Model(..), Msg(..), Player, PlayerAndNumberOfValues, Value)
 
+import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.User exposing (User)
 import Time
 import Uuid
@@ -9,6 +10,7 @@ type Msg
     = Start
     | AddRemovePlayers
     | AddUser
+    | RemoteUsers (List User)
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -22,6 +24,7 @@ type Msg
     | CountValues
     | CountValuesTick Time.Posix
     | Restart
+    | NoOp
 
 
 

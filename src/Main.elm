@@ -27,12 +27,18 @@ errorToHtml error =
     "Error in decoder: " ++ Json.Decode.errorToString error
 
 
+port createUser : E.Value -> Cmd msg
+
+
+port remoteUsers : (Json.Decode.Value -> msg) -> Sub msg
+
+
 
 ---- MODEL ----
 
 
 type alias Flags =
-    { users : Json.Decode.Value
+    { remoteUsers : Json.Decode.Value
     , random : Int
     }
 
@@ -41,7 +47,7 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         usersMaybe =
-            Json.Decode.decodeValue usersDecoder flags.users
+            Json.Decode.decodeValue usersDecoder flags.remoteUsers
 
         _ =
             Debug.log "flags.users" flags
@@ -213,6 +219,13 @@ updatePreGame msg model =
         NewPlayerInputValueChange value ->
             ( { model | currentNewPlayerName = value }, Cmd.none )
 
+        RemoteUsers users ->
+            ( { model
+                | users = users
+              }
+            , Cmd.none
+            )
+
         AddUser ->
             if find (\u -> String.toLower u.name == String.toLower model.currentNewPlayerName) model.users == Nothing then
                 let
@@ -220,7 +233,7 @@ updatePreGame msg model =
                         model.currentNewPlayerName
                 in
                 ( model
-                , Cmd.none
+                , createUser (E.string name)
                 )
 
             else
@@ -576,12 +589,31 @@ view model =
                     div [] [ text "No player found" ]
 
 
+remoteUsersUpdated : Json.Decode.Value -> Msg
+remoteUsersUpdated usersJson =
+    let
+        usersMaybe =
+            Json.Decode.decodeValue usersDecoder usersJson
+    in
+    case usersMaybe of
+        Ok users ->
+            RemoteUsers users
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "Error in mapWorkerUpdated:" err
+            in
+            NoOp
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
         PostGame postGame ->
             if postGame.state == ShowCountedValues then
-                Time.every 100 CountValuesTick
+                Time.every 100
+                    CountValuesTick
 
             else
                 Sub.none
@@ -590,7 +622,7 @@ subscriptions model =
             Sub.none
 
         PreGame preGame ->
-            Sub.none
+            remoteUsers remoteUsersUpdated
 
 
 

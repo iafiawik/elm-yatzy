@@ -1,6 +1,7 @@
 import { Elm } from "./Main.elm";
 import { unregister } from "./registerServiceWorker";
 import Data from "./data";
+
 import "./styles/app.scss";
 
 // db
@@ -13,23 +14,31 @@ import "./styles/app.scss";
 // usersRef2.on("value", function(snapshot) {
 //   alert(snapshot.val());
 // });
+//
+// Promise.all([Data.getUsers()]).then(function(values) {
+//   console.log("All promises resolved", values);
+//
+//   initElm(values[0]);
+// });
 
-Promise.all([Data.getUsers()]).then(function(values) {
-  console.log("All promises resolved", values);
+console.error("initElm");
 
-  initElm(values[0]);
+var app = Elm.Main.init({
+  node: document.getElementById("root"),
+  flags: {
+    random: Math.floor(Math.random() * 0x0fffffff),
+    remoteUsers: []
+  }
 });
 
-const initElm = users => {
-  console.error("initElm", users);
-  Elm.Main.init({
-    node: document.getElementById("root"),
-    flags: {
-      random: Math.floor(Math.random() * 0x0fffffff),
-      users: users
-    }
-  });
-};
+Data.getUsers(users => {
+  console.log("app.ports", app.ports);
+  app.ports.remoteUsers.send(users);
+});
+
+app.ports.createUser.subscribe(function(name) {
+  Data.createUser(name);
+});
 
 unregister();
 
