@@ -36,7 +36,7 @@ type Msg
 
 type Error
     = NoCurrentPlayer
-    | UserAlreadyExists
+    | UserAlreadyExists String
     | UnableToDecodeUsers String
 
 

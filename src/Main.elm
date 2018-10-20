@@ -6,6 +6,7 @@ import Debug
 import Html exposing (Html, button, div, h1, h2, img, input, label, li, span, table, td, text, th, tr, ul)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy exposing (lazy)
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Json.Encode as E
 import List.Extra exposing (find, findIndex, getAt, removeAt)
@@ -207,8 +208,8 @@ errorToString error =
         NoCurrentPlayer ->
             "No current player found. Unable to proceed from this state."
 
-        UserAlreadyExists ->
-            "User already exists. Try another name."
+        UserAlreadyExists name ->
+            "User " ++ name ++ " already exists. Try another name."
 
 
 
@@ -245,7 +246,7 @@ updatePreGame msg model =
                     _ =
                         Debug.log "" "Name exists"
                 in
-                ( { model | error = Just UserAlreadyExists }
+                ( { model | error = Just (UserAlreadyExists model.currentNewPlayerName) }
                 , Cmd.none
                 )
 
@@ -509,19 +510,36 @@ update msg model =
 ---- VIEW ----
 
 
+viewInput : String -> Html Msg
+viewInput task =
+    div
+        [ class "header" ]
+        [ h1 [] [ text "todos" ]
+        , input
+            [ class "new-todo"
+            , placeholder "What needs to be done?"
+            , autofocus True
+            , value task
+            , name "newTodo"
+            ]
+            []
+        ]
+
+
 view : Model -> Html Msg
 view model =
     case model of
         PreGame preGame ->
-            case preGame.error of
-                Just error ->
-                    div []
-                        [ div [] [ addRemovePlayers preGame ]
-                        , div [] [ notification (errorToString error) ]
-                        ]
+            let
+                notificationHtml =
+                    case preGame.error of
+                        Just error ->
+                            notification (errorToString error)
 
-                Nothing ->
-                    div [] [ addRemovePlayers preGame ]
+                        Nothing ->
+                            div [] []
+            in
+            div [] [ lazy addRemovePlayers preGame, notificationHtml ]
 
         Playing playingModel ->
             let
