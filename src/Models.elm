@@ -24,6 +24,7 @@ type Msg
     | CountValues
     | CountValuesTick Time.Posix
     | Restart
+    | HideNotification
     | NoOp
 
 
@@ -35,6 +36,7 @@ type Msg
 
 type Error
     = NoCurrentPlayer
+    | UserAlreadyExists
     | UnableToDecodeUsers String
 
 

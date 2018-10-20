@@ -18,6 +18,7 @@ import Uuid
 import Views.AddRemovePlayers exposing (addRemovePlayers)
 import Views.GameFinished exposing (gameFinished)
 import Views.Highscore exposing (highscore)
+import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
 
@@ -206,6 +207,9 @@ errorToString error =
         NoCurrentPlayer ->
             "No current player found. Unable to proceed from this state."
 
+        UserAlreadyExists ->
+            "User already exists. Try another name."
+
 
 
 ---- UPDATE ----
@@ -232,7 +236,7 @@ updatePreGame msg model =
                     name =
                         model.currentNewPlayerName
                 in
-                ( model
+                ( { model | currentNewPlayerName = "", error = Nothing }
                 , createUser (E.string name)
                 )
 
@@ -241,7 +245,7 @@ updatePreGame msg model =
                     _ =
                         Debug.log "" "Name exists"
                 in
-                ( model
+                ( { model | error = Just UserAlreadyExists }
                 , Cmd.none
                 )
 
@@ -450,6 +454,9 @@ update msg model =
                 , Cmd.none
                 )
 
+            else if msg == HideNotification then
+                ( PreGame { preGame | error = Nothing }, Cmd.none )
+
             else
                 Tuple.mapFirst PreGame <| updatePreGame msg preGame
 
@@ -506,7 +513,15 @@ view : Model -> Html Msg
 view model =
     case model of
         PreGame preGame ->
-            div [] [ addRemovePlayers preGame ]
+            case preGame.error of
+                Just error ->
+                    div []
+                        [ div [] [ addRemovePlayers preGame ]
+                        , div [] [ notification (errorToString error) ]
+                        ]
+
+                Nothing ->
+                    div [] [ addRemovePlayers preGame ]
 
         Playing playingModel ->
             let

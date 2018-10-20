@@ -19,3 +19,21 @@
     opacity: 1;
   }
 }
+
+@keyframes show-animation {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+@keyframes hide-animation {
+  from {
+    transform: translateY(0%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}

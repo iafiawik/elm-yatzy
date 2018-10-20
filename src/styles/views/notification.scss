@@ -1,0 +1,19 @@
+.notification {
+  position: fixed;
+  width: 400px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: $primary-color;
+  color: white;
+  top: 0px;
+  margin-left: -220px;
+  box-sizing: content-box;
+  font-size: 10px;
+  padding: 20px;
+  box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
+    5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+
+  animation: bounceInDown 1s linear forwards, bounceOutUp 1s linear 5s forwards;
+}
