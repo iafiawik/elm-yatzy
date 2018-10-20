@@ -4,7 +4,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Logic exposing (getAcceptedValues)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Game, Model, Msg(..), Player, PlayerAndNumberOfValues, Value)
+import Model.Box exposing (Box)
+import Model.BoxCategory exposing (BoxCategory(..))
+import Model.BoxType exposing (BoxType(..))
+import Model.Game exposing (Game)
+import Model.Player exposing (Player)
+import Model.Value exposing (Value)
+import Models exposing (Model, Msg(..), PlayerAndNumberOfValues)
 
 
 scoreDialogNumberButton : Bool -> Int -> String -> String -> Html Msg

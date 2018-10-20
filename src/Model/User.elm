@@ -1,6 +1,7 @@
 module Model.User exposing (User, userDecoder, usersDecoder)
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
+import Json.Encode as E
 
 
 usersDecoder : Json.Decode.Decoder (List User)
@@ -22,3 +23,12 @@ userDecoder =
 
 type alias User =
     { id : String, name : String, userName : String }
+
+
+
+-- userEncoder : User -> E.value
+-- userEncoder ({ id } as user) =
+--     Encode.object
+--         [ ( "id", encodeOfficeId id )
+--         , ( "latLng", encodeLatLon office.address.geo )
+--         ]

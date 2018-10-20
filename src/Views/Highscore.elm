@@ -4,7 +4,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Logic exposing (getRoundHighscore)
-import Models exposing (Msg(..), Player, Value)
+import Model.Player exposing (Player)
+import Model.Value exposing (Value)
+import Models exposing (Msg(..))
 
 
 highscore : List Player -> List Value -> Html Msg

@@ -11,8 +11,16 @@ import Json.Decode exposing (Decoder, field, int, map3, string)
 import Json.Encode as E
 import List.Extra exposing (find, findIndex, getAt, removeAt)
 import Logic exposing (..)
-import Model.User exposing (usersDecoder)
-import Models exposing (..)
+import Model.Box exposing (Box)
+import Model.BoxCategory exposing (BoxCategory(..))
+import Model.BoxType exposing (BoxType(..))
+import Model.Error exposing (Error(..))
+import Model.Game exposing (Game)
+import Model.GameState exposing (GameState(..))
+import Model.Player exposing (Player)
+import Model.User exposing (User, usersDecoder)
+import Model.Value exposing (Value)
+import Models exposing (GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
 import Uuid
@@ -31,6 +39,9 @@ errorToHtml error =
 
 
 port createUser : E.Value -> Cmd msg
+
+
+port createGame : E.Value -> Cmd msg
 
 
 port remoteUsers : (Json.Decode.Value -> msg) -> Sub msg
@@ -285,7 +296,11 @@ updatePreGame msg model =
                     ( model, Cmd.none )
 
         PlayersAdded ->
-            ( { model | state = ShowGameInfo }, Cmd.none )
+            let
+                users =
+                    List.map (\p -> p.user) model.players
+            in
+            ( { model | state = ShowGameInfo }, createGame (E.string "hej") )
 
         _ ->
             ( model, Cmd.none )

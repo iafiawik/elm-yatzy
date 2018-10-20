@@ -1,7 +1,12 @@
-module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game, GameResult, GameResultState(..), GameSetup, GameState(..), Model(..), Msg(..), Player, PlayerAndNumberOfValues, PreGameState(..), Value)
+module Models exposing (GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
+import Model.Box exposing (Box)
+import Model.Error exposing (Error(..))
+import Model.Game exposing (Game)
+import Model.Player exposing (Player)
 import Model.User exposing (User)
+import Model.Value exposing (Value)
 import Time
 import Uuid
 
@@ -35,12 +40,6 @@ type Msg
 --     | Nothing
 
 
-type Error
-    = NoCurrentPlayer
-    | UserAlreadyExists String
-    | UnableToDecodeUsers String
-
-
 type Model
     = PreGame GameSetup
     | Playing Game
@@ -52,16 +51,6 @@ type alias GameSetup =
     , currentNewPlayerName : String
     , players : List Player
     , state : PreGameState
-    , error : Maybe Error
-    }
-
-
-type alias Game =
-    { players : List Player
-    , boxes : List Box
-    , values : List Value
-    , state : GameState
-    , currentValue : Int
     , error : Maybe Error
     }
 
@@ -86,42 +75,6 @@ type GameResultState
 type PreGameState
     = ShowAddRemovePlayers
     | ShowGameInfo
-
-
-type GameState
-    = Idle
-    | Input Box Bool
-
-
-type BoxType
-    = Regular Int
-    | SameKind
-    | Combination
-    | UpperSum
-    | TotalSum
-    | Bonus
-
-
-type BoxCategory
-    = Upper
-    | Lower
-    | None
-
-
-type alias Box =
-    { id_ : String, friendlyName : String, boxType : BoxType, category : BoxCategory, order : Int }
-
-
-type alias Value =
-    { box : Box
-    , player : Player
-    , value : Int
-    , counted : Bool
-    }
-
-
-type alias Player =
-    { user : User, order : Int }
 
 
 type alias PlayerAndNumberOfValues =

@@ -1,7 +1,12 @@
 module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
 import List.Extra exposing (find, findIndex, removeAt)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Model, Player, PlayerAndNumberOfValues, Value)
+import Model.Box exposing (Box)
+import Model.BoxCategory exposing (BoxCategory(..))
+import Model.BoxType exposing (BoxType(..))
+import Model.Player exposing (Player)
+import Model.Value exposing (Value)
+import Models exposing (Model, PlayerAndNumberOfValues)
 import Ordering exposing (Ordering)
 
 
