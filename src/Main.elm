@@ -44,7 +44,7 @@ port createUser : E.Value -> Cmd msg
 port createGame : E.Value -> Cmd msg
 
 
-port remoteUsers : (Json.Decode.Value -> msg) -> Sub msg
+port usersReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port gameReceived : (Json.Decode.Value -> msg) -> Sub msg
@@ -778,7 +778,7 @@ subscriptions model =
 
         PreGame preGame ->
             Sub.batch
-                [ remoteUsers remoteUsersUpdated
+                [ usersReceived remoteUsersUpdated
                 , gameReceived gameCreated
                 ]
 

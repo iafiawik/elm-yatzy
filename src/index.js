@@ -34,7 +34,7 @@ var app = Elm.Main.init({
 
 Data.getUsers(users => {
   console.log("app.ports", app.ports);
-  app.ports.remoteUsers.send(users);
+  app.ports.usersReceived.send(users);
 });
 
 // Data.getGames(games => {
