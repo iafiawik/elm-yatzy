@@ -10,7 +10,7 @@ import Model.BoxType exposing (BoxType(..))
 import Model.Game exposing (Game)
 import Model.Player exposing (Player)
 import Model.Value exposing (Value)
-import Models exposing (Model, Msg(..), PlayerAndNumberOfValues)
+import Models exposing (GamePlaying, Model, Msg(..), PlayerAndNumberOfValues)
 
 
 scoreDialogNumberButton : Bool -> Int -> String -> String -> Html Msg
@@ -26,7 +26,7 @@ scoreDialogNumberButton isMarked value buttonText class =
         [ span [] [ text buttonText ] ]
 
 
-scoreDialog : Game -> Box -> Player -> Bool -> Html Msg
+scoreDialog : GamePlaying -> Box -> Player -> Bool -> Html Msg
 scoreDialog model box currentPlayer isEdit =
     let
         acceptedValues =

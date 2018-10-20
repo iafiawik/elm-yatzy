@@ -27,7 +27,8 @@ var app = Elm.Main.init({
   node: document.getElementById("root"),
   flags: {
     random: Math.floor(Math.random() * 0x0fffffff),
-    remoteUsers: []
+    remoteUsers: [],
+    remoteGames: []
   }
 });
 
@@ -36,8 +37,21 @@ Data.getUsers(users => {
   app.ports.remoteUsers.send(users);
 });
 
+// Data.getGames(games => {
+//   console.log("app.ports", app.ports);
+//   app.ports.remoteUsers.send(users);
+// });
+
 app.ports.createUser.subscribe(function(name) {
+  alert("Create user" + name);
   Data.createUser(name);
+});
+
+var gameId = "";
+app.ports.createGame.subscribe(function(game) {
+  Data.createGame(game.users).then(function(dbGame) {
+    app.ports.gameReceived.send(dbGame);
+  });
 });
 
 unregister();

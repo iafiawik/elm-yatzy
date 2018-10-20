@@ -15,12 +15,12 @@ import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
-import Model.Game exposing (Game)
+import Model.Game exposing (Game, encodeGame, gameDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
 import Model.Value exposing (Value)
-import Models exposing (GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
 import Uuid
@@ -45,6 +45,9 @@ port createGame : E.Value -> Cmd msg
 
 
 port remoteUsers : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port gameReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
@@ -74,7 +77,12 @@ init flags =
             in
             ( PreGame
                 { users = []
-                , players = []
+                , game =
+                    { id = ""
+                    , code = ""
+                    , players = []
+                    , values = []
+                    }
                 , currentNewPlayerName = ""
                 , error = Just (UnableToDecodeUsers (errorToHtml err))
                 , state = ShowAddRemovePlayers
@@ -117,7 +125,12 @@ init flags =
             -- in
             ( PreGame
                 { users = users
-                , players = []
+                , game =
+                    { id = ""
+                    , code = ""
+                    , players = []
+                    , values = []
+                    }
                 , error = Nothing
                 , currentNewPlayerName = ""
                 , state = ShowAddRemovePlayers
@@ -245,6 +258,24 @@ updatePreGame msg model =
             , Cmd.none
             )
 
+        GameReceived dbGame ->
+            let
+                currentGame =
+                    model.game
+
+                _ =
+                    Debug.log "GameReceived: " dbGame
+            in
+            ( { model
+                | game =
+                    { currentGame
+                        | id = dbGame.id
+                        , code = dbGame.code
+                    }
+              }
+            , Cmd.none
+            )
+
         AddUser ->
             if find (\u -> String.toLower u.name == String.toLower model.currentNewPlayerName) model.users == Nothing then
                 let
@@ -267,13 +298,16 @@ updatePreGame msg model =
         AddPlayer user ->
             let
                 newPlayer =
-                    { user = user, order = List.length model.players }
+                    { user = user, order = List.length model.game.players }
 
                 newPlayers =
-                    sortPlayersByOrder (newPlayer :: model.players)
+                    sortPlayersByOrder (newPlayer :: model.game.players)
+
+                currentGame =
+                    model.game
             in
             ( { model
-                | players = newPlayers
+                | game = { currentGame | players = newPlayers }
                 , currentNewPlayerName = ""
               }
             , Cmd.none
@@ -282,38 +316,45 @@ updatePreGame msg model =
         RemovePlayer player ->
             let
                 playerIndexMaybe =
-                    findIndex (\a -> a.user.id == player.user.id) model.players
+                    findIndex (\a -> a.user.id == player.user.id) model.game.players
             in
             case playerIndexMaybe of
                 Just playerIndex ->
                     let
                         newPlayers =
-                            removeAt playerIndex model.players
+                            removeAt playerIndex model.game.players
+
+                        currentGame =
+                            model.game
                     in
-                    ( { model | players = newPlayers }, Cmd.none )
+                    ( { model | game = { currentGame | players = newPlayers } }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
 
         PlayersAdded ->
             let
-                users =
-                    List.map (\p -> p.user) model.players
+                game =
+                    { id = ""
+                    , code = ""
+                    , players = model.game.players
+                    , values = []
+                    }
             in
-            ( { model | state = ShowGameInfo }, createGame (E.string "hej") )
+            ( { model | state = ShowGameInfo }, createGame (encodeGame game) )
 
         _ ->
             ( model, Cmd.none )
 
 
-updateGame : Msg -> Game -> ( Game, Cmd Msg )
+updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
 updateGame msg model =
     let
         _ =
             Debug.log "state2:" msg
 
         currentPlayerMaybe =
-            getCurrentPlayer model.values model.players
+            getCurrentPlayer model.game.values model.game.players
     in
     case currentPlayerMaybe of
         Just currentPlayer ->
@@ -322,10 +363,8 @@ updateGame msg model =
                     case model.state of
                         Input box isEdit ->
                             if isEdit then
-                                ( { model
-                                    | state = Idle
-                                    , currentValue = -1
-                                    , values =
+                                let
+                                    values =
                                         List.map
                                             (\item ->
                                                 if (\v -> v.box == box && v.player == currentPlayer) item then
@@ -338,7 +377,15 @@ updateGame msg model =
                                                 else
                                                     item
                                             )
-                                            model.values
+                                            model.game.values
+
+                                    currentGame =
+                                        model.game
+                                in
+                                ( { model
+                                    | state = Idle
+                                    , currentValue = -1
+                                    , game = { currentGame | values = values }
                                   }
                                 , Cmd.none
                                 )
@@ -353,12 +400,15 @@ updateGame msg model =
                                         }
 
                                     newValues =
-                                        newValue :: model.values
+                                        newValue :: model.game.values
+
+                                    currentGame =
+                                        model.game
                                 in
                                 ( { model
                                     | state = Idle
                                     , currentValue = -1
-                                    , values = newValues
+                                    , game = { currentGame | values = newValues }
                                   }
                                 , Cmd.none
                                 )
@@ -369,10 +419,14 @@ updateGame msg model =
                 RemoveValue ->
                     case model.state of
                         Input box isEdit ->
+                            let
+                                currentGame =
+                                    model.game
+                            in
                             ( { model
                                 | state = Idle
                                 , currentValue = -1
-                                , values = List.filter (not << (\v -> v.box == box && v.player == currentPlayer)) model.values
+                                , game = { currentGame | values = List.filter (not << (\v -> v.box == box && v.player == currentPlayer)) model.game.values }
                               }
                             , Cmd.none
                             )
@@ -435,7 +489,7 @@ updatePostGame msg model =
                     Debug.log "Update(), CountValuesTick:" newTime
 
                 nextValueToAnimateMaybe =
-                    getNextValueToAnimate model.players model.values
+                    getNextValueToAnimate model.game.players model.game.values
             in
             case nextValueToAnimateMaybe of
                 Just nextValue ->
@@ -449,9 +503,12 @@ updatePostGame msg model =
                                     else
                                         v
                                 )
-                                model.values
+                                model.game.values
+
+                        currentGame =
+                            model.game
                     in
-                    ( { model | values = updatedValues }, Cmd.none )
+                    ( { model | game = { currentGame | values = updatedValues } }, Cmd.none )
 
                 Nothing ->
                     ( { model | state = ShowResults }, Cmd.none )
@@ -466,9 +523,13 @@ update msg model =
         PreGame preGame ->
             if msg == Start then
                 ( Playing
-                    { players = preGame.players
+                    { game =
+                        { id = preGame.game.id
+                        , code = preGame.game.code
+                        , players = preGame.game.players
+                        , values = []
+                        }
                     , boxes = getBoxes
-                    , values = []
                     , state = Idle
                     , currentValue = 0
                     , error = Nothing
@@ -482,18 +543,22 @@ update msg model =
             else
                 Tuple.mapFirst PreGame <| updatePreGame msg preGame
 
-        Playing game ->
+        Playing gamePlaying ->
             let
                 gameModel =
-                    Tuple.mapFirst Playing <| updateGame msg game
+                    Tuple.mapFirst Playing <| updateGame msg gamePlaying
             in
             case Tuple.first gameModel of
                 Playing playingModel ->
-                    if areAllUsersFinished playingModel.values playingModel.players playingModel.boxes then
+                    if areAllUsersFinished playingModel.game.values playingModel.game.players playingModel.boxes then
                         ( PostGame
-                            { players = playingModel.players
+                            { game =
+                                { id = ""
+                                , code = ""
+                                , players = playingModel.game.players
+                                , values = playingModel.game.values
+                                }
                             , boxes = playingModel.boxes
-                            , values = playingModel.values
                             , state = GameFinished
                             , countedPlayers = []
                             , countedValues = []
@@ -517,7 +582,12 @@ update msg model =
                 ( PreGame
                     { users = []
                     , currentNewPlayerName = ""
-                    , players = []
+                    , game =
+                        { id = ""
+                        , code = ""
+                        , players = postGame.game.players
+                        , values = []
+                        }
                     , error = Nothing
                     , state = ShowAddRemovePlayers
                     }
@@ -566,7 +636,7 @@ view model =
                     div [] [ lazy addRemovePlayers preGame, notificationHtml ]
 
                 ShowGameInfo ->
-                    div [] [ gameInfo "" ]
+                    div [] [ gameInfo preGame.game ]
 
         Playing playingModel ->
             let
@@ -580,7 +650,7 @@ view model =
                 Nothing ->
                     let
                         currentPlayerMaybe =
-                            getCurrentPlayer playingModel.values playingModel.players
+                            getCurrentPlayer playingModel.game.values playingModel.game.players
 
                         gameState =
                             stateToString playingModel.state
@@ -592,12 +662,12 @@ view model =
                                     case playingModel.state of
                                         Idle ->
                                             div []
-                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.values playingModel.players False ]
+                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
                                                 ]
 
                                         Input box isEdit ->
                                             div []
-                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.values playingModel.players False ]
+                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
                                                 , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
                                                 ]
                             in
@@ -612,7 +682,7 @@ view model =
         PostGame finishedModel ->
             let
                 currentPlayerMaybe =
-                    getCurrentPlayer finishedModel.values finishedModel.players
+                    getCurrentPlayer finishedModel.game.values finishedModel.game.players
 
                 gameState =
                     stateToString finishedModel.state
@@ -625,19 +695,19 @@ view model =
                                 GameFinished ->
                                     div []
                                         [ div [] [ gameFinished ]
-                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.values finishedModel.players False False ]
+                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False False ]
                                         , button [ onClick CountValues ] [ text "Count" ]
                                         ]
 
                                 ShowCountedValues ->
                                     div []
-                                        [ div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.values finishedModel.players False True ]
+                                        [ div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
                                         ]
 
                                 ShowResults ->
                                     div []
-                                        [ div [] [ highscore finishedModel.players finishedModel.values ]
-                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.values finishedModel.players False True ]
+                                        [ div [] [ highscore finishedModel.game.players finishedModel.game.values ]
+                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
                                         ]
                     in
                     div
@@ -667,6 +737,31 @@ remoteUsersUpdated usersJson =
             NoOp
 
 
+gameCreated : Json.Decode.Value -> Msg
+gameCreated gameJson =
+    let
+        _ =
+            Debug.log "gameJson" gameJson
+
+        gameMaybe =
+            Json.Decode.decodeValue gameDecoder gameJson
+    in
+    case gameMaybe of
+        Ok dbGame ->
+            let
+                _ =
+                    Debug.log "dbGame" dbGame
+            in
+            GameReceived dbGame
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "Error in mapWorkerUpdated:" err
+            in
+            NoOp
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
@@ -682,7 +777,10 @@ subscriptions model =
             Sub.none
 
         PreGame preGame ->
-            remoteUsers remoteUsersUpdated
+            Sub.batch
+                [ remoteUsers remoteUsersUpdated
+                , gameReceived gameCreated
+                ]
 
 
 

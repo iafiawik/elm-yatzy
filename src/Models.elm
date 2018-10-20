@@ -1,9 +1,10 @@
-module Models exposing (GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
-import Model.Game exposing (Game)
+import Model.Game exposing (DbGame, Game)
+import Model.GameState exposing (GameState)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
 import Model.Value exposing (Value)
@@ -15,6 +16,7 @@ type Msg
     = AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
+    | GameReceived DbGame
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -42,23 +44,31 @@ type Msg
 
 type Model
     = PreGame GameSetup
-    | Playing Game
+    | Playing GamePlaying
     | PostGame GameResult
 
 
 type alias GameSetup =
     { users : List User
     , currentNewPlayerName : String
-    , players : List Player
     , state : PreGameState
+    , error : Maybe Error
+    , game : Game
+    }
+
+
+type alias GamePlaying =
+    { game : Game
+    , boxes : List Box
+    , state : GameState
+    , currentValue : Int
     , error : Maybe Error
     }
 
 
 type alias GameResult =
-    { players : List Player
+    { game : Game
     , boxes : List Box
-    , values : List Value
     , state : GameResultState
     , countedPlayers : List Player
     , countedValues : List Value

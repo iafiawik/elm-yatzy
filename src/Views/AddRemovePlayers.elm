@@ -28,12 +28,12 @@ addRemovePlayers model =
                     playerButton p
                         []
                 )
-                model.players
+                model.game.players
 
         availableUsers =
             List.filter
                 (\u ->
-                    if find (\p -> p.user.id == u.id) model.players == Nothing then
+                    if find (\p -> p.user.id == u.id) model.game.players == Nothing then
                         True
 
                     else
@@ -63,6 +63,6 @@ addRemovePlayers model =
                 ]
             , h3 [] [ text "Spelare i denna omgång" ]
             , div [ class "add-players-dialog-player-buttons" ] playerButtons
-            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.players > 0 ) ], disabled (List.length model.players == 0), onClick PlayersAdded ] [ text "Start" ]
+            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.game.players > 0 ) ], disabled (List.length model.game.players == 0), onClick PlayersAdded ] [ text "Start" ]
             ]
         ]

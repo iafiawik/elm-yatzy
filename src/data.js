@@ -48,6 +48,18 @@ const getUsers = onUsersChange => {
   });
 };
 
+const getGames = onGameChange => {
+  db.collection("games").onSnapshot(function(snapshot) {
+    var games = snapshot.docs.map(game => {
+      return { id: game.id, ...game.data() };
+    });
+
+    onGameChange && onGameChange(game);
+
+    console.log("game", game);
+  });
+};
+
 const createUser = name => {
   db
     .collection("users")
@@ -63,7 +75,60 @@ const createUser = name => {
     });
 };
 
+const createGame = users => {
+  function id() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    for (var i = 0; i < 4; i++)
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text.toUpperCase();
+  }
+  var gameId = id();
+
+  return new Promise(function(resolve, reject) {
+    db
+      .collection("games")
+      .add({
+        users: users,
+        dateCreated: Date.now(),
+        finished: false,
+        code: gameId
+      })
+      .then(function(game) {
+        console.log("Game created written with ID: ", game);
+        // resolve({ id: game.id, ...game.data() });
+
+        var docRef = db.collection("games").doc(game.id);
+
+        docRef
+          .get()
+          .then(function(doc) {
+            if (doc.exists) {
+              resolve({ id: doc.id, ...doc.data() });
+              console.log("Document data:", doc.data());
+            } else {
+              // doc.data() will be undefined in this case
+              console.log("No such document!");
+              reject("No such document!");
+            }
+          })
+          .catch(function(error) {
+            console.log("Error getting document:", error);
+            reject(error);
+          });
+      })
+      .catch(function(error) {
+        console.error("Error adding document: ", error);
+        reject(error);
+      });
+  });
+};
+
 export default {
   createUser,
-  getUsers: getUsers
+  getUsers,
+  createGame,
+  getGames
 };

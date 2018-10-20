@@ -1,6 +1,6 @@
-module Model.Game exposing (Game, gameDecoder, gamesDecoder)
+module Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gamesDecoder)
 
-import Json.Decode exposing (Decoder, field, int, list, map3, map4, string)
+import Json.Decode exposing (Decoder, field, int, list, map2, map3, map4, string)
 import Json.Encode as E
 import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
@@ -20,28 +20,37 @@ gameDecoder =
         _ =
             Debug.log "userDecoder" ""
     in
-    map4 DbGame
+    map3 DbGame
         (field "id" string)
-        (field "users" (list string))
-        (field "values" valuesDecoder)
-        (field "dateStarted" string)
+        (field "code" string)
+        (field "users" (Json.Decode.list string))
+
+
+encodeGame : Game -> E.Value
+encodeGame game =
+    let
+        users =
+            List.map (\p -> p.user.id) game.players
+    in
+    E.object
+        [ ( "id", E.string game.id )
+        , ( "code", E.string game.code )
+        , ( "users", E.list E.string users )
+        ]
 
 
 type alias DbGame =
     { id : String
+    , code : String
     , users : List String
-    , values : List DbValue
-    , dateStarted : String
     }
 
 
 type alias Game =
-    { players : List Player
-    , boxes : List Box
+    { id : String
+    , code : String
+    , players : List Player
     , values : List Value
-    , state : GameState
-    , currentValue : Int
-    , error : Maybe Error
     }
 
 
