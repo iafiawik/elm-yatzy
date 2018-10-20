@@ -1,6 +1,32 @@
 @import "../colors";
 
+.add-players-dialog h1 {
+  margin: 0px;
+}
+.add-players-dialog h2 {
+  font-size: 20px;
+  margin: 0px;
+  margin-bottom: 20px;
+}
+
+.add-players-dialog h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.add-players-dialog.dialog-content {
+  padding: 20px 20px 30px 20px;
+  height: 800px;
+}
+
 .add-players-dialog-player-buttons {
+  border: 2px solid $primary-color;
+  padding: 0px 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 300px;
+  margin-bottom: 20px;
 }
 
 .add-players-dialog-player-button {
@@ -9,24 +35,94 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 10px 10px 20px;
-  font-size: 20px;
-  margin: 10px 0px;
+  padding: 7px 8px 7px 10px;
+  font-size: 14px;
+  margin: 5px 0px;
   font-weight: bold;
   display: block;
   transition: all 0.3s linear;
   position: relative;
+  border: 2px solid $primary-color;
+
+  &:hover {
+    background: white;
+    color: $primary-color;
+  }
 }
 
 .add-players-dialog-player-button-delete {
   color: $primary-color;
-  width: 25px;
-  height: 25px;
-  margin-left: 20px;
+  text-align: center;
+  margin-left: 10px;
   background: white;
 }
 
 .add-players-dialog-player-button-delete:hover {
   background: $primary-color;
   color: white;
+}
+
+.add-players-dialog-user-buttons {
+  border: 10px solid $primary-color;
+  background: $primary-color;
+  // padding: 0px 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 200px;
+
+  .add-players-dialog-user-button {
+    display: block;
+    padding: 7px 8px 7px 10px;
+    margin: 0px 0px 5px 0px;
+    border: 2px solid white;
+    transition: all 0.3s linear;
+    font-weight: bold;
+    font-size: 14px;
+    background: $primary-color;
+    color: white;
+
+    &:hover {
+      color: $primary-color;
+      background: white;
+    }
+
+    .add-players-dialog-user-button-add {
+      font-weight: bold;
+      border-radius: 100%;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 10px;
+      background: white;
+      color: $primary-color;
+    }
+  }
+}
+
+.add-players-dialog-add-new-user {
+  background: $primary-color;
+  padding: 10px;
+  text-align: left;
+  display: flex;
+  border-top: 2px solid white;
+
+  input {
+    border: 2px solid white;
+    width: 80%;
+    margin-right: 10px;
+    padding: 10px;
+    font-family: inherit;
+  }
+
+  button {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.add-players-dialog-start-button:not(.enabled) {
+  opacity: 0.2;
+  cursor: default;
 }

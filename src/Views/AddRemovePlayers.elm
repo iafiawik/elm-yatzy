@@ -10,12 +10,12 @@ import Models exposing (GameSetup, Model(..), Msg(..), Player)
 
 playerButton : Player -> List (Html Msg) -> Html Msg
 playerButton player content =
-    button [ class "add-players-dialog-player-button" ] [ span [] [ text player.user.name ], button [ onClick (RemovePlayer player), class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
+    button [ onClick (RemovePlayer player), class "add-players-dialog-player-button" ] [ span [] [ text (String.fromInt (player.order + 1) ++ ". ") ], span [] [ text player.user.name ], button [ class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
 
 
 userButton : User -> List (Html Msg) -> Html Msg
 userButton user content =
-    button [ class "add-players-dialog-user-button" ] [ span [] [ text user.name ], button [ onClick (AddPlayer user), class "add-players-dialog-player-button-delete" ] [ text "Add" ], div [] ([] ++ content) ]
+    button [ onClick (AddPlayer user), class "add-players-dialog-user-button" ] [ span [] [ text user.name ], button [ class "add-players-dialog-user-button-add" ] [ text "+" ], div [] ([] ++ content) ]
 
 
 addRemovePlayers : GameSetup -> Html Msg
@@ -46,18 +46,22 @@ addRemovePlayers model =
                     userButton u
                         []
                 )
-                availableUsers
+                (List.sortBy
+                    .name
+                    availableUsers
+                )
     in
     div [ class "add-players-dialog-wrapper dialog-wrapper" ]
         [ div [ class "add-players-dialog-background dialog-background animated fadeIn" ] []
         , div [ class "add-players-dialog dialog-content a animated jackInTheBox" ]
-            [ div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Add players" ] ]
-            , div [ class "add-players-dialog-player-buttons" ] playerButtons
+            [ div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Lägg till spelare" ] ]
             , div [ class "add-players-dialog-user-buttons" ] userButtons
-            , div []
-                [ input [ class "add-players-dialog-input-field", type_ "text", onInput NewPlayerInputValueChange, value model.currentNewPlayerName ] []
-                , button [ onClick AddUser ] [ text "Add new player" ]
+            , div [ class "add-players-dialog-add-new-user" ]
+                [ input [ class "add-players-dialog-input-field", type_ "text", onInput NewPlayerInputValueChange, value model.currentNewPlayerName, placeholder "Ny spelare..." ] []
+                , button [ onClick AddUser ] [ text "Skapa" ]
                 ]
-            , button [ class "large-button  ", onClick Start ] [ text "Start" ]
+            , h3 [] [ text "Spelare i denna omgång" ]
+            , div [ class "add-players-dialog-player-buttons" ] playerButtons
+            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.players > 0 ) ], disabled (List.length model.players == 0), onClick Start ] [ text "Start" ]
             ]
         ]
