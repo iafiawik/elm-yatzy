@@ -1,4 +1,4 @@
-module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game, GameResult, GameResultState(..), GameSetup, GameState(..), Model(..), Msg(..), Player, PlayerAndNumberOfValues, Value)
+module Models exposing (Box, BoxCategory(..), BoxType(..), Error(..), Game, GameResult, GameResultState(..), GameSetup, GameState(..), Model(..), Msg(..), Player, PlayerAndNumberOfValues, PreGameState(..), Value)
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.User exposing (User)
@@ -7,13 +7,14 @@ import Uuid
 
 
 type Msg
-    = Start
-    | AddRemovePlayers
+    = AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
+    | PlayersAdded
+    | Start
     | AddValue
     | RemoveValue
     | ShowAddValue Box
@@ -50,6 +51,7 @@ type alias GameSetup =
     { users : List User
     , currentNewPlayerName : String
     , players : List Player
+    , state : PreGameState
     , error : Maybe Error
     }
 
@@ -79,6 +81,11 @@ type GameResultState
     = GameFinished
     | ShowCountedValues
     | ShowResults
+
+
+type PreGameState
+    = ShowAddRemovePlayers
+    | ShowGameInfo
 
 
 type GameState

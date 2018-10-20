@@ -62,6 +62,6 @@ addRemovePlayers model =
                 ]
             , h3 [] [ text "Spelare i denna omgång" ]
             , div [ class "add-players-dialog-player-buttons" ] playerButtons
-            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.players > 0 ) ], disabled (List.length model.players == 0), onClick Start ] [ text "Start" ]
+            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.players > 0 ) ], disabled (List.length model.players == 0), onClick PlayersAdded ] [ text "Start" ]
             ]
         ]

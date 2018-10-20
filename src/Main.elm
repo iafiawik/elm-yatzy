@@ -18,6 +18,7 @@ import Time
 import Uuid
 import Views.AddRemovePlayers exposing (addRemovePlayers)
 import Views.GameFinished exposing (gameFinished)
+import Views.GameInfo exposing (gameInfo)
 import Views.Highscore exposing (highscore)
 import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
@@ -65,6 +66,7 @@ init flags =
                 , players = []
                 , currentNewPlayerName = ""
                 , error = Just (UnableToDecodeUsers (errorToHtml err))
+                , state = ShowAddRemovePlayers
                 }
             , Cmd.none
             )
@@ -107,6 +109,7 @@ init flags =
                 , players = []
                 , error = Nothing
                 , currentNewPlayerName = ""
+                , state = ShowAddRemovePlayers
                 }
             , Cmd.none
             )
@@ -280,6 +283,9 @@ updatePreGame msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        PlayersAdded ->
+            ( { model | state = ShowGameInfo }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -498,6 +504,7 @@ update msg model =
                     , currentNewPlayerName = ""
                     , players = []
                     , error = Nothing
+                    , state = ShowAddRemovePlayers
                     }
                 , Cmd.none
                 )
@@ -539,7 +546,12 @@ view model =
                         Nothing ->
                             div [] []
             in
-            div [] [ lazy addRemovePlayers preGame, notificationHtml ]
+            case preGame.state of
+                ShowAddRemovePlayers ->
+                    div [] [ lazy addRemovePlayers preGame, notificationHtml ]
+
+                ShowGameInfo ->
+                    div [] [ gameInfo "" ]
 
         Playing playingModel ->
             let
