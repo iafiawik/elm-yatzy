@@ -106,39 +106,7 @@ init flags =
             , Cmd.none
             )
 
-        -- ( { game = Initializing
-        --   , users = []
-        --   , values = []
-        --   , players = []
-        --   , boxes = []
-        --   , countedPlayers = []
-        --   , countedValues = []
-        --   , currentValue = -1
-        --   , currentNewPlayerName = ""
-        --   , currentSeed = newSeed
-        --   , currentUuid = Just newUuid
-        --   , error = Just (UnableToDecodeUsers (errorToHtml err))
-        --   }
-        -- , Cmd.none
-        -- )
         Ok users ->
-            -- let
-            --     boxes =
-            --         getBoxes
-            -- valueBoxes =
-            --     List.filter (\b -> b.id_ /= "yatzy" && b.category /= None) boxes
-            -- sophie =
-            --     { id_ = getUniqueId currentSeed ++ "_sophie", order = 0, name = "Sophie" }
-            --
-            -- hugo =
-            --     { id_ = getUniqueId currentSeed ++ "_hugo", order = 1, name = "Hugo" }
-            --
-            -- phoenix =
-            --     { id_ = getUniqueId currentSeed ++ "_phoenix", order = 0, name = "Phoenix" }
-            --
-            -- louise =
-            --     { id_ = getUniqueId currentSeed ++ "_louise", order = 1, name = "Louise" }
-            -- in
             ( PreGame
                 { users = users
                 , game =
@@ -156,91 +124,9 @@ init flags =
             )
 
 
-
---
--- ( { boxes = boxes
---   , players =
---         []
---   , values =
---         List.concat
---             [ List.map
---                 (\b ->
---                     { box = b
---                     , player = sophie
---                     , value = getAt 3 (getAcceptedValues b) |> Maybe.withDefault 0
---                     , counted = False
---                     }
---                 )
---                 valueBoxes
---             , List.map
---                 (\b ->
---                     { box = b
---                     , player = hugo
---                     , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
---                     , counted = False
---                     }
---                 )
---                 valueBoxes
---             , List.map
---                 (\b ->
---                     { box = b
---                     , player = phoenix
---                     , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
---                     , counted = False
---                     }
---                 )
---                 valueBoxes
---             , List.map
---                 (\b ->
---                     { box = b
---                     , player = louise
---                     , value = getAt 2 (getAcceptedValues b) |> Maybe.withDefault 0
---                     , counted = False
---                     }
---                 )
---                 valueBoxes
---             ]
---   , game = ShowAddRemovePlayers
---   , users = users
---   , countedPlayers = []
---   , countedValues = []
---   , currentValue = -1
---   , currentNewPlayerName = ""
---   , currentSeed = newSeed
---   , currentUuid = Just newUuid
---   , error = Nothing
---   }
--- , Cmd.none
--- )
-
-
 stateToString : a -> String
 stateToString state =
     ""
-
-
-
--- case state of
---     Initializing ->
---         "initializing"
---
---     ShowAddRemovePlayers ->
---         "add-players"
---
---     Idle ->
---         "idle"
---
---     Input box isEdit ->
---         "input"
---
---     Finished ->
---         "finished"
---
---     ShowCountedValues ->
---         "show-counted-values"
---
---     ShowResults ->
---         "show-results"
 
 
 errorToString : Error -> String
@@ -455,23 +341,6 @@ updateGame msg model =
 
                                     Nothing ->
                                         ( model, Cmd.none )
-                                -- values =
-                                --     List.map
-                                --         (\item ->
-                                --             if (\v -> v.box == box && v.player == currentPlayer) item then
-                                --                 { box = box
-                                --                 , player = currentPlayer
-                                --                 , value = model.currentValue
-                                --                 , counted = False
-                                --                 }
-                                --
-                                --             else
-                                --                 item
-                                --         )
-                                --         model.game.values
-                                --
-                                -- currentGame =
-                                --     model.game
 
                             else
                                 let
@@ -482,17 +351,6 @@ updateGame msg model =
                                         , value = model.currentValue
                                         , counted = False
                                         }
-
-                                    -- newValues =
-                                    --     newValue :: model.game.values
-                                    --
-                                    -- currentGame =
-                                    --     model.game
-                                    --
-                                    -- encodedValue =
-                                    --     encodeValue newValue
-                                    -- _ =
-                                    --     Debug.log "encodedValue; " (E.string "Name")
                                 in
                                 ( { model
                                     | state = Idle
@@ -916,19 +774,6 @@ subscriptions model =
 
 
 
--- Playing playing ->
---     Sub.batch
---         [ usersReceived remoteUsersUpdated
---         , gameReceived gameCreated
---         , valuesReceived remoteValuesUpdated
---         ]
---
--- PreGame preGame ->
---     Sub.batch
---         [ usersReceived remoteUsersUpdated
---         , gameReceived gameCreated
---         , valuesReceived remoteValuesUpdated
---         ]
 ---- PROGRAM ----
 
 
