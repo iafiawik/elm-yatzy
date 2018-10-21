@@ -7,7 +7,7 @@ import Model.Game exposing (DbGame, Game)
 import Model.GameState exposing (GameState)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
-import Model.Value exposing (Value)
+import Model.Value exposing (DbValue, Value)
 import Time
 import Uuid
 
@@ -16,6 +16,7 @@ type Msg
     = AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
+    | RemoteValuesReceived (List DbValue)
     | GameReceived DbGame
     | AddPlayer User
     | RemovePlayer Player

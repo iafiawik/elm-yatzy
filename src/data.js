@@ -126,9 +126,84 @@ const createGame = users => {
   });
 };
 
+const createValue = value => {
+  db
+    .collection("values")
+    .add({
+      boxId: value.boxId,
+      userId: value.userId,
+      value: value.value
+    })
+    .then(function(docRef) {
+      console.log("createValue(): Document written with ID: ", docRef.id);
+    })
+    .catch(function(error) {
+      console.error("Error adding document: ", error);
+    });
+};
+
+const editValue = value => {
+  var docRef = db.collection("values").doc(value.id);
+
+  docRef
+    .set({
+      boxId: value.boxId,
+      userId: value.userId,
+      value: value.value
+    })
+    .then(function(docRef) {
+      console.log(
+        "editValue(): Value with ID " +
+          docRef.id +
+          " has been updated with value " +
+          value.value
+      );
+    })
+    .catch(function(error) {
+      console.error(
+        "Unable to update value with ID " + value.id + ". Error : ",
+        error
+      );
+    });
+};
+const deleteValue = value => {
+  var docRef = db.collection("values").doc(value.id);
+
+  docRef
+    .delete()
+    .then(function(docRef) {
+      console.log(
+        "deleteValue(): Value with ID " + docRef.id + " has been deleted."
+      );
+    })
+    .catch(function(error) {
+      console.error(
+        "Unable to delete value with ID " + value.id + ". Error : ",
+        error
+      );
+    });
+};
+
+const getValues = onValuesChange => {
+  db.collection("values").onSnapshot(function(snapshot) {
+    var values = snapshot.docs.map(value => {
+      return { id: value.id, ...value.data() };
+    });
+
+    onValuesChange && onValuesChange(values);
+
+    console.log("values", values);
+    // return users;
+  });
+};
+
 export default {
   createUser,
   getUsers,
   createGame,
-  getGames
+  getGames,
+  createValue,
+  editValue,
+  deleteValue,
+  getValues
 };
