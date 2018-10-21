@@ -26,9 +26,7 @@ console.log("index.js: initElm");
 var app = Elm.Main.init({
   node: document.getElementById("root"),
   flags: {
-    random: Math.floor(Math.random() * 0x0fffffff),
-    remoteUsers: [],
-    remoteGames: []
+    random: Math.floor(Math.random() * 0x0fffffff)
   }
 });
 

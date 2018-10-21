@@ -70,58 +70,26 @@ port valuesReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 type alias Flags =
-    { remoteUsers : Json.Decode.Value
-    , random : Int
-    }
+    {}
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    let
-        usersMaybe =
-            Json.Decode.decodeValue usersDecoder flags.remoteUsers
-
-        _ =
-            Debug.log "flags.users" flags
-    in
-    case usersMaybe of
-        Err err ->
-            let
-                _ =
-                    Debug.log "" (errorToHtml err)
-            in
-            ( PreGame
-                { users = []
-                , game =
-                    { id = ""
-                    , code = ""
-                    , players = []
-                    , values = []
-                    , finished = False
-                    }
-                , currentNewPlayerName = ""
-                , error = Just (UnableToDecodeUsers (errorToHtml err))
-                , state = ShowAddRemovePlayers
-                }
-            , Cmd.none
-            )
-
-        Ok users ->
-            ( PreGame
-                { users = users
-                , game =
-                    { id = ""
-                    , code = ""
-                    , players = []
-                    , values = []
-                    , finished = False
-                    }
-                , error = Nothing
-                , currentNewPlayerName = ""
-                , state = ShowAddRemovePlayers
-                }
-            , Cmd.none
-            )
+    ( PreGame
+        { users = []
+        , game =
+            { id = ""
+            , code = ""
+            , players = []
+            , values = []
+            , finished = False
+            }
+        , error = Nothing
+        , currentNewPlayerName = ""
+        , state = ShowAddRemovePlayers
+        }
+    , Cmd.none
+    )
 
 
 stateToString : a -> String
