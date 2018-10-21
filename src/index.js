@@ -21,7 +21,7 @@ import "./styles/app.scss";
 //   initElm(values[0]);
 // });
 
-console.log("initElm");
+console.log("index.js: initElm");
 
 var app = Elm.Main.init({
   node: document.getElementById("root"),
@@ -33,13 +33,8 @@ var app = Elm.Main.init({
 });
 
 Data.getUsers(users => {
-  console.log("app.ports", app.ports);
+  console.log("index.js: Data.getUsers", users);
   app.ports.usersReceived.send(users);
-});
-
-Data.getValues(values => {
-  console.log("app.ports", app.ports);
-  app.ports.valuesReceived.send(values);
 });
 
 // Data.getGames(games => {
@@ -48,7 +43,7 @@ Data.getValues(values => {
 // });
 
 app.ports.createUser.subscribe(function(name) {
-  console.log("Create user " + name);
+  console.log("index.js: Create user " + name);
   Data.createUser(name);
 });
 
@@ -56,22 +51,34 @@ var gameId = "";
 
 app.ports.createGame.subscribe(function(game) {
   Data.createGame(game.users).then(function(dbGame) {
+    gameId = dbGame.id;
+
+    Data.getValues(gameId, values => {
+      console.log("index.js: Data.getValues", values);
+      app.ports.valuesReceived.send(values);
+    });
+
     app.ports.gameReceived.send(dbGame);
   });
 });
 
+app.ports.editGame.subscribe(function(game) {
+  alert("index.js: Edit game " + JSON.stringify(game));
+  Data.editGame(game, gameId);
+});
+
 app.ports.createValue.subscribe(function(value) {
-  alert("Create value " + JSON.stringify(value));
-  Data.createValue(value);
+  console.log("index.js: Create value " + JSON.stringify(value));
+  Data.createValue(value, gameId);
 });
 
 app.ports.editValue.subscribe(function(value) {
-  alert("Edit value " + JSON.stringify(value));
-  Data.editValue(value);
+  console.log("Edit value " + JSON.stringify(value));
+  Data.editValue(value, gameId);
 });
 
 app.ports.deleteValue.subscribe(function(value) {
-  alert("Delete value " + JSON.stringify(value));
+  console.log("index.js: Delete value " + JSON.stringify(value));
   Data.deleteValue(value);
 });
 

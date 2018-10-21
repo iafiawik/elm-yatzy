@@ -19,7 +19,7 @@ import Model.Game exposing (Game, encodeGame, gameDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
-import Model.Value exposing (Value, encodeValue, valuesDecoder)
+import Model.Value exposing (DbValue, Value, encodeValue, valuesDecoder)
 import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
@@ -45,6 +45,9 @@ port createGame : E.Value -> Cmd msg
 
 
 port createValue : E.Value -> Cmd msg
+
+
+port editGame : E.Value -> Cmd msg
 
 
 port editValue : E.Value -> Cmd msg
@@ -94,6 +97,7 @@ init flags =
                     , code = ""
                     , players = []
                     , values = []
+                    , finished = False
                     }
                 , currentNewPlayerName = ""
                 , error = Just (UnableToDecodeUsers (errorToHtml err))
@@ -142,6 +146,7 @@ init flags =
                     , code = ""
                     , players = []
                     , values = []
+                    , finished = False
                     }
                 , error = Nothing
                 , currentNewPlayerName = ""
@@ -351,6 +356,7 @@ updatePreGame msg model =
                     , code = ""
                     , players = model.game.players
                     , values = []
+                    , finished = False
                     }
             in
             ( { model | state = ShowGameInfo }, createGame (encodeGame game) )
@@ -359,14 +365,37 @@ updatePreGame msg model =
             ( model, Cmd.none )
 
 
+getPlayerByUserId : String -> List Player -> Player
+getPlayerByUserId id players =
+    Maybe.withDefault { user = { name = "", userName = "", id = "" }, order = 0 } (find (\p -> p.user.id == id) players)
+
+
 getBoxById : String -> Box
 getBoxById id =
     Maybe.withDefault { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id_ == id) getBoxes)
 
 
-getPlayerByUserId : String -> List Player -> Player
-getPlayerByUserId id players =
-    Maybe.withDefault { user = { name = "", userName = "", id = "" }, order = 0 } (find (\p -> p.user.id == id) players)
+fromDbValueToValue : DbValue -> List Player -> Value
+fromDbValueToValue dbValue players =
+    let
+        player =
+            getPlayerByUserId dbValue.userId players
+    in
+    { id = dbValue.id
+    , box = getBoxById dbValue.boxId
+    , player = player
+    , value = dbValue.value
+    , counted = False
+    }
+
+
+updateValues : List DbValue -> List Player -> List Value
+updateValues dbValues players =
+    List.map
+        (\v ->
+            fromDbValueToValue v players
+        )
+        dbValues
 
 
 updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
@@ -386,20 +415,11 @@ updateGame msg model =
                         currentGame =
                             model.game
 
+                        values =
+                            updateValues dbValues model.game.players
+
                         _ =
                             Debug.log "RemoteValuesReceived: " dbValues
-
-                        values =
-                            List.map
-                                (\v ->
-                                    { id = v.id
-                                    , box = getBoxById v.boxId
-                                    , player = getPlayerByUserId v.userId model.game.players
-                                    , value = v.value
-                                    , counted = False
-                                    }
-                                )
-                                dbValues
                     in
                     ( { model
                         | game =
@@ -606,6 +626,7 @@ update msg model =
                         , code = preGame.game.code
                         , players = preGame.game.players
                         , values = []
+                        , finished = False
                         }
                     , boxes = getBoxes
                     , state = Idle
@@ -629,20 +650,24 @@ update msg model =
             case Tuple.first gameModel of
                 Playing playingModel ->
                     if areAllUsersFinished playingModel.game.values playingModel.game.players playingModel.boxes then
-                        ( PostGame
-                            { game =
+                        let
+                            currentGame =
                                 { id = ""
-                                , code = ""
+                                , code = playingModel.game.code
                                 , players = playingModel.game.players
                                 , values = playingModel.game.values
+                                , finished = True
                                 }
+                        in
+                        ( PostGame
+                            { game = currentGame
                             , boxes = playingModel.boxes
                             , state = GameFinished
                             , countedPlayers = []
                             , countedValues = []
                             , error = Nothing
                             }
-                        , Tuple.second gameModel
+                        , Cmd.batch [ Tuple.second gameModel, editGame (encodeGame currentGame) ]
                         )
 
                     else
@@ -665,6 +690,7 @@ update msg model =
                         , code = ""
                         , players = postGame.game.players
                         , values = []
+                        , finished = False
                         }
                     , error = Nothing
                     , state = ShowAddRemovePlayers
@@ -866,28 +892,43 @@ subscriptions model =
     case model of
         PostGame postGame ->
             if postGame.state == ShowCountedValues then
-                Time.every 100
-                    CountValuesTick
+                Sub.batch
+                    [ Time.every 100
+                        CountValuesTick
+                    , usersReceived remoteUsersUpdated
+                    , gameReceived gameCreated
+                    , valuesReceived remoteValuesUpdated
+                    ]
 
             else
-                Sub.none
+                Sub.batch
+                    [ usersReceived remoteUsersUpdated
+                    , gameReceived gameCreated
+                    , valuesReceived remoteValuesUpdated
+                    ]
 
-        Playing playing ->
+        _ ->
             Sub.batch
                 [ usersReceived remoteUsersUpdated
                 , gameReceived gameCreated
                 , valuesReceived remoteValuesUpdated
                 ]
 
-        PreGame preGame ->
-            Sub.batch
-                [ usersReceived remoteUsersUpdated
-                , gameReceived gameCreated
-                , valuesReceived remoteValuesUpdated
-                ]
 
 
-
+-- Playing playing ->
+--     Sub.batch
+--         [ usersReceived remoteUsersUpdated
+--         , gameReceived gameCreated
+--         , valuesReceived remoteValuesUpdated
+--         ]
+--
+-- PreGame preGame ->
+--     Sub.batch
+--         [ usersReceived remoteUsersUpdated
+--         , gameReceived gameCreated
+--         , valuesReceived remoteValuesUpdated
+--         ]
 ---- PROGRAM ----
 
 

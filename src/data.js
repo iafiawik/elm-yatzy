@@ -126,10 +126,33 @@ const createGame = users => {
   });
 };
 
-const createValue = value => {
+const editGame = (game, gameId) => {
+  debugger;
+  return new Promise(function(resolve, reject) {
+    var docRef = db
+      .collection("games")
+      .doc(gameId)
+      .update({
+        finished: game.finished
+      })
+      .then(function(updatedDoc) {
+        console.log("editGame(): Game with ID " + gameId + " has been.");
+      })
+      .catch(function(error) {
+        console.log(
+          "editGame(): Unable to update game with ID " + gameId + ". Error: ",
+          error
+        );
+        reject(error);
+      });
+  });
+};
+
+const createValue = (value, gameId) => {
   db
     .collection("values")
     .add({
+      gameId: gameId,
       boxId: value.boxId,
       userId: value.userId,
       value: value.value
@@ -142,19 +165,20 @@ const createValue = value => {
     });
 };
 
-const editValue = value => {
+const editValue = (value, gameId) => {
   var docRef = db.collection("values").doc(value.id);
 
   docRef
     .set({
+      gameId: gameId,
       boxId: value.boxId,
       userId: value.userId,
       value: value.value
     })
-    .then(function(docRef) {
+    .then(function() {
       console.log(
         "editValue(): Value with ID " +
-          docRef.id +
+          value.id +
           " has been updated with value " +
           value.value
       );
@@ -166,6 +190,7 @@ const editValue = value => {
       );
     });
 };
+
 const deleteValue = value => {
   var docRef = db.collection("values").doc(value.id);
 
@@ -173,7 +198,7 @@ const deleteValue = value => {
     .delete()
     .then(function(docRef) {
       console.log(
-        "deleteValue(): Value with ID " + docRef.id + " has been deleted."
+        "deleteValue(): Value with ID " + value.id + " has been deleted."
       );
     })
     .catch(function(error) {
@@ -184,23 +209,27 @@ const deleteValue = value => {
     });
 };
 
-const getValues = onValuesChange => {
-  db.collection("values").onSnapshot(function(snapshot) {
-    var values = snapshot.docs.map(value => {
-      return { id: value.id, ...value.data() };
+const getValues = (gameId, onValuesChange) => {
+  db
+    .collection("values")
+    .where("gameId", "==", gameId)
+    .onSnapshot(function(snapshot) {
+      var values = snapshot.docs.map(value => {
+        return { id: value.id, ...value.data() };
+      });
+
+      onValuesChange && onValuesChange(values);
+
+      console.log("data: , getValues(), values:", values);
+      // return users;
     });
-
-    onValuesChange && onValuesChange(values);
-
-    console.log("values", values);
-    // return users;
-  });
 };
 
 export default {
   createUser,
   getUsers,
   createGame,
+  editGame,
   getGames,
   createValue,
   editValue,
