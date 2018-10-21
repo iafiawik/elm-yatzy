@@ -1,4 +1,4 @@
-module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -13,7 +13,9 @@ import Uuid
 
 
 type Msg
-    = AddRemovePlayers
+    = SelectGroup
+    | SelectIndividual
+    | AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
     | RemoteValuesReceived (List DbValue)
@@ -44,6 +46,17 @@ type Msg
 
 
 type Model
+    = SelectMode
+    | Individual IndividualModel
+    | Group GroupModel
+
+
+type IndividualModel
+    = EnterGameCode
+    | IndividualPlaying GamePlaying
+
+
+type GroupModel
     = PreGame GameSetup
     | Playing GamePlaying
     | PostGame GameResult

@@ -20,7 +20,7 @@ import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
 import Model.Value exposing (DbValue, Value, encodeValue, valuesDecoder)
-import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
 import Uuid
@@ -75,21 +75,27 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( PreGame
-        { users = []
-        , game =
-            { id = ""
-            , code = ""
-            , players = []
-            , values = []
-            , finished = False
-            }
-        , error = Nothing
-        , currentNewPlayerName = ""
-        , state = ShowAddRemovePlayers
-        }
-    , Cmd.none
-    )
+    ( SelectMode, Cmd.none )
+
+
+
+-- ( Group
+--     (PreGame
+--         { users = []
+--         , game =
+--             { id = ""
+--             , code = ""
+--             , players = []
+--             , values = []
+--             , finished = False
+--             }
+--         , error = Nothing
+--         , currentNewPlayerName = ""
+--         , state = ShowAddRemovePlayers
+--         }
+--     )
+-- , Cmd.none
+-- )
 
 
 stateToString : a -> String
@@ -444,88 +450,137 @@ updatePostGame msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model of
-        PreGame preGame ->
-            if msg == Start then
-                ( Playing
-                    { game =
-                        { id = preGame.game.id
-                        , code = preGame.game.code
-                        , players = preGame.game.players
-                        , values = []
-                        , finished = False
-                        }
-                    , boxes = getBoxes
-                    , state = Idle
-                    , currentValue = 0
-                    , error = Nothing
-                    }
-                , Cmd.none
-                )
-
-            else if msg == HideNotification then
-                ( PreGame { preGame | error = Nothing }, Cmd.none )
-
-            else
-                Tuple.mapFirst PreGame <| updatePreGame msg preGame
-
-        Playing gamePlaying ->
-            let
-                gameModel =
-                    Tuple.mapFirst Playing <| updateGame msg gamePlaying
-            in
-            case Tuple.first gameModel of
-                Playing playingModel ->
-                    if areAllUsersFinished playingModel.game.values playingModel.game.players playingModel.boxes then
-                        let
-                            currentGame =
-                                { id = ""
-                                , code = playingModel.game.code
-                                , players = playingModel.game.players
-                                , values = playingModel.game.values
-                                , finished = True
-                                }
-                        in
-                        ( PostGame
-                            { game = currentGame
-                            , boxes = playingModel.boxes
-                            , state = GameFinished
-                            , countedPlayers = []
-                            , countedValues = []
-                            , error = Nothing
-                            }
-                        , Cmd.batch [ Tuple.second gameModel, editGame (encodeGame currentGame) ]
-                        )
-
-                    else
-                        ( Tuple.first gameModel
-                        , Tuple.second gameModel
-                        )
-
-                _ ->
-                    ( model
+        SelectMode ->
+            case msg of
+                SelectIndividual ->
+                    ( Individual
+                        EnterGameCode
                     , Cmd.none
                     )
 
-        PostGame postGame ->
-            if msg == Restart then
-                ( PreGame
-                    { users = []
-                    , currentNewPlayerName = ""
-                    , game =
-                        { id = ""
-                        , code = ""
-                        , players = postGame.game.players
-                        , values = []
-                        , finished = False
-                        }
-                    , error = Nothing
-                    , state = ShowAddRemovePlayers
-                    }
-                , Cmd.none
-                )
+                SelectGroup ->
+                    ( Group
+                        (PreGame
+                            { users = []
+                            , game =
+                                { id = ""
+                                , code = ""
+                                , players = []
+                                , values = []
+                                , finished = False
+                                }
+                            , error = Nothing
+                            , currentNewPlayerName = ""
+                            , state = ShowAddRemovePlayers
+                            }
+                        )
+                    , Cmd.none
+                    )
 
-            else
-                Tuple.mapFirst PostGame <| updatePostGame msg postGame
+                _ ->
+                    ( model, Cmd.none )
+
+        Individual individualModel ->
+            ( model, Cmd.none )
+
+        Group groupModel ->
+            case groupModel of
+                PreGame preGame ->
+                    if msg == Start then
+                        ( Group
+                            (Playing
+                                { game =
+                                    { id = preGame.game.id
+                                    , code = preGame.game.code
+                                    , players = preGame.game.players
+                                    , values = []
+                                    , finished = False
+                                    }
+                                , boxes = getBoxes
+                                , state = Idle
+                                , currentValue = 0
+                                , error = Nothing
+                                }
+                            )
+                        , Cmd.none
+                        )
+
+                    else if msg == HideNotification then
+                        ( Group (PreGame { preGame | error = Nothing }), Cmd.none )
+
+                    else
+                        let
+                            newModel =
+                                Tuple.mapFirst PreGame <| updatePreGame msg preGame
+                        in
+                        ( Group (Tuple.first newModel), Tuple.second newModel )
+
+                Playing gamePlaying ->
+                    let
+                        gameModel =
+                            Tuple.mapFirst Playing <| updateGame msg gamePlaying
+                    in
+                    case Tuple.first gameModel of
+                        Playing playingModel ->
+                            if areAllUsersFinished playingModel.game.values playingModel.game.players playingModel.boxes then
+                                let
+                                    currentGame =
+                                        { id = ""
+                                        , code = playingModel.game.code
+                                        , players = playingModel.game.players
+                                        , values = playingModel.game.values
+                                        , finished = True
+                                        }
+                                in
+                                ( Group
+                                    (PostGame
+                                        { game = currentGame
+                                        , boxes = playingModel.boxes
+                                        , state = GameFinished
+                                        , countedPlayers = []
+                                        , countedValues = []
+                                        , error = Nothing
+                                        }
+                                    )
+                                , Cmd.batch [ Tuple.second gameModel, editGame (encodeGame currentGame) ]
+                                )
+
+                            else
+                                ( Group (Tuple.first gameModel)
+                                , Tuple.second gameModel
+                                )
+
+                        _ ->
+                            ( model
+                            , Cmd.none
+                            )
+
+                PostGame postGame ->
+                    if msg == Restart then
+                        ( Group
+                            (PreGame
+                                { users = []
+                                , currentNewPlayerName = ""
+                                , game =
+                                    { id = ""
+                                    , code = ""
+                                    , players = postGame.game.players
+                                    , values = []
+                                    , finished = False
+                                    }
+                                , error = Nothing
+                                , state = ShowAddRemovePlayers
+                                }
+                            )
+                        , Cmd.none
+                        )
+
+                    else
+                        let
+                            newModel =
+                                Tuple.mapFirst PostGame <| updatePostGame msg postGame
+                        in
+                        ( Group (Tuple.first newModel), Tuple.second newModel )
 
 
 
@@ -551,54 +606,106 @@ viewInput task =
 view : Model -> Html Msg
 view model =
     case model of
-        PreGame preGame ->
-            let
-                notificationHtml =
-                    case preGame.error of
+        SelectMode ->
+            div [] [ div [ onClick SelectIndividual ] [ text "Individual" ], div [ onClick SelectGroup ] [ text "Group" ] ]
+
+        Individual individualModel ->
+            case individualModel of
+                EnterGameCode ->
+                    div [] [ text "EnterGameCode" ]
+
+                IndividualPlaying gamePlayingModel ->
+                    div [] [ text "IndividualPlaying" ]
+
+        Group groupModel ->
+            case groupModel of
+                PreGame preGame ->
+                    let
+                        notificationHtml =
+                            case preGame.error of
+                                Just error ->
+                                    notification (errorToString error)
+
+                                Nothing ->
+                                    div [] []
+                    in
+                    case preGame.state of
+                        ShowAddRemovePlayers ->
+                            div [] [ lazy addRemovePlayers preGame, notificationHtml ]
+
+                        ShowGameInfo ->
+                            div [] [ gameInfo preGame.game ]
+
+                Playing playingModel ->
+                    let
+                        errorMaybe =
+                            playingModel.error
+                    in
+                    case errorMaybe of
                         Just error ->
-                            notification (errorToString error)
+                            div [] [ text (errorToString error) ]
 
                         Nothing ->
-                            div [] []
-            in
-            case preGame.state of
-                ShowAddRemovePlayers ->
-                    div [] [ lazy addRemovePlayers preGame, notificationHtml ]
+                            let
+                                currentPlayerMaybe =
+                                    getCurrentPlayer playingModel.game.values playingModel.game.players
 
-                ShowGameInfo ->
-                    div [] [ gameInfo preGame.game ]
+                                gameState =
+                                    stateToString playingModel.state
+                            in
+                            case currentPlayerMaybe of
+                                Just currentPlayer ->
+                                    let
+                                        content =
+                                            case playingModel.state of
+                                                Idle ->
+                                                    div []
+                                                        [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
+                                                        ]
 
-        Playing playingModel ->
-            let
-                errorMaybe =
-                    playingModel.error
-            in
-            case errorMaybe of
-                Just error ->
-                    div [] [ text (errorToString error) ]
+                                                Input box isEdit ->
+                                                    div []
+                                                        [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
+                                                        , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                        ]
+                                    in
+                                    div
+                                        []
+                                        [ div [ classList [ ( gameState, True ) ] ] [ content ]
+                                        ]
 
-                Nothing ->
+                                Nothing ->
+                                    div [] [ text "No player found" ]
+
+                PostGame finishedModel ->
                     let
                         currentPlayerMaybe =
-                            getCurrentPlayer playingModel.game.values playingModel.game.players
+                            getCurrentPlayer finishedModel.game.values finishedModel.game.players
 
                         gameState =
-                            stateToString playingModel.state
+                            stateToString finishedModel.state
                     in
                     case currentPlayerMaybe of
                         Just currentPlayer ->
                             let
                                 content =
-                                    case playingModel.state of
-                                        Idle ->
+                                    case finishedModel.state of
+                                        GameFinished ->
                                             div []
-                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
+                                                [ div [] [ gameFinished ]
+                                                , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False False ]
+                                                , button [ onClick CountValues ] [ text "Count" ]
                                                 ]
 
-                                        Input box isEdit ->
+                                        ShowCountedValues ->
                                             div []
-                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
-                                                , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                [ div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
+                                                ]
+
+                                        ShowResults ->
+                                            div []
+                                                [ div [] [ highscore finishedModel.game.players finishedModel.game.values ]
+                                                , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
                                                 ]
                             in
                             div
@@ -608,45 +715,6 @@ view model =
 
                         Nothing ->
                             div [] [ text "No player found" ]
-
-        PostGame finishedModel ->
-            let
-                currentPlayerMaybe =
-                    getCurrentPlayer finishedModel.game.values finishedModel.game.players
-
-                gameState =
-                    stateToString finishedModel.state
-            in
-            case currentPlayerMaybe of
-                Just currentPlayer ->
-                    let
-                        content =
-                            case finishedModel.state of
-                                GameFinished ->
-                                    div []
-                                        [ div [] [ gameFinished ]
-                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False False ]
-                                        , button [ onClick CountValues ] [ text "Count" ]
-                                        ]
-
-                                ShowCountedValues ->
-                                    div []
-                                        [ div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
-                                        ]
-
-                                ShowResults ->
-                                    div []
-                                        [ div [] [ highscore finishedModel.game.players finishedModel.game.values ]
-                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
-                                        ]
-                    in
-                    div
-                        []
-                        [ div [ classList [ ( gameState, True ) ] ] [ content ]
-                        ]
-
-                Nothing ->
-                    div [] [ text "No player found" ]
 
 
 remoteUsersUpdated : Json.Decode.Value -> Msg
@@ -716,22 +784,31 @@ remoteValuesUpdated valuesJson =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        PostGame postGame ->
-            if postGame.state == ShowCountedValues then
-                Sub.batch
-                    [ Time.every 100
-                        CountValuesTick
-                    , usersReceived remoteUsersUpdated
-                    , gameReceived gameCreated
-                    , valuesReceived remoteValuesUpdated
-                    ]
+        Group groupModel ->
+            case groupModel of
+                PostGame postGame ->
+                    if postGame.state == ShowCountedValues then
+                        Sub.batch
+                            [ Time.every 100
+                                CountValuesTick
+                            , usersReceived remoteUsersUpdated
+                            , gameReceived gameCreated
+                            , valuesReceived remoteValuesUpdated
+                            ]
 
-            else
-                Sub.batch
-                    [ usersReceived remoteUsersUpdated
-                    , gameReceived gameCreated
-                    , valuesReceived remoteValuesUpdated
-                    ]
+                    else
+                        Sub.batch
+                            [ usersReceived remoteUsersUpdated
+                            , gameReceived gameCreated
+                            , valuesReceived remoteValuesUpdated
+                            ]
+
+                _ ->
+                    Sub.batch
+                        [ usersReceived remoteUsersUpdated
+                        , gameReceived gameCreated
+                        , valuesReceived remoteValuesUpdated
+                        ]
 
         _ ->
             Sub.batch
