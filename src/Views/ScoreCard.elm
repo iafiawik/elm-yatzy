@@ -23,8 +23,26 @@ getValueText value =
             String.fromInt value
 
 
-scoreCard : Player -> Game -> Bool -> Bool -> Bool -> Html Msg
-scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
+selectedPlayerExists selectedPlayerMaybe =
+    case selectedPlayerMaybe of
+        Just selectedPlayer ->
+            True
+
+        Nothing ->
+            False
+
+
+isPlayerTheSelectedPlayer selectedPlayerMaybe player =
+    case selectedPlayerMaybe of
+        Just selectedPlayer ->
+            selectedPlayer == player
+
+        Nothing ->
+            False
+
+
+scoreCard : Player -> Maybe Player -> Game -> Bool -> Bool -> Bool -> Html Msg
+scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction showTotalSum =
     let
         boxes =
             getBoxes
@@ -35,6 +53,9 @@ scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
         players =
             game.players
 
+        hasSelectedPlayer =
+            selectedPlayerExists selectedPlayer
+
         boxItems =
             List.map
                 (\box ->
@@ -42,7 +63,7 @@ scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
                         playerBoxes =
                             List.map
                                 (\p ->
-                                    renderCell box boxes values p (p == currentPlayer) allowInteraction showTotalSum
+                                    renderCell box boxes values p currentPlayer selectedPlayer allowInteraction showTotalSum
                                 )
                                 players
                     in
@@ -55,10 +76,24 @@ scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
                 boxes
 
         headers =
-            List.map (\p -> th [] [ text p.user.name ]) players
+            List.map
+                (\player ->
+                    let
+                        isSelectedPlayer =
+                            isPlayerTheSelectedPlayer selectedPlayer player
+
+                        isCurrentPlayer =
+                            player == currentPlayer
+
+                        classNames =
+                            [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ) ]
+                    in
+                    th [ classList classNames ] [ text player.user.name ]
+                )
+                players
     in
     div [ class "score-card-wrapper" ]
-        [ table [ class "score-card" ]
+        [ table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
             ([ tr []
                 ([ th []
                     [ text "" ]
@@ -73,17 +108,29 @@ scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
 
 staticScoreCard : Player -> Game -> Bool -> Bool -> Html Msg
 staticScoreCard currentPlayer game showCountedValues showTotalSum =
-    scoreCard currentPlayer game showCountedValues False showTotalSum
+    scoreCard currentPlayer Nothing game showCountedValues False showTotalSum
 
 
-interactiveScoreCard : Player -> Game -> Bool -> Html Msg
-interactiveScoreCard currentPlayer game showCountedValues =
-    scoreCard currentPlayer game showCountedValues True False
+interactiveScoreCard : Player -> Maybe Player -> Game -> Bool -> Html Msg
+interactiveScoreCard currentPlayer selectedPlayer game showCountedValues =
+    scoreCard currentPlayer selectedPlayer game showCountedValues True False
 
 
-renderCell : Box -> List Box -> List Value -> Player -> Bool -> Bool -> Bool -> Html Msg
-renderCell box boxes values player isCurrentPlayer allowInteraction showTotalSum =
+renderCell : Box -> List Box -> List Value -> Player -> Player -> Maybe Player -> Bool -> Bool -> Html Msg
+renderCell box boxes values player currentPlayer selectedPlayer allowInteraction showTotalSum =
     let
+        hasSelectedPlayer =
+            selectedPlayerExists selectedPlayer
+
+        isSelectedPlayer =
+            isPlayerTheSelectedPlayer selectedPlayer player
+
+        isCurrentPlayer =
+            player == currentPlayer
+
+        allowEditAdd =
+            ((hasSelectedPlayer == True && isSelectedPlayer && isCurrentPlayer) || (hasSelectedPlayer == False && isCurrentPlayer)) && allowInteraction
+
         boxValue =
             List.head
                 (List.filter
@@ -92,14 +139,21 @@ renderCell box boxes values player isCurrentPlayer allowInteraction showTotalSum
                     )
                     values
                 )
+
+        _ =
+            Debug.log "renderCell, allowEditAdd: " (Debug.toString allowEditAdd ++ Debug.toString selectedPlayer)
     in
     case boxValue of
         Just value ->
-            if isCurrentPlayer && allowInteraction then
-                td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ], onClick (ShowEditValue value) ] [ text (getValueText value.value) ]
+            let
+                classNames =
+                    [ ( "inactive", True ), ( "selected", isSelectedPlayer ) ]
+            in
+            if allowEditAdd then
+                td [ classList classNames, onClick (ShowEditValue value) ] [ text (getValueText value.value) ]
 
             else
-                td [ classList [ ( "inactive", True ), ( "counted", value.counted ) ] ] [ text (getValueText value.value) ]
+                td [ classList classNames ] [ text (getValueText value.value) ]
 
         Nothing ->
             if box.boxType == UpperSum then
@@ -107,14 +161,14 @@ renderCell box boxes values player isCurrentPlayer allowInteraction showTotalSum
                     upperSum =
                         getUpperSum values player
                 in
-                td [ class "inactive" ] [ text (String.fromInt upperSum) ]
+                td [ classList [ ( "inactive", True ), ( "selected", isSelectedPlayer ) ] ] [ text (String.fromInt upperSum) ]
 
             else if box.boxType == TotalSum then
                 if showTotalSum then
                     td [ class "inactive" ] [ text (String.fromInt (getTotalSum values player)) ]
 
                 else
-                    td [ class "inactive" ] [ text "" ]
+                    td [ classList [ ( "inactive", True ), ( "selected", isSelectedPlayer ) ] ] [ text "" ]
 
             else if box.boxType == Bonus then
                 let
@@ -124,17 +178,21 @@ renderCell box boxes values player isCurrentPlayer allowInteraction showTotalSum
                     bonusValue =
                         getBonusValue values player
                 in
-                td [ classList [ ( "inactive bonus", True ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
+                td [ classList [ ( "inactive bonus", True ), ( "selected", isSelectedPlayer ), ( "animated bonus-cell", bonusValue > 0 ) ] ] [ upperSumText ]
 
-            else if isCurrentPlayer then
+            else if isCurrentPlayer || isSelectedPlayer && hasSelectedPlayer then
+                let
+                    classNames =
+                        [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ) ]
+                in
                 if box.category == None then
-                    td [ classList [ ( "active", True ) ] ] [ text "" ]
+                    td [ classList classNames ] [ text "" ]
 
-                else if allowInteraction then
-                    td [ class "active", onClick (ShowAddValue box) ] [ text "" ]
+                else if allowEditAdd then
+                    td [ classList classNames, onClick (ShowAddValue box) ] [ text "" ]
 
                 else
-                    td [ class "active" ] [ text "" ]
+                    td [ classList classNames ] [ text "" ]
 
             else
                 td [ class "inactive" ] [ text "" ]

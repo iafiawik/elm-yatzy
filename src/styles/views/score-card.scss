@@ -18,6 +18,16 @@
     background: white;
   }
 
+  &.has-selected-player {
+    td:not(:first-of-type) {
+      opacity: 0.5;
+    }
+
+    .selected {
+      opacity: 1 !important;
+    }
+  }
+
   td {
     border: 1px solid $primary-color;
     padding: 10px 20px;
