@@ -35,6 +35,12 @@ Data.getUsers(users => {
   app.ports.usersReceived.send(users);
 });
 
+app.ports.getUsers.subscribe(function(name) {
+  Data.getUsers(users => {
+    console.log("index.js: Data.getUsers", users);
+    app.ports.usersReceived.send(users);
+  });
+});
 // Data.getGames(games => {
 //   console.log("app.ports", app.ports);
 //   app.ports.remoteUsers.send(users);
