@@ -18,6 +18,11 @@
     background: white;
   }
 
+  th.active span {
+    animation: flash 3s linear infinite;
+    display: block;
+  }
+
   &.has-selected-player {
     td:not(:first-of-type) {
       opacity: 0.5;
