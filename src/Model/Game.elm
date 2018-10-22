@@ -5,7 +5,8 @@ import Json.Encode as E
 import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
 import Model.GameState exposing (GameState(..))
-import Model.Player exposing (Player, playersDecoder)
+import Model.Player exposing (Player, encodePlayer, playerDecoder, playersDecoder)
+import Model.User exposing (User, userDecoder)
 import Model.Value exposing (DbValue, Value, valuesDecoder)
 
 
@@ -23,20 +24,24 @@ gameDecoder =
     map4 DbGame
         (field "id" string)
         (field "code" string)
-        (field "users" (Json.Decode.list string))
+        (field "users" (Json.Decode.list playerDecoder))
         (field "finished" bool)
+
+
+
+-- `list` takes two parameters, the first is a function to convert one element to a `Value` the second is the list of things to convert (
 
 
 encodeGame : Game -> E.Value
 encodeGame game =
     let
         users =
-            List.map (\p -> p.user.id) game.players
+            List.map (\p -> encodePlayer p) game.players
     in
     E.object
         [ ( "id", E.string game.id )
         , ( "code", E.string game.code )
-        , ( "users", E.list E.string users )
+        , ( "users", E.list encodePlayer game.players )
         , ( "finished", E.bool game.finished )
         ]
 
@@ -44,7 +49,7 @@ encodeGame game =
 type alias DbGame =
     { id : String
     , code : String
-    , users : List String
+    , users : List Player
     , finished : Bool
     }
 

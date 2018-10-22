@@ -90,13 +90,70 @@ const getGame = gameCode => {
           reject("Unable to find a game with this game code: ", gameCode);
         } else {
           var game = games[0];
-          resolve(game);
+
+          var users = game.users.map(function(user) {
+            return user.user;
+          });
+
+          getUsersByIds(users).then(function(dbUsers) {
+            var realUsers = game.users.map(function(user) {
+              return {
+                user: dbUsers.find(function(dbUser) {
+                  return dbUser.id == user.user;
+                }),
+                order: user.order
+              };
+            });
+
+            var dbGame = { ...game, users: realUsers };
+            console.log("DbGame: ", dbGame);
+            resolve(dbGame);
+          });
         }
       })
       .catch(function(error) {
-        console.error("Unable to find a game with this game code: ", gameCode);
+        console.error(
+          "Unable to find a game with this game code: ",
+          gameCode,
+          ". Error: ",
+          error
+        );
 
         reject("Unable to find a game with that code.");
+      });
+  });
+};
+
+const getUsersByIds = userIds => {
+  return new Promise(function(resolve, reject) {
+    // var docRef = db.collection("cities").doc(userIds);
+
+    db
+      .collection("users")
+      .get()
+      .then(function(snapshot) {
+        var users = snapshot.docs.map(user => {
+          return { id: user.id, ...user.data() };
+        });
+
+        var filtered = users.filter(function(user) {
+          return userIds.find(function(userId) {
+            return userId == user.id;
+          });
+        });
+
+        console.log(
+          "getUsersByIds(), tried to fetch " +
+            userIds.length +
+            " users. Received " +
+            filtered.length +
+            " users."
+        );
+        resolve(filtered);
+      })
+      .catch(function(error) {
+        console.error("Error getting documents: ", error);
+        reject("Unable to get users");
       });
   });
 };
@@ -117,7 +174,9 @@ const createGame = users => {
     db
       .collection("games")
       .add({
-        users: users,
+        users: users.map(function(user) {
+          return { user: user.userId, order: user.order };
+        }),
         dateCreated: Date.now(),
         finished: false,
         code: gameId
@@ -132,8 +191,11 @@ const createGame = users => {
           .get()
           .then(function(doc) {
             if (doc.exists) {
-              resolve({ id: doc.id, ...doc.data() });
-              console.log("Document data:", doc.data());
+              var game = { id: doc.id, ...doc.data() };
+              var users = game.users.map(function(user) {
+                return user.user;
+              });
+              return getUsersByIds(users);
             } else {
               // doc.data() will be undefined in this case
               console.log("No such document!");

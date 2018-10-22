@@ -1,4 +1,4 @@
-module Model.Player exposing (Player, playerDecoder, playersDecoder)
+module Model.Player exposing (Player, encodePlayer, playerDecoder, playersDecoder)
 
 import Json.Decode exposing (Decoder, field, int, map2, string)
 import Json.Encode as E
@@ -21,11 +21,28 @@ playerDecoder =
         (field "order" int)
 
 
+encodePlayer : Player -> E.Value
+encodePlayer player =
+    E.object
+        [ ( "userId", E.string player.user.id ), ( "order", E.int player.order ) ]
+
+
 type alias Player =
     { user : User, order : Int }
 
 
 
+--
+-- playerDecoder : Decoder DbPlayer
+-- playerDecoder =
+--     map2 DbPlayer
+--         (field "user" userDecoder)
+--         (field "order" int)
+--
+-- type alias DbPlayer =
+--     { user : User
+--     , order : Int
+--     }
 -- userEncoder : User -> E.value
 -- userEncoder ({ id } as user) =
 --     Encode.object
