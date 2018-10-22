@@ -146,9 +146,6 @@ renderCell box boxes values player currentPlayer selectedPlayer allowInteraction
                     )
                     values
                 )
-
-        _ =
-            Debug.log "renderCell, allowEditAdd: " (Debug.toString allowEditAdd ++ Debug.toString selectedPlayer)
     in
     case boxValue of
         Just value ->
