@@ -1,4 +1,4 @@
-module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -48,6 +48,10 @@ type Msg
 
 
 type Model
+    = SelectedMode Mode (List User)
+
+
+type Mode
     = SelectMode
     | Individual IndividualModel
     | Group GroupModel
