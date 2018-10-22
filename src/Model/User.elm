@@ -11,10 +11,6 @@ usersDecoder =
 
 userDecoder : Decoder User
 userDecoder =
-    let
-        _ =
-            Debug.log "userDecoder" ""
-    in
     map3 User
         (field "id" string)
         (field "name" string)

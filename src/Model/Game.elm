@@ -17,10 +17,6 @@ gamesDecoder =
 
 gameDecoder : Decoder DbGame
 gameDecoder =
-    let
-        _ =
-            Debug.log "userDecoder" ""
-    in
     map4 DbGame
         (field "id" string)
         (field "code" string)

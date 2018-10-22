@@ -12,10 +12,6 @@ playersDecoder =
 
 playerDecoder : Decoder Player
 playerDecoder =
-    let
-        _ =
-            Debug.log "userDecoder" ""
-    in
     map2 Player
         (field "user" userDecoder)
         (field "order" int)

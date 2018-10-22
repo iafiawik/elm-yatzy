@@ -14,10 +14,6 @@ valuesDecoder =
 
 valueDecoder : Decoder DbValue
 valueDecoder =
-    let
-        _ =
-            Debug.log "valueDecoder" ""
-    in
     map4 DbValue
         (field "id" string)
         (field "boxId" string)
