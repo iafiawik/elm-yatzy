@@ -40,9 +40,18 @@ Data.getUsers(users => {
 //   app.ports.remoteUsers.send(users);
 // });
 
+var gameId = "";
+
 app.ports.getGame.subscribe(function(gameCode) {
   console.log("index.js: getGame " + gameCode);
   Data.getGame(gameCode).then(function(game) {
+    gameId = game.id;
+
+    Data.getValues(game.id, values => {
+      console.log("index.js: Data.getValues", values);
+      app.ports.valuesReceived.send(values);
+    });
+
     app.ports.gameReceived.send(game);
   });
 });
@@ -51,8 +60,6 @@ app.ports.createUser.subscribe(function(name) {
   console.log("index.js: Create user " + name);
   Data.createUser(name);
 });
-
-var gameId = "";
 
 app.ports.createGame.subscribe(function(game) {
   Data.createGame(game.users).then(function(dbGame) {
