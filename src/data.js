@@ -92,14 +92,14 @@ const getGame = gameCode => {
           var game = games[0];
 
           var users = game.users.map(function(user) {
-            return user.user;
+            return user.userId;
           });
 
           getUsersByIds(users).then(function(dbUsers) {
             var realUsers = game.users.map(function(user) {
               return {
                 user: dbUsers.find(function(dbUser) {
-                  return dbUser.id == user.user;
+                  return dbUser.id == user.userId;
                 }),
                 order: user.order
               };
@@ -174,9 +174,7 @@ const createGame = users => {
     db
       .collection("games")
       .add({
-        users: users.map(function(user) {
-          return { user: user.userId, order: user.order };
-        }),
+        users: users,
         dateCreated: Date.now(),
         finished: false,
         code: gameId
@@ -193,9 +191,22 @@ const createGame = users => {
             if (doc.exists) {
               var game = { id: doc.id, ...doc.data() };
               var users = game.users.map(function(user) {
-                return user.user;
+                return user.userId;
               });
-              return getUsersByIds(users);
+
+              getUsersByIds(users).then(function(dbUsers) {
+                var realUsers = game.users.map(function(user) {
+                  return {
+                    user: dbUsers.find(function(dbUser) {
+                      return dbUser.id == user.userId;
+                    }),
+                    order: user.order
+                  };
+                });
+                var dbGame = { ...game, users: realUsers };
+                console.log("DbGame: ", dbGame);
+                resolve(dbGame);
+              });
             } else {
               // doc.data() will be undefined in this case
               console.log("No such document!");
@@ -215,7 +226,6 @@ const createGame = users => {
 };
 
 const editGame = (game, gameId) => {
-  debugger;
   return new Promise(function(resolve, reject) {
     var docRef = db
       .collection("games")
