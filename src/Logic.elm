@@ -54,8 +54,9 @@ getRoundHighscore players values =
         sortedPlayers =
             sortTupleBySecond playerValues
 
-        _ =
-            Debug.log "sortedPlayers" sortedPlayers
+        --
+        -- _ =
+        --     Debug.log "sortedPlayers" sortedPlayers
     in
     sortedPlayers
 
@@ -77,15 +78,14 @@ getNextValueToAnimate players values =
                 )
                 players
 
-        _ =
-            Debug.log "NextPlayer:" nextPlayerMaybe
+        -- _ =
+        --     Debug.log "NextPlayer:" nextPlayerMaybe
     in
     case nextPlayerMaybe of
         Just nextPlayer ->
             let
-                _ =
-                    Debug.log ("NextPlayer: " ++ nextPlayer.user.name)
-
+                -- _ =
+                --     Debug.log ("NextPlayer: " ++ nextPlayer.user.name)
                 playerValues =
                     getValuesByPlayer values nextPlayer
 
