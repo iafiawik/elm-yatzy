@@ -15,6 +15,7 @@ import Uuid
 type Msg
     = SelectGroup
     | SelectIndividual
+    | EnterGame
     | AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
@@ -32,6 +33,7 @@ type Msg
     | ValueMarked Int
     | HideAddValue
     | InputValueChange String
+    | GameCodeInputChange String
     | CountValues
     | CountValuesTick Time.Posix
     | Restart
@@ -52,7 +54,9 @@ type Model
 
 
 type IndividualModel
-    = EnterGameCode
+    = EnterGameCode String
+    | WaitingForGame
+    | SelectPlayer GamePlaying
     | IndividualPlaying GamePlaying
 
 

@@ -75,6 +75,32 @@ const createUser = name => {
     });
 };
 
+const getGame = gameCode => {
+  return new Promise(function(resolve, reject) {
+    db
+      .collection("games")
+      .where("code", "==", gameCode)
+      .get()
+      .then(function(snapshot) {
+        var games = snapshot.docs.map(game => {
+          return { id: game.id, ...game.data() };
+        });
+
+        if (games.length === 0) {
+          reject("Unable to find a game with this game code: ", gameCode);
+        } else {
+          var game = games[0];
+          resolve(game);
+        }
+      })
+      .catch(function(error) {
+        console.error("Unable to find a game with this game code: ", gameCode);
+
+        reject("Unable to find a game with that code.");
+      });
+  });
+};
+
 const createGame = users => {
   function id() {
     var text = "";
@@ -228,6 +254,7 @@ const getValues = (gameId, onValuesChange) => {
 export default {
   createUser,
   getUsers,
+  getGame,
   createGame,
   editGame,
   getGames,

@@ -38,6 +38,12 @@ errorToHtml error =
     "Error in decoder: " ++ Json.Decode.errorToString error
 
 
+port getGame : E.Value -> Cmd msg
+
+
+port getUsers : E.Value -> Cmd msg
+
+
 port createUser : E.Value -> Cmd msg
 
 
@@ -454,7 +460,9 @@ update msg model =
             case msg of
                 SelectIndividual ->
                     ( Individual
-                        EnterGameCode
+                        (EnterGameCode
+                            "BGXH"
+                        )
                     , Cmd.none
                     )
 
@@ -481,7 +489,51 @@ update msg model =
                     ( model, Cmd.none )
 
         Individual individualModel ->
-            ( model, Cmd.none )
+            case individualModel of
+                EnterGameCode gameCode ->
+                    case msg of
+                        EnterGame ->
+                            ( Individual
+                                WaitingForGame
+                            , getGame (E.string gameCode)
+                            )
+
+                        GameCodeInputChange value ->
+                            ( Individual (EnterGameCode value), Cmd.none )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                WaitingForGame ->
+                    case msg of
+                        GameReceived dbGame ->
+                            let
+                                _ =
+                                    Debug.log "GameReceived: " dbGame
+                            in
+                            ( Individual
+                                (SelectPlayer
+                                    { game =
+                                        { id = dbGame.id
+                                        , code = dbGame.code
+                                        , players = []
+                                        , values = []
+                                        , finished = False
+                                        }
+                                    , boxes = getBoxes
+                                    , state = Idle
+                                    , currentValue = 0
+                                    , error = Nothing
+                                    }
+                                )
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         Group groupModel ->
             case groupModel of
@@ -611,8 +663,14 @@ view model =
 
         Individual individualModel ->
             case individualModel of
-                EnterGameCode ->
-                    div [] [ text "EnterGameCode" ]
+                EnterGameCode gameCode ->
+                    div [] [ span [] [ text "Enter game code" ], input [ value gameCode, onInput GameCodeInputChange ] [], button [ onClick EnterGame ] [ text "Enter" ] ]
+
+                WaitingForGame ->
+                    div [] [ span [] [ text "Waiting for game ..." ] ]
+
+                SelectPlayer gamePlayingModel ->
+                    div [] [ span [] [ text ("Select player" ++ gamePlayingModel.game.code) ] ]
 
                 IndividualPlaying gamePlayingModel ->
                     div [] [ text "IndividualPlaying" ]

@@ -40,6 +40,13 @@ Data.getUsers(users => {
 //   app.ports.remoteUsers.send(users);
 // });
 
+app.ports.getGame.subscribe(function(gameCode) {
+  console.log("index.js: getGame " + gameCode);
+  Data.getGame(gameCode).then(function(game) {
+    app.ports.gameReceived.send(game);
+  });
+});
+
 app.ports.createUser.subscribe(function(name) {
   console.log("index.js: Create user " + name);
   Data.createUser(name);
