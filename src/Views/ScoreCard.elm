@@ -56,6 +56,16 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
         hasSelectedPlayer =
             selectedPlayerExists selectedPlayer
 
+        waitingFor =
+            if hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == False then
+                div [ class "score-card-current-player waiting" ] [ span [] [ text "Väntar på" ], span [] [ text currentPlayer.user.name ] ]
+
+            else if hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == True then
+                div [ class "score-card-current-player not-waiting" ] [ span [] [ text "Det är din tur!" ] ]
+
+            else
+                div [] []
+
         boxItems =
             List.map
                 (\box ->
@@ -100,7 +110,8 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
                 players
     in
     div [ class "score-card-wrapper" ]
-        [ table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
+        [ waitingFor
+        , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
             ([ tr []
                 ([ th []
                     [ text "" ]
