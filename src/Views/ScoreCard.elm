@@ -85,10 +85,17 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
                         isCurrentPlayer =
                             player == currentPlayer
 
+                        name =
+                            if isSelectedPlayer then
+                                "Jag"
+
+                            else
+                                player.user.name
+
                         classNames =
                             [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ) ]
                     in
-                    th [ classList classNames ] [ text player.user.name ]
+                    th [ classList classNames ] [ span [] [ text name ] ]
                 )
                 players
     in
