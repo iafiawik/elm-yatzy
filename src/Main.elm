@@ -855,12 +855,12 @@ view model =
                                             case playingModel.state of
                                                 Idle ->
                                                     div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes game.values game.players False ]
+                                                        [ div [] [ interactiveScoreCard currentPlayer game False ]
                                                         ]
 
                                                 Input box isEdit ->
                                                     div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes game.values game.players False ]
+                                                        [ div [] [ interactiveScoreCard currentPlayer game False ]
                                                         , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
                                                         ]
                                     in
@@ -915,12 +915,12 @@ view model =
                                                     case playingModel.state of
                                                         Idle ->
                                                             div []
-                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
+                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.game False ]
                                                                 ]
 
                                                         Input box isEdit ->
                                                             div []
-                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.boxes playingModel.game.values playingModel.game.players False ]
+                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.game False ]
                                                                 , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
                                                                 ]
                                             in
@@ -948,19 +948,19 @@ view model =
                                                 GameFinished ->
                                                     div []
                                                         [ div [] [ gameFinished ]
-                                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False False ]
+                                                        , div [] [ staticScoreCard currentPlayer finishedModel.game False False ]
                                                         , button [ onClick CountValues ] [ text "Count" ]
                                                         ]
 
                                                 ShowCountedValues ->
                                                     div []
-                                                        [ div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
+                                                        [ div [] [ staticScoreCard currentPlayer finishedModel.game False True ]
                                                         ]
 
                                                 ShowResults ->
                                                     div []
                                                         [ div [] [ highscore finishedModel.game.players finishedModel.game.values ]
-                                                        , div [] [ staticScoreCard currentPlayer finishedModel.boxes finishedModel.game.values finishedModel.game.players False True ]
+                                                        , div [] [ staticScoreCard currentPlayer finishedModel.game False True ]
                                                         ]
                                     in
                                     div

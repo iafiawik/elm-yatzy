@@ -3,7 +3,7 @@ module Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Logic exposing (getBonusValue, getTotalSum, getUpperSum, getValuesByPlayer, sum)
+import Logic exposing (getBonusValue, getBoxes, getTotalSum, getUpperSum, getValuesByPlayer, sum)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
@@ -23,9 +23,18 @@ getValueText value =
             String.fromInt value
 
 
-scoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Bool -> Bool -> Html Msg
-scoreCard currentPlayer boxes values players showCountedValues allowInteraction showTotalSum =
+scoreCard : Player -> Game -> Bool -> Bool -> Bool -> Html Msg
+scoreCard currentPlayer game showCountedValues allowInteraction showTotalSum =
     let
+        boxes =
+            getBoxes
+
+        values =
+            game.values
+
+        players =
+            game.players
+
         boxItems =
             List.map
                 (\box ->
@@ -62,14 +71,14 @@ scoreCard currentPlayer boxes values players showCountedValues allowInteraction 
         ]
 
 
-staticScoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Bool -> Html Msg
-staticScoreCard currentPlayer boxes values players showCountedValues showTotalSum =
-    scoreCard currentPlayer boxes values players showCountedValues False showTotalSum
+staticScoreCard : Player -> Game -> Bool -> Bool -> Html Msg
+staticScoreCard currentPlayer game showCountedValues showTotalSum =
+    scoreCard currentPlayer game showCountedValues False showTotalSum
 
 
-interactiveScoreCard : Player -> List Box -> List Value -> List Player -> Bool -> Html Msg
-interactiveScoreCard currentPlayer boxes values players showCountedValues =
-    scoreCard currentPlayer boxes values players showCountedValues True False
+interactiveScoreCard : Player -> Game -> Bool -> Html Msg
+interactiveScoreCard currentPlayer game showCountedValues =
+    scoreCard currentPlayer game showCountedValues True False
 
 
 renderCell : Box -> List Box -> List Value -> Player -> Bool -> Bool -> Bool -> Html Msg
