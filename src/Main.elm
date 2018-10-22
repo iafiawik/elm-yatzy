@@ -821,7 +821,7 @@ view model =
         SelectedMode mode users ->
             case mode of
                 SelectMode ->
-                    div [] [ div [ onClick SelectIndividual ] [ text "Individual" ], div [ onClick SelectGroup ] [ text "Group" ] ]
+                    div [] [ div [ onClick SelectIndividual ] [ text "Joina spel" ], div [ onClick SelectGroup ] [ text "Skapa spel" ] ]
 
                 Individual individualModel ->
                     case individualModel of
@@ -855,12 +855,12 @@ view model =
                                             case playingModel.state of
                                                 Idle ->
                                                     div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer game False ]
+                                                        [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
                                                         ]
 
                                                 Input box isEdit ->
                                                     div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer game False ]
+                                                        [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
                                                         , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
                                                         ]
                                     in
@@ -915,12 +915,12 @@ view model =
                                                     case playingModel.state of
                                                         Idle ->
                                                             div []
-                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.game False ]
+                                                                [ div [] [ interactiveScoreCard currentPlayer Nothing playingModel.game False ]
                                                                 ]
 
                                                         Input box isEdit ->
                                                             div []
-                                                                [ div [] [ interactiveScoreCard currentPlayer playingModel.game False ]
+                                                                [ div [] [ interactiveScoreCard currentPlayer Nothing playingModel.game False ]
                                                                 , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
                                                                 ]
                                             in
