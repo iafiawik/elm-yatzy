@@ -101,13 +101,3 @@ app.ports.deleteValue.subscribe(function(value) {
 });
 
 unregister();
-
-// Initialize Firebase
-// var config = {
-//   apiKey: "AIzaSyDpLTMW0O94t-OKm6tTMxD2Ww0zOyFsw9c",
-//   authDomain: "elm-yatzy.firebaseapp.com",
-//   databaseURL: "https://elm-yatzy.firebaseio.com",
-//   projectId: "elm-yatzy",
-//   storageBucket: "",
-//   messagingSenderId: "222344465987"
-// };
