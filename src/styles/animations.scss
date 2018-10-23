@@ -37,3 +37,14 @@
     transform: translateY(-100%);
   }
 }
+
+@keyframes new-value {
+  from {
+    background: $primary-color;
+    color: white;
+  }
+  to {
+    background: white;
+    color: inherit;
+  }
+}

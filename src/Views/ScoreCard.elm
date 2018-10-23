@@ -162,7 +162,7 @@ renderCell box boxes values player currentPlayer selectedPlayer allowInteraction
         Just value ->
             let
                 classNames =
-                    [ ( "inactive", True ), ( "selected", isSelectedPlayer ) ]
+                    [ ( "inactive", True ), ( "selected", isSelectedPlayer ), ( "new", value.new ) ]
             in
             if allowEditAdd then
                 td [ classList classNames, onClick (ShowEditValue value) ] [ text (getValueText value.value) ]

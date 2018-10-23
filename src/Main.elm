@@ -264,25 +264,33 @@ getBoxById id =
     Maybe.withDefault { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id_ == id) getBoxes)
 
 
-fromDbValueToValue : DbValue -> List Player -> Value
-fromDbValueToValue dbValue players =
+fromDbValueToValue : DbValue -> List Value -> List Player -> Value
+fromDbValueToValue dbValue oldValues players =
     let
         player =
             getPlayerByUserId dbValue.userId players
+
+        new =
+            if find (\v -> v.id == dbValue.id) oldValues == Nothing then
+                True
+
+            else
+                False
     in
     { id = dbValue.id
     , box = getBoxById dbValue.boxId
     , player = player
     , value = dbValue.value
     , counted = False
+    , new = new
     }
 
 
-updateValues : List DbValue -> List Player -> List Value
-updateValues dbValues players =
+updateValues : List DbValue -> List Value -> List Player -> List Value
+updateValues dbValues oldValues players =
     List.map
         (\v ->
-            fromDbValueToValue v players
+            fromDbValueToValue v oldValues players
         )
         dbValues
 
@@ -305,7 +313,7 @@ updateGame msg model =
                             model.game
 
                         values =
-                            updateValues dbValues model.game.players
+                            updateValues dbValues model.game.values model.game.players
 
                         _ =
                             Debug.log "RemoteValuesReceived: " dbValues
@@ -618,10 +626,7 @@ update msg model =
                                                     Debug.log "update(), RemoteValuesReceived, game.players: " game.players
 
                                                 updatedValues =
-                                                    updateValues dbValues game.players
-
-                                                _ =
-                                                    Debug.log "update(), RemoteValuesReceived, updatedValues: " updatedValues
+                                                    updateValues dbValues game.values game.players
 
                                                 newGame =
                                                     { game | values = updatedValues }

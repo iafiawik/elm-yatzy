@@ -40,6 +40,10 @@
   border-collapse: collapse;
   border: 10px solid $primary-color;
 
+  .new {
+    animation: new-value 3s linear forwards;
+  }
+
   .inactive {
     background: white;
   }

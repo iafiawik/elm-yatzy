@@ -45,6 +45,7 @@ type alias Value =
     , player : Player
     , value : Int
     , counted : Bool
+    , new : Bool
     }
 
 
