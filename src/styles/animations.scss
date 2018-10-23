@@ -39,12 +39,28 @@
 }
 
 @keyframes new-value {
-  from {
+  0% {
     background: $primary-color;
     color: white;
   }
-  to {
+  20% {
+    background: $primary-color;
+    color: white;
+  }
+  50% {
     background: white;
     color: inherit;
+  }
+  60% {
+    background: white;
+    color: inherit;
+  }
+  80% {
+    background: $primary-color;
+    color: white;
+  }
+  100% {
+    background: $primary-color;
+    color: white;
   }
 }

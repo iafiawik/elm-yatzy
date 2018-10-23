@@ -41,7 +41,8 @@
   border: 10px solid $primary-color;
 
   .new {
-    animation: new-value 3s linear forwards;
+    animation: new-value 13s linear alternate-reverse;
+    animation-iteration-count: 3;
   }
 
   .inactive {
