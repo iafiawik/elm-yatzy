@@ -1,6 +1,6 @@
 module Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gamesDecoder)
 
-import Json.Decode exposing (Decoder, bool, field, int, list, map2, map3, map4, string)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
 import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
@@ -10,18 +10,18 @@ import Model.User exposing (User, userDecoder)
 import Model.Value exposing (DbValue, Value, valuesDecoder)
 
 
-gamesDecoder : Json.Decode.Decoder (List DbGame)
+gamesDecoder : Decoder (List DbGame)
 gamesDecoder =
-    Json.Decode.list gameDecoder
+    Decode.list gameDecoder
 
 
 gameDecoder : Decoder DbGame
 gameDecoder =
-    map4 DbGame
-        (field "id" string)
-        (field "code" string)
-        (field "users" (Json.Decode.list playerDecoder))
-        (field "finished" bool)
+    Decode.map4 DbGame
+        (Decode.field "id" Decode.string)
+        (Decode.field "code" Decode.string)
+        (Decode.field "users" (Decode.list playerDecoder))
+        (Decode.field "finished" Decode.bool)
 
 
 

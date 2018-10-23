@@ -1,24 +1,24 @@
 module Model.Value exposing (DbValue, Value, encodeValue, valueDecoder, valuesDecoder)
 
-import Json.Decode exposing (Decoder, bool, field, int, map3, map4, string)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
 import Model.Box exposing (Box)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
 
 
-valuesDecoder : Json.Decode.Decoder (List DbValue)
+valuesDecoder : Decoder (List DbValue)
 valuesDecoder =
-    Json.Decode.list valueDecoder
+    Decode.list valueDecoder
 
 
 valueDecoder : Decoder DbValue
 valueDecoder =
-    map4 DbValue
-        (field "id" string)
-        (field "boxId" string)
-        (field "userId" string)
-        (field "value" int)
+    Decode.map4 DbValue
+        (Decode.field "id" Decode.string)
+        (Decode.field "boxId" Decode.string)
+        (Decode.field "userId" Decode.string)
+        (Decode.field "value" Decode.int)
 
 
 encodeValue : Value -> E.Value
