@@ -11,6 +11,7 @@ import Model.Game exposing (Game)
 import Model.Player exposing (Player)
 import Model.Value exposing (Value)
 import Models exposing (Model, Msg(..), PlayerAndNumberOfValues)
+import Views.TopBar exposing (topBar)
 
 
 getValueText : Int -> String
@@ -56,13 +57,6 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
         hasSelectedPlayer =
             selectedPlayerExists selectedPlayer
 
-        waitingFor =
-            if hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == True then
-                div [ class "score-card-current-player not-waiting" ] [ span [] [ text "Det är din tur!" ] ]
-
-            else
-                div [ class "score-card-current-player waiting" ] [ span [] [ text "Väntar på" ], span [] [ text currentPlayer.user.name ] ]
-
         boxItems =
             List.map
                 (\box ->
@@ -107,7 +101,7 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
                 players
     in
     div [ class "score-card-wrapper" ]
-        [ waitingFor
+        [ topBar (hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == True) currentPlayer
         , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
             ([ tr []
                 ([ th []

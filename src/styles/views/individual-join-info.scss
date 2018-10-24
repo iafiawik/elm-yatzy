@@ -1,0 +1,42 @@
+.individual-join-info {
+}
+
+.individual-join-info h1 {
+  margin: 0px;
+}
+
+.individual-join-info h2 {
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.individual-join-info h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.individual-join-info li {
+  width: auto;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.individual-join-info-link {
+  a {
+    margin-left: 10px;
+  }
+}
+
+.individual-join-info-code {
+  border: 5px dashed $primary-color;
+  color: $primary-color;
+  display: block;
+  padding: 10px;
+  font-weight: bold;
+  font-size: 40px;
+  letter-spacing: 4px;
+  margin-top: 20px;
+  text-align: center;
+}

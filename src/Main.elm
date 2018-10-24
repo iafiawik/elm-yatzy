@@ -28,6 +28,7 @@ import Views.AddRemovePlayers exposing (addRemovePlayers)
 import Views.GameFinished exposing (gameFinished)
 import Views.GameInfo exposing (gameInfo)
 import Views.Highscore exposing (highscore)
+import Views.IndividualJoinInfo exposing (individualJoinInfo)
 import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
@@ -251,7 +252,7 @@ updatePreGame msg model =
                     , finished = False
                     }
             in
-            ( { model | state = ShowGameInfo }, createGame (encodeGame game) )
+            ( { model | state = ShowIndividualJoinInfo }, createGame (encodeGame game) )
 
         _ ->
             ( model, Cmd.none )
@@ -432,6 +433,12 @@ updateGame msg model =
                       }
                     , Cmd.none
                     )
+
+                ShowGameInfo ->
+                    ( { model | showGameInfo = True }, Cmd.none )
+
+                HideGameInfo ->
+                    ( { model | showGameInfo = False }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -660,6 +667,7 @@ update msg model =
                                                     , boxes = getBoxes
                                                     , state = Idle
                                                     , currentValue = -1
+                                                    , showGameInfo = False
                                                     , error = Nothing
                                                     }
                                                 , selectedPlayer = selectPlayerModel.markedPlayer
@@ -701,6 +709,7 @@ update msg model =
                                             , boxes = getBoxes
                                             , state = Idle
                                             , currentValue = 0
+                                            , showGameInfo = False
                                             , error = Nothing
                                             }
                                         )
@@ -883,8 +892,8 @@ view model =
                                 ShowAddRemovePlayers ->
                                     div [] [ lazy addRemovePlayers preGame, notificationHtml ]
 
-                                ShowGameInfo ->
-                                    div [] [ gameInfo preGame.game ]
+                                ShowIndividualJoinInfo ->
+                                    div [] [ individualJoinInfo preGame.game ]
 
                         Playing playingModel ->
                             let
@@ -902,6 +911,13 @@ view model =
 
                                         gameState =
                                             stateToString playingModel.state
+
+                                        gameInformation =
+                                            if playingModel.showGameInfo then
+                                                gameInfo playingModel.game
+
+                                            else
+                                                div [] []
                                     in
                                     case currentPlayerMaybe of
                                         Just currentPlayer ->
@@ -910,7 +926,8 @@ view model =
                                                     case playingModel.state of
                                                         Idle ->
                                                             div []
-                                                                [ div [] [ interactiveScoreCard currentPlayer Nothing playingModel.game False ]
+                                                                [ gameInformation
+                                                                , div [] [ interactiveScoreCard currentPlayer Nothing playingModel.game False ]
                                                                 ]
 
                                                         Input box isEdit ->

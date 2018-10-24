@@ -39,6 +39,8 @@ type Msg
     | CountValuesTick Time.Posix
     | Restart
     | HideNotification
+    | ShowGameInfo
+    | HideGameInfo
     | NoOp
 
 
@@ -97,6 +99,7 @@ type alias GamePlaying =
     , boxes : List Box
     , state : GameState
     , currentValue : Int
+    , showGameInfo : Bool
     , error : Maybe Error
     }
 
@@ -119,7 +122,7 @@ type GameResultState
 
 type PreGameState
     = ShowAddRemovePlayers
-    | ShowGameInfo
+    | ShowIndividualJoinInfo
 
 
 type alias PlayerAndNumberOfValues =

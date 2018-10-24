@@ -21,6 +21,6 @@ gameInfo game =
                 , li [] [ text "Välj ditt namn" ]
                 , li [] [ text "Spela!" ]
                 ]
-            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick Start ] [ text "Start" ]
+            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick HideGameInfo ] [ text "Stäng" ]
             ]
         ]
