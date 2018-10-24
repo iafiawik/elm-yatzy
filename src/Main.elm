@@ -82,7 +82,8 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( SelectedMode (Individual (EnterGameCode "LOJB")) [], Cmd.none )
+    -- ( SelectedMode (Individual (EnterGameCode "RVBG")) [], Cmd.none )
+    ( SelectedMode SelectMode, Cmd.none )
 
 
 
@@ -106,7 +107,6 @@ init flags =
 --     []
 -- , Cmd.none
 -- )
---
 -- ( Group
 --     (PreGame
 --         { users = []
@@ -168,8 +168,8 @@ updatePreGame msg model =
                 currentGame =
                     model.game
 
-                _ =
-                    Debug.log "GameReceived: " dbGame
+                -- _ =
+                --     Debug.log "GameReceived: " dbGame
             in
             ( { model
                 | game =
@@ -193,10 +193,10 @@ updatePreGame msg model =
                 )
 
             else
-                let
-                    _ =
-                        Debug.log "" "Name exists"
-                in
+                -- let
+                --     _ =
+                --         Debug.log "" "Name exists"
+                -- in
                 ( { model | error = Just (UserAlreadyExists model.currentNewPlayerName) }
                 , Cmd.none
                 )
@@ -216,7 +216,7 @@ updatePreGame msg model =
                 | game = { currentGame | players = newPlayers }
                 , currentNewPlayerName = ""
               }
-            , createUser (E.string "hej")
+            , Cmd.none
             )
 
         RemovePlayer player ->
@@ -298,9 +298,8 @@ updateValues dbValues oldValues players =
 updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
 updateGame msg model =
     let
-        _ =
-            Debug.log "updateGame:" msg
-
+        -- _ =
+        --     Debug.log "updateGame:" msg
         currentPlayerMaybe =
             getCurrentPlayer model.game.values model.game.players
     in
@@ -315,8 +314,8 @@ updateGame msg model =
                         values =
                             updateValues dbValues model.game.values model.game.players
 
-                        _ =
-                            Debug.log "RemoteValuesReceived: " dbValues
+                        -- _ =
+                        --     Debug.log "RemoteValuesReceived: " dbValues
                     in
                     ( { model
                         | game =
@@ -361,6 +360,7 @@ updateGame msg model =
                                         , player = currentPlayer
                                         , value = model.currentValue
                                         , counted = False
+                                        , new = False
                                         }
                                 in
                                 ( { model
@@ -434,10 +434,10 @@ updateGame msg model =
                     ( model, Cmd.none )
 
         Nothing ->
-            let
-                _ =
-                    Debug.log "Nothing returned from Update:" msg
-            in
+            -- let
+            --     _ =
+            --         Debug.log "Nothing returned from Update:" msg
+            -- in
             -- handle product not found here
             -- likely return the model unchanged
             -- or set an error message on the model
@@ -452,9 +452,8 @@ updatePostGame msg model =
 
         CountValuesTick newTime ->
             let
-                _ =
-                    Debug.log "Update(), CountValuesTick:" newTime
-
+                -- _ =
+                --     Debug.log "Update(), CountValuesTick:" newTime
                 nextValueToAnimateMaybe =
                     getNextValueToAnimate model.game.players model.game.values
             in
@@ -486,12 +485,12 @@ updatePostGame msg model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            Debug.log "update(): " msg
-    in
+    -- let
+    --     _ =
+    --         Debug.log "update(): " msg
+    -- in
     case model of
-        SelectedMode mode users ->
+        SelectedMode mode ->
             case mode of
                 SelectMode ->
                     case msg of
@@ -499,10 +498,9 @@ update msg model =
                             ( SelectedMode
                                 (Individual
                                     (EnterGameCode
-                                        "CJNL"
+                                        ""
                                     )
                                 )
-                                []
                             , Cmd.none
                             )
 
@@ -524,8 +522,7 @@ update msg model =
                                         }
                                     )
                                 )
-                                []
-                            , Cmd.none
+                            , getUsers (E.string "")
                             )
 
                         _ ->
@@ -542,12 +539,11 @@ update msg model =
                                                 ( Nothing, Nothing )
                                             )
                                         )
-                                        []
                                     , getGame (E.string gameCode)
                                     )
 
                                 GameCodeInputChange value ->
-                                    ( SelectedMode (Individual (EnterGameCode value)) [], Cmd.none )
+                                    ( SelectedMode (Individual (EnterGameCode value)), Cmd.none )
 
                                 _ ->
                                     ( model, Cmd.none )
@@ -574,57 +570,13 @@ update msg model =
                                                         )
                                                     )
                                                 )
-                                                []
                                             , Cmd.none
                                             )
 
                                         Just dbValues ->
                                             let
-                                                _ =
-                                                    Debug.log "GameReceived: " dbGame
-
-                                                updatedValues =
-                                                    updateValues dbValues game.players
-
-                                                newGame =
-                                                    { game | values = updatedValues }
-                                            in
-                                            ( SelectedMode
-                                                (Individual
-                                                    (SelectPlayer
-                                                        { game = newGame
-                                                        , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
-                                                        }
-                                                    )
-                                                )
-                                                []
-                                            , Cmd.none
-                                            )
-
-                                RemoteValuesReceived dbValues ->
-                                    let
-                                        _ =
-                                            Debug.log "update(), RemoteValuesReceived" dbValues
-                                    in
-                                    case gameMaybe of
-                                        Nothing ->
-                                            ( SelectedMode
-                                                (Individual
-                                                    (WaitingForData
-                                                        ( gameMaybe
-                                                        , Just dbValues
-                                                        )
-                                                    )
-                                                )
-                                                []
-                                            , Cmd.none
-                                            )
-
-                                        Just game ->
-                                            let
-                                                _ =
-                                                    Debug.log "update(), RemoteValuesReceived, game.players: " game.players
-
+                                                -- _ =
+                                                --     Debug.log "GameReceived: " dbGame
                                                 updatedValues =
                                                     updateValues dbValues game.values game.players
 
@@ -639,7 +591,47 @@ update msg model =
                                                         }
                                                     )
                                                 )
-                                                []
+                                            , Cmd.none
+                                            )
+
+                                RemoteValuesReceived dbValues ->
+                                    -- let
+                                    --     _ =
+                                    --         Debug.log "update(), RemoteValuesReceived" dbValues
+                                    -- in
+                                    case gameMaybe of
+                                        Nothing ->
+                                            ( SelectedMode
+                                                (Individual
+                                                    (WaitingForData
+                                                        ( gameMaybe
+                                                        , Just dbValues
+                                                        )
+                                                    )
+                                                )
+                                            , Cmd.none
+                                            )
+
+                                        Just game ->
+                                            let
+                                                -- _ =
+                                                --     Debug.log "update(), RemoteValuesReceived, game.players: " game.players
+                                                updatedValues =
+                                                    updateValues dbValues game.values game.players
+
+                                                -- _ =
+                                                --     Debug.log "update(), RemoteValuesReceived, updatedValues: " updatedValues
+                                                newGame =
+                                                    { game | values = updatedValues }
+                                            in
+                                            ( SelectedMode
+                                                (Individual
+                                                    (SelectPlayer
+                                                        { game = newGame
+                                                        , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
+                                                        }
+                                                    )
+                                                )
                                             , Cmd.none
                                             )
 
@@ -653,7 +645,6 @@ update msg model =
                                         (Individual
                                             (SelectPlayer { selectPlayerModel | markedPlayer = player })
                                         )
-                                        []
                                     , Cmd.none
                                     )
 
@@ -672,7 +663,6 @@ update msg model =
                                                 }
                                             )
                                         )
-                                        []
                                     , Cmd.none
                                     )
 
@@ -687,7 +677,7 @@ update msg model =
                                 --     playingModel =
                                 --         Tuple.mapFirst IndividualPlaying <| updateGame msg individualPlayingModel.playingModel
                             in
-                            ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first playingModel, selectedPlayer = individualPlayingModel.selectedPlayer })) []
+                            ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first playingModel, selectedPlayer = individualPlayingModel.selectedPlayer }))
                             , Tuple.second playingModel
                             )
 
@@ -712,19 +702,18 @@ update msg model =
                                             }
                                         )
                                     )
-                                    []
                                 , Cmd.none
                                 )
 
                             else if msg == HideNotification then
-                                ( SelectedMode (Group (PreGame { preGame | error = Nothing })) [], Cmd.none )
+                                ( SelectedMode (Group (PreGame { preGame | error = Nothing })), Cmd.none )
 
                             else
                                 let
                                     newModel =
                                         Tuple.mapFirst PreGame <| updatePreGame msg preGame
                                 in
-                                ( SelectedMode (Group (Tuple.first newModel)) [], Tuple.second newModel )
+                                ( SelectedMode (Group (Tuple.first newModel)), Tuple.second newModel )
 
                         Playing gamePlaying ->
                             let
@@ -755,12 +744,11 @@ update msg model =
                                                     }
                                                 )
                                             )
-                                            []
                                         , Cmd.batch [ Tuple.second gameModel, editGame (encodeGame currentGame) ]
                                         )
 
                                     else
-                                        ( SelectedMode (Group (Tuple.first gameModel)) []
+                                        ( SelectedMode (Group (Tuple.first gameModel))
                                         , Tuple.second gameModel
                                         )
 
@@ -788,7 +776,6 @@ update msg model =
                                             }
                                         )
                                     )
-                                    []
                                 , Cmd.none
                                 )
 
@@ -797,7 +784,7 @@ update msg model =
                                     newModel =
                                         Tuple.mapFirst PostGame <| updatePostGame msg postGame
                                 in
-                                ( SelectedMode (Group (Tuple.first newModel)) [], Tuple.second newModel )
+                                ( SelectedMode (Group (Tuple.first newModel)), Tuple.second newModel )
 
 
 
@@ -823,7 +810,7 @@ viewInput task =
 view : Model -> Html Msg
 view model =
     case model of
-        SelectedMode mode users ->
+        SelectedMode mode ->
             case mode of
                 SelectMode ->
                     div [] [ div [ onClick SelectIndividual ] [ text "Joina spel" ], div [ onClick SelectGroup ] [ text "Skapa spel" ] ]
@@ -988,44 +975,42 @@ remoteUsersUpdated usersJson =
             RemoteUsers users
 
         Err err ->
-            let
-                _ =
-                    Debug.log "Error in remoteUsersUpdated:" err
-            in
+            -- let
+            --     _ =
+            --         Debug.log "Error in remoteUsersUpdated:" err
+            -- in
             NoOp
 
 
 gameCreated : Json.Decode.Value -> Msg
 gameCreated gameJson =
     let
-        _ =
-            Debug.log "gameJson" gameJson
-
+        -- _ =
+        --     Debug.log "gameJson" gameJson
         gameMaybe =
             Json.Decode.decodeValue gameDecoder gameJson
     in
     case gameMaybe of
         Ok dbGame ->
-            let
-                _ =
-                    Debug.log "dbGame" dbGame
-            in
+            -- let
+            --     _ =
+            --         Debug.log "dbGame" dbGame
+            -- in
             GameReceived dbGame
 
         Err err ->
-            let
-                _ =
-                    Debug.log "Error in mapWorkerUpdated:" err
-            in
+            -- let
+            --     _ =
+            --         Debug.log "Error in mapWorkerUpdated:" err
+            -- in
             NoOp
 
 
 remoteValuesUpdated : Json.Decode.Value -> Msg
 remoteValuesUpdated valuesJson =
     let
-        _ =
-            Debug.log "remoteValuesUpdated: valuesJson" valuesJson
-
+        -- _ =
+        --     Debug.log "remoteValuesUpdated: valuesJson" valuesJson
         valuesMaybe =
             Json.Decode.decodeValue valuesDecoder valuesJson
     in
@@ -1034,17 +1019,17 @@ remoteValuesUpdated valuesJson =
             RemoteValuesReceived values
 
         Err err ->
-            let
-                _ =
-                    Debug.log "Error in remoteValuesUpdated:" err
-            in
+            -- let
+            --     _ =
+            --         Debug.log "Error in remoteValuesUpdated:" err
+            -- in
             NoOp
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        SelectedMode mode users ->
+        SelectedMode mode ->
             case mode of
                 Group groupModel ->
                     case groupModel of

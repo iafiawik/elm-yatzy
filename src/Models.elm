@@ -49,7 +49,7 @@ type Msg
 
 
 type Model
-    = SelectedMode Mode (List User)
+    = SelectedMode Mode
 
 
 type Mode
