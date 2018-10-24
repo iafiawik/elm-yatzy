@@ -1,0 +1,28 @@
+.enter-game-code {
+}
+
+.enter-game-code h1 {
+  margin: 0px;
+}
+
+.enter-game-code h2 {
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.enter-game-code input {
+  width: 100%;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  border: 5px solid $primary-color;
+  font-size: larger;
+  color: $primary-color;
+  font-weight: bold;
+  font-family: inherit;
+}
+
+.enter-game-code .large-button:not(.enabled) {
+  opacity: 0.2;
+  cursor: default;
+}
