@@ -64,23 +64,31 @@
       opacity: 1 !important;
       border-color: $primary-color;
     }
-    .selected {
+
+    .selected,
+    .box,
+    th:first-of-type {
       opacity: 1 !important;
+      display: table-cell !important;
+    }
+
+    th:not(.selected, .box),
+    td:not(.selected, .box) {
+      display: none;
     }
 
     td.selected.active:hover {
       cursor: pointer;
       background: white;
     }
-
-    &:not(.has-selected-player) {
-      td.active:hover {
-        cursor: pointer;
-        background: white;
-      }
-    }
   }
 
+  &:not(.has-selected-player) {
+    td.active:hover {
+      cursor: pointer;
+      background: white;
+    }
+  }
   td {
     border: 1px solid $primary-color;
     padding: 10px 20px;
