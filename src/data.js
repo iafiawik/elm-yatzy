@@ -87,7 +87,7 @@ const getGame = gameCode => {
         });
 
         if (games.length === 0) {
-          reject("Unable to find a game with this game code: ", gameCode);
+          reject("Unable to find a game with this game code: " + gameCode);
         } else {
           var game = games[0];
 

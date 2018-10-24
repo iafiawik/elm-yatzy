@@ -1,6 +1,7 @@
-module Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gamesDecoder)
+module Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Field as Field
 import Json.Encode as E
 import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
@@ -22,6 +23,28 @@ gameDecoder =
         (Decode.field "code" Decode.string)
         (Decode.field "users" (Decode.list playerDecoder))
         (Decode.field "finished" Decode.bool)
+
+
+gameResultDecoder : Decoder GameResult
+gameResultDecoder =
+    Field.require "result" Decode.string <|
+        \result ->
+            Field.require "game" gameDecoder <|
+                \game ->
+                    if result /= "ok" then
+                        Decode.fail "You must be an adult"
+
+                    else
+                        Decode.succeed
+                            { result = result
+                            , game = game
+                            }
+
+
+type alias GameResult =
+    { result : String
+    , game : DbGame
+    }
 
 
 

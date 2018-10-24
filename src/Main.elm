@@ -15,7 +15,7 @@ import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
-import Model.Game exposing (Game, encodeGame, gameDecoder)
+import Model.Game exposing (Game, encodeGame, gameDecoder, gameResultDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
@@ -25,6 +25,7 @@ import Task
 import Time
 import Uuid
 import Views.AddRemovePlayers exposing (addRemovePlayers)
+import Views.EnterGameCode exposing (enterGameCode)
 import Views.GameFinished exposing (gameFinished)
 import Views.GameInfo exposing (gameInfo)
 import Views.Highscore exposing (highscore)
@@ -167,24 +168,29 @@ updatePreGame msg model =
             , Cmd.none
             )
 
-        GameReceived dbGame ->
-            let
-                currentGame =
-                    model.game
+        GameReceived dbGameMaybe ->
+            case dbGameMaybe of
+                Just dbGame ->
+                    let
+                        currentGame =
+                            model.game
 
-                -- _ =
-                --     Debug.log "GameReceived: " dbGame
-            in
-            ( { model
-                | game =
-                    { currentGame
-                        | id = dbGame.id
-                        , code = dbGame.code
-                        , players = dbGame.users
-                    }
-              }
-            , Cmd.none
-            )
+                        -- _ =
+                        --     Debug.log "GameReceived: " dbGame
+                    in
+                    ( { model
+                        | game =
+                            { currentGame
+                                | id = dbGame.id
+                                , code = dbGame.code
+                                , players = dbGame.users
+                            }
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         AddUser ->
             if find (\u -> String.toLower u.name == String.toLower model.currentNewPlayerName) model.users == Nothing then
@@ -553,56 +559,61 @@ update msg model =
                                     )
 
                                 GameCodeInputChange value ->
-                                    ( SelectedMode (Individual (EnterGameCode value)), Cmd.none )
+                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper value))), Cmd.none )
 
                                 _ ->
                                     ( model, Cmd.none )
 
                         WaitingForData ( gameMaybe, dbValuesMaybe ) ->
                             case msg of
-                                GameReceived dbGame ->
-                                    let
-                                        game =
-                                            { id = dbGame.id
-                                            , code = dbGame.code
-                                            , players = dbGame.users
-                                            , values = []
-                                            , finished = False
-                                            }
-                                    in
-                                    case dbValuesMaybe of
-                                        Nothing ->
-                                            ( SelectedMode
-                                                (Individual
-                                                    (WaitingForData
-                                                        ( Just game
-                                                        , dbValuesMaybe
-                                                        )
-                                                    )
-                                                )
-                                            , Cmd.none
-                                            )
-
-                                        Just dbValues ->
+                                GameReceived dbGameMaybe ->
+                                    case dbGameMaybe of
+                                        Just dbGame ->
                                             let
-                                                -- _ =
-                                                --     Debug.log "GameReceived: " dbGame
-                                                updatedValues =
-                                                    updateValues dbValues game.values game.players
-
-                                                newGame =
-                                                    { game | values = updatedValues }
+                                                game =
+                                                    { id = dbGame.id
+                                                    , code = dbGame.code
+                                                    , players = dbGame.users
+                                                    , values = []
+                                                    , finished = False
+                                                    }
                                             in
-                                            ( SelectedMode
-                                                (Individual
-                                                    (SelectPlayer
-                                                        { game = newGame
-                                                        , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
-                                                        }
+                                            case dbValuesMaybe of
+                                                Nothing ->
+                                                    ( SelectedMode
+                                                        (Individual
+                                                            (WaitingForData
+                                                                ( Just game
+                                                                , dbValuesMaybe
+                                                                )
+                                                            )
+                                                        )
+                                                    , Cmd.none
                                                     )
-                                                )
-                                            , Cmd.none
-                                            )
+
+                                                Just dbValues ->
+                                                    let
+                                                        -- _ =
+                                                        --     Debug.log "GameReceived: " dbGame
+                                                        updatedValues =
+                                                            updateValues dbValues game.values game.players
+
+                                                        newGame =
+                                                            { game | values = updatedValues }
+                                                    in
+                                                    ( SelectedMode
+                                                        (Individual
+                                                            (SelectPlayer
+                                                                { game = newGame
+                                                                , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
+                                                                }
+                                                            )
+                                                        )
+                                                    , Cmd.none
+                                                    )
+
+                                        Nothing ->
+                                            ( SelectedMode (Individual (EnterGameCode "")), Cmd.none )
 
                                 RemoteValuesReceived dbValues ->
                                     -- let
@@ -830,7 +841,7 @@ view model =
                 Individual individualModel ->
                     case individualModel of
                         EnterGameCode gameCode ->
-                            div [] [ span [] [ text "Enter game code" ], input [ value gameCode, onInput GameCodeInputChange ] [], button [ onClick EnterGame ] [ text "Enter" ] ]
+                            enterGameCode gameCode
 
                         WaitingForData ( game, values ) ->
                             div [] [ span [] [ text "Waiting for game ..." ] ]
@@ -1008,22 +1019,22 @@ gameCreated gameJson =
         -- _ =
         --     Debug.log "gameJson" gameJson
         gameMaybe =
-            Json.Decode.decodeValue gameDecoder gameJson
+            Json.Decode.decodeValue gameResultDecoder gameJson
     in
     case gameMaybe of
-        Ok dbGame ->
+        Ok gameResult ->
             -- let
             --     _ =
             --         Debug.log "dbGame" dbGame
             -- in
-            GameReceived dbGame
+            GameReceived (Just gameResult.game)
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in mapWorkerUpdated:" err
-            -- in
-            NoOp
+            let
+                _ =
+                    Debug.log "Error in mapWorkerUpdated:" err
+            in
+            GameReceived Nothing
 
 
 remoteValuesUpdated : Json.Decode.Value -> Msg
@@ -1039,15 +1050,22 @@ remoteValuesUpdated valuesJson =
             RemoteValuesReceived values
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in remoteValuesUpdated:" err
-            -- in
+            let
+                _ =
+                    Debug.log "Error in remoteValuesUpdated:" err
+            in
             NoOp
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        allSubscriptions =
+            [ usersReceived remoteUsersUpdated
+            , gameReceived gameCreated
+            , valuesReceived remoteValuesUpdated
+            ]
+    in
     case model of
         SelectedMode mode ->
             case mode of
@@ -1058,31 +1076,19 @@ subscriptions model =
                                 Sub.batch
                                     [ Time.every 100
                                         CountValuesTick
-                                    , usersReceived remoteUsersUpdated
-                                    , gameReceived gameCreated
-                                    , valuesReceived remoteValuesUpdated
                                     ]
 
                             else
                                 Sub.batch
-                                    [ usersReceived remoteUsersUpdated
-                                    , gameReceived gameCreated
-                                    , valuesReceived remoteValuesUpdated
-                                    ]
+                                    allSubscriptions
 
                         _ ->
                             Sub.batch
-                                [ usersReceived remoteUsersUpdated
-                                , gameReceived gameCreated
-                                , valuesReceived remoteValuesUpdated
-                                ]
+                                allSubscriptions
 
                 _ ->
                     Sub.batch
-                        [ usersReceived remoteUsersUpdated
-                        , gameReceived gameCreated
-                        , valuesReceived remoteValuesUpdated
-                        ]
+                        allSubscriptions
 
 
 

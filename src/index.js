@@ -56,16 +56,22 @@ var gameId = "";
 
 app.ports.getGame.subscribe(function(gameCode) {
   console.log("index.js: getGame " + gameCode);
-  Data.getGame(gameCode).then(function(game) {
-    gameId = game.id;
+  Data.getGame(gameCode)
+    .then(function(game) {
+      gameId = game.id;
 
-    Data.getValues(game.id, values => {
-      console.log("index.js: Data.getValues", values);
-      app.ports.valuesReceived.send(values);
+      Data.getValues(game.id, values => {
+        console.log("index.js: Data.getValues", values);
+        app.ports.valuesReceived.send(values);
+      });
+
+      app.ports.gameReceived.ssnd({ game: game, result: "ok" });
+    })
+    .catch(function(error) {
+      console.error("index.js: getGame(): Unable to get game. Error: ", error);
+
+      app.ports.gameReceived.send({ game: {}, result: "not found" });
     });
-
-    app.ports.gameReceived.send(game);
-  });
 });
 
 app.ports.createUser.subscribe(function(name) {
@@ -82,7 +88,7 @@ app.ports.createGame.subscribe(function(game) {
       app.ports.valuesReceived.send(values);
     });
 
-    app.ports.gameReceived.send(dbGame);
+    app.ports.gameReceived.send({ game: dbGame, result: "ok" });
   });
 });
 

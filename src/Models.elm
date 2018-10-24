@@ -21,7 +21,7 @@ type Msg
     | AddUser
     | RemoteUsers (List User)
     | RemoteValuesReceived (List DbValue)
-    | GameReceived DbGame
+    | GameReceived (Maybe DbGame)
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
