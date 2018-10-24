@@ -22,6 +22,7 @@ type Msg
     | RemoteUsers (List User)
     | RemoteValuesReceived (List DbValue)
     | GameReceived (Maybe DbGame)
+    | GamesReceived (List DbGame)
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -61,7 +62,7 @@ type Mode
 
 
 type IndividualModel
-    = EnterGameCode String
+    = EnterGameCode String (List Game)
     | WaitingForData ( Maybe Game, Maybe (List DbValue) )
     | SelectPlayer SelectPlayerModel
     | IndividualPlaying IndividualPlayingModel
