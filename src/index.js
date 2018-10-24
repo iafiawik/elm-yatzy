@@ -47,6 +47,12 @@ app.ports.getValues.subscribe(function(gameId) {
     app.ports.valuesReceived.send(values);
   });
 });
+app.ports.getGames.subscribe(function() {
+  Data.getGames(games => {
+    console.log("index.js: Data.getGames", games);
+    app.ports.gamesReceived.send(games);
+  });
+});
 // Data.getGames(games => {
 //   console.log("app.ports", app.ports);
 //   app.ports.remoteUsers.send(users);

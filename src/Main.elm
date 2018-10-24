@@ -15,7 +15,7 @@ import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
-import Model.Game exposing (Game, encodeGame, gameDecoder, gameResultDecoder)
+import Model.Game exposing (Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
@@ -42,6 +42,9 @@ errorToHtml error =
 
 
 port getGame : E.Value -> Cmd msg
+
+
+port getGames : () -> Cmd msg
 
 
 port getUsers : () -> Cmd msg
@@ -72,6 +75,9 @@ port usersReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port gameReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port gamesReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port valuesReceived : (Json.Decode.Value -> msg) -> Sub msg
@@ -515,9 +521,10 @@ update msg model =
                                 (Individual
                                     (EnterGameCode
                                         ""
+                                        []
                                     )
                                 )
-                            , Cmd.none
+                            , getGames ()
                             )
 
                         SelectGroup ->
@@ -546,8 +553,30 @@ update msg model =
 
                 Individual individualModel ->
                     case individualModel of
-                        EnterGameCode gameCode ->
+                        EnterGameCode gameCode games ->
                             case msg of
+                                GamesReceived dbGames ->
+                                    let
+                                        currentModel =
+                                            individualModel
+
+                                        allGames =
+                                            List.map
+                                                (\dbGame ->
+                                                    { id = dbGame.id
+                                                    , code = dbGame.code
+                                                    , players = dbGame.users
+                                                    , values = []
+                                                    , finished = dbGame.finished
+                                                    }
+                                                )
+                                                dbGames
+
+                                        -- _ =
+                                        --     Debug.log "GameReceived: " dbGame
+                                    in
+                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)), Cmd.none )
+
                                 EnterGame ->
                                     ( SelectedMode
                                         (Individual
@@ -559,7 +588,11 @@ update msg model =
                                     )
 
                                 GameCodeInputChange value ->
-                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper value))), Cmd.none )
+                                    let
+                                        currentModel =
+                                            individualModel
+                                    in
+                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)), Cmd.none )
 
                                 _ ->
                                     ( model, Cmd.none )
@@ -613,7 +646,7 @@ update msg model =
                                                     )
 
                                         Nothing ->
-                                            ( SelectedMode (Individual (EnterGameCode "")), Cmd.none )
+                                            ( SelectedMode (Individual (EnterGameCode "" [])), Cmd.none )
 
                                 RemoteValuesReceived dbValues ->
                                     -- let
@@ -840,8 +873,8 @@ view model =
 
                 Individual individualModel ->
                     case individualModel of
-                        EnterGameCode gameCode ->
-                            enterGameCode gameCode
+                        EnterGameCode gameCode games ->
+                            enterGameCode gameCode games
 
                         WaitingForData ( game, values ) ->
                             div [] [ span [] [ text "Waiting for game ..." ] ]
@@ -1037,6 +1070,30 @@ gameCreated gameJson =
             GameReceived Nothing
 
 
+gamesUpdated : Json.Decode.Value -> Msg
+gamesUpdated gamesJson =
+    let
+        -- _ =
+        --     Debug.log "gameJson" gameJson
+        gamesMaybe =
+            Json.Decode.decodeValue gamesDecoder gamesJson
+    in
+    case gamesMaybe of
+        Ok games ->
+            -- let
+            --     _ =
+            --         Debug.log "dbGame" dbGame
+            -- in
+            GamesReceived games
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "Error in mapWorkerUpdated:" err
+            in
+            NoOp
+
+
 remoteValuesUpdated : Json.Decode.Value -> Msg
 remoteValuesUpdated valuesJson =
     let
@@ -1064,6 +1121,7 @@ subscriptions model =
             [ usersReceived remoteUsersUpdated
             , gameReceived gameCreated
             , valuesReceived remoteValuesUpdated
+            , gamesReceived gamesUpdated
             ]
     in
     case model of
