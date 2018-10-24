@@ -42,7 +42,10 @@ errorToHtml error =
 port getGame : E.Value -> Cmd msg
 
 
-port getUsers : E.Value -> Cmd msg
+port getUsers : () -> Cmd msg
+
+
+port getValues : E.Value -> Cmd msg
 
 
 port createUser : E.Value -> Cmd msg
@@ -522,7 +525,7 @@ update msg model =
                                         }
                                     )
                                 )
-                            , getUsers (E.string "")
+                            , getUsers ()
                             )
 
                         _ ->
@@ -702,7 +705,7 @@ update msg model =
                                             }
                                         )
                                     )
-                                , Cmd.none
+                                , getValues (E.string preGame.game.id)
                                 )
 
                             else if msg == HideNotification then

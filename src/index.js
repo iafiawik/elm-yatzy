@@ -35,10 +35,16 @@ Data.getUsers(users => {
   app.ports.usersReceived.send(users);
 });
 
-app.ports.getUsers.subscribe(function(name) {
+app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
     console.log("index.js: Data.getUsers", users);
     app.ports.usersReceived.send(users);
+  });
+});
+app.ports.getValues.subscribe(function(gameId) {
+  Data.getValues(gameId, values => {
+    console.log("index.js: Data.getValues", values);
+    app.ports.valuesReceived.send(values);
   });
 });
 // Data.getGames(games => {
