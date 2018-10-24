@@ -49,15 +49,52 @@ const getUsers = onUsersChange => {
 };
 
 const getGames = onGameChange => {
-  db.collection("games").onSnapshot(function(snapshot) {
-    var games = snapshot.docs.map(game => {
-      return { id: game.id, ...game.data() };
+  db
+    .collection("games")
+    .where("finished", "==", false)
+    .onSnapshot(function(snapshot) {
+      var games = snapshot.docs.map(game => {
+        return { id: game.id, ...game.data() };
+      });
+
+      var users = games.map(function(game) {
+        return game.users.map(function(user) {
+          user.userId;
+        });
+      });
+
+      getUsersByIds(users).then(function(dbUsers) {
+        // var realUsers = game.users.map(function(user) {
+        //   return {
+        //     user: dbUsers.find(function(dbUser) {
+        //       return dbUser.id == user.userId;
+        //     }),
+        //     order: user.order
+        //   };
+        // });
+
+        var dbGames = games.map(function(game) {
+          var realUsers = [];
+          game.users.forEach(function(user) {
+            var dbUser = dbUsers.find(function(dbUser) {
+              return dbUser.id == user.userId;
+            });
+
+            if (dbUser) {
+              realUsers.push(dbUser);
+            }
+          });
+          return { ...game, users: realUsers };
+        });
+        console.log("DbGames: ", dbGames);
+
+        dbGames.sort(function(a, b) {
+          return new Date(b.dateCreated) - new Date(a.dateCreated);
+        });
+
+        onGameChange && onGameChange(dbGames);
+      });
     });
-
-    onGameChange && onGameChange(game);
-
-    console.log("game", game);
-  });
 };
 
 const createUser = name => {
@@ -312,6 +349,20 @@ const getValues = (gameId, onValuesChange) => {
     .collection("values")
     .where("gameId", "==", gameId)
     .onSnapshot(function(snapshot) {
+      var addedValueIds = [];
+      snapshot.docChanges().forEach(function(change) {
+        if (change.type === "added") {
+          addedValueIds.push(change.doc.id);
+          console.log("New city: ", change.doc.data());
+        }
+        if (change.type === "modified") {
+          console.log("Modified city: ", change.doc.data());
+        }
+        if (change.type === "removed") {
+          console.log("Removed city: ", change.doc.data());
+        }
+      });
+
       var values = snapshot.docs.map(value => {
         return { id: value.id, ...value.data() };
       });
