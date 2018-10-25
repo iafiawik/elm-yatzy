@@ -17,10 +17,6 @@
       max-width: 500px;
     }
 
-    // td:first-of-type {
-    //   width: 110px;
-    // }
-
     @include md {
       margin-left: auto;
       margin-right: auto;
@@ -39,7 +35,7 @@
 
   &.show-total-sum {
     tr:last-of-type {
-      display: block;
+      display: table-row;
     }
   }
 

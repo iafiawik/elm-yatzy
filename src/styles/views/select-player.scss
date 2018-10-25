@@ -19,6 +19,11 @@
   padding: 5px 10px;
   margin-bottom: 5px;
   color: $primary-color;
+  background: white;
+
+  &:hover {
+    cursor: pointer;
+  }
 
   &.selected {
     background: $primary-color;
