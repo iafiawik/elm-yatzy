@@ -107,9 +107,9 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
             else
                 div [] []
     in
-    div [ class "score-card-wrapper" ]
+    div [ classList [ ( "score-card-wrapper", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
         [ currentTopBar
-        , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
+        , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ) ] ]
             ([ tr []
                 ([ th []
                     [ text "" ]

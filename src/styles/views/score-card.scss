@@ -1,19 +1,51 @@
 @import "../colors";
 
 .score-card-wrapper {
-  margin-top: 30px;
+  margin-top: 70px;
   margin-right: auto;
   margin-left: auto;
   display: inline-block;
-  border: 10px solid white;
-  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
-    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
-    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
+
+  &:not(.has-selected-player) {
+  }
+
+  &.has-selected-player {
+    width: 100%;
+    max-width: 500px;
+    table {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    // td:first-of-type {
+    //   width: 110px;
+    // }
+
+    @include md {
+      margin-left: auto;
+      margin-right: auto;
+      width: auto;
+      border: 10px solid white;
+      box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
+        4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
+        6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
+    }
+  }
 }
 
 .score-card {
   border-collapse: collapse;
   border: 10px solid $primary-color;
+
+  &.show-total-sum {
+    tr:last-of-type {
+      display: block;
+    }
+  }
+
+  tr:last-of-type {
+    display: none;
+  }
 
   .new {
     animation: new-value 13s linear alternate-reverse;
