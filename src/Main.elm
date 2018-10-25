@@ -310,9 +310,6 @@ flippedComparison a b =
 updateValues : List DbValue -> List Value -> List Player -> List Value
 updateValues dbValues oldValues players =
     let
-        _ =
-            Debug.log "UpdateValues" (String.fromInt (List.length dbValues) ++ String.fromInt (List.length oldValues))
-
         newestMaybe =
             List.head (List.sortWith flippedComparison dbValues)
     in
@@ -326,9 +323,6 @@ updateValues dbValues oldValues players =
 updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
 updateGame msg model =
     let
-        _ =
-            Debug.log "updateGame" (Debug.toString msg)
-
         currentPlayerMaybe =
             getCurrentPlayer model.game.values model.game.players
     in
@@ -1199,9 +1193,6 @@ gamesUpdated gamesJson =
 remoteValuesUpdated : Json.Decode.Value -> Msg
 remoteValuesUpdated valuesJson =
     let
-        _ =
-            Debug.log "remoteValuesUpdated" ""
-
         valuesMaybe =
             Json.Decode.decodeValue valuesDecoder valuesJson
     in
