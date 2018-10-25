@@ -1,4 +1,4 @@
-module Model.Value exposing (DbValue, Value, encodeValue, valueDecoder, valuesDecoder)
+module Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valueDecoder, valuesDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
@@ -29,6 +29,20 @@ encodeValue value =
         , ( "userId", E.string value.player.user.id )
         , ( "value", E.int value.value )
         ]
+
+
+encodeValues : List Value -> List E.Value
+encodeValues values =
+    List.map
+        (\value ->
+            E.object
+                [ ( "id", E.string value.id )
+                , ( "boxId", E.string value.box.id_ )
+                , ( "userId", E.string value.player.user.id )
+                , ( "value", E.int value.value )
+                ]
+        )
+        values
 
 
 type alias DbValue =
