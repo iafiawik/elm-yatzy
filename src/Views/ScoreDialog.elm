@@ -48,7 +48,7 @@ scoreDialog model box currentPlayer isEdit =
                 , h2 [] [ text currentPlayer.user.name ]
                 ]
             , div [ classList [ ( "score-dialog-number-buttons", True ), ( "" ++ box.id, True ) ] ]
-                (acceptedValuesButtons ++ [ scoreDialogNumberButton (model.currentValue == 0) 0 ":(" "skip-button" ])
+                (acceptedValuesButtons ++ [ scoreDialogNumberButton (model.currentValue == 0) 0 "" "skip-button" ])
             , button [ classList [ ( "score-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue >= 0 ) ], disabled (model.currentValue < 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]

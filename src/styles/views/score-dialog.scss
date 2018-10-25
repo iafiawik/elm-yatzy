@@ -1,5 +1,19 @@
 @import "../colors";
 
+@mixin button($scale) {
+  width: 90px * $scale;
+  height: 90px * $scale;
+  font-size: 25px * $scale;
+  line-height: 25px * $scale;
+  margin: 8px * $scale;
+}
+
+@mixin buttons($scale) {
+  .score-dialog-number-button {
+    @include button($scale);
+  }
+}
+
 .score-dialog h1 {
   margin: 0px;
   padding: 0px;
@@ -21,96 +35,65 @@
 }
 
 .score-dialog-number-button.skip-button {
-  background: white;
-  color: $primary-color;
+  background-image: url("frown-face-inactive.svg");
+  background-size: 90% 90%;
+  background-color: white;
+  background-position: center center;
   border: 6px solid $primary-color;
-  transform: rotate(90deg);
-
-  text-align: center;
-  letter-spacing: -8px;
-  padding: 0px;
-
-  span {
-    // background: red;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-    height: 100%;
-    position: relative;
-    top: -3px;
-    left: -1px;
-  }
 }
 
 .score-dialog-number-button.skip-button:hover,
 .score-dialog-number-button.skip-button.marked {
   border-color: black;
+  background-image: url("frown-face-active.svg");
+  background-size: 90% 90%;
+  background-position: center center;
+  border-color: black;
 }
 
 .score-dialog-number-buttons.full_house {
-  margin-top: 10px;
-  padding: 0px 20px;
+  @include buttons(0.55);
 
-  .score-dialog-number-button {
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
-    margin: 5px;
-  }
-  .score-dialog-number-button.skip-button {
-    font-size: 25px;
-    letter-spacing: -6px;
+  @include sm {
+    padding: 10px;
 
-    span {
-      left: -2px;
-      top: -4px;
-    }
+    @include buttons(0.6);
   }
 }
 
 .score-dialog-number-buttons.chance {
-  .score-dialog-number-button {
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
-    margin: 5px;
-  }
-  .score-dialog-number-button.skip-button {
-    font-size: 20px;
-    letter-spacing: -5px;
+  @include buttons(0.5);
+
+  @include sm {
+    padding: 10px;
+
+    @include buttons(0.55);
   }
 }
 
 .score-dialog-number-buttons.one_pair,
 .score-dialog-number-buttons.four_of_a_kind,
 .score-dialog-number-buttons.three_of_a_kind {
-  padding: 15px;
+  padding: 0px;
 
-  .score-dialog-number-button {
-    width: 80px;
-    height: 80px;
-    font-size: 20px;
-  }
+  @include buttons(0.9);
 
-  .score-dialog-number-button.skip-button {
-    font-size: 35px;
+  @include sm {
+    padding: 10px;
+
+    @include buttons(1);
   }
 }
 
 .score-dialog-number-buttons.two_pairs {
-  padding: 15px;
+  padding: 0px;
 
-  .score-dialog-number-button {
-    width: 70px;
-    height: 70px;
-    font-size: 20px;
-    margin: 5px;
-  }
+  @include buttons(0.75);
 
-  .score-dialog-number-button.skip-button {
-    font-size: 35px;
+  @include sm {
+    padding: 10px;
+
+    @include buttons(0.85);
   }
 }
 
@@ -120,21 +103,13 @@
 .score-dialog-number-buttons.fours,
 .score-dialog-number-buttons.fives,
 .score-dialog-number-buttons.sixes {
-  padding: 20px;
+  padding: 0px;
 
-  .score-dialog-number-button {
-    width: 90px;
-    height: 90px;
-    font-size: 23px;
-  }
+  @include buttons(0.9);
 
-  .score-dialog-number-button.skip-button {
-    font-size: 40px;
-
-    span {
-      top: -5px;
-      left: -1px;
-    }
+  @include sm {
+    padding: 10px;
+    @include buttons(1);
   }
 }
 
@@ -145,21 +120,13 @@
   justify-content: center;
   align-items: center;
   display: flex;
-  margin-top: -40px;
 
-  .score-dialog-number-button {
-    width: 120px;
-    height: 120px;
-    font-size: 50px;
-  }
+  @include buttons(1.3);
 
-  .score-dialog-number-button.skip-button {
-    font-size: 50px;
+  @include sm {
+    padding: 20px;
 
-    span {
-      top: -6px;
-      left: 0px;
-    }
+    @include buttons(1.6);
   }
 }
 
@@ -172,7 +139,6 @@
   justify-content: center;
   align-items: center;
   border-radius: 100%;
-  margin: 10px;
   font-size: 25px;
   line-height: 25px;
   font-weight: bold;
@@ -228,7 +194,7 @@
   }
 }
 .score-dialog-number-button.marked {
-  background: black;
+  background-color: black;
   color: white;
 }
 
