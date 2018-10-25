@@ -37,11 +37,6 @@ import Views.ScoreDialog exposing (scoreDialog)
 import Views.SelectPlayer exposing (selectPlayer)
 
 
-errorToHtml : Json.Decode.Error -> String
-errorToHtml error =
-    "Error in decoder: " ++ Json.Decode.errorToString error
-
-
 port fillWithDummyValues : List E.Value -> Cmd msg
 
 
@@ -166,8 +161,6 @@ errorToString error =
 updatePreGame : Msg -> GameSetup -> ( GameSetup, Cmd Msg )
 updatePreGame msg model =
     case msg of
-        -- AddRemovePlayers ->
-        --     ( { model | game = ShowAddRemovePlayers }, Cmd.none )
         NewPlayerInputValueChange value ->
             ( { model | currentNewPlayerName = value }, Cmd.none )
 
@@ -184,9 +177,6 @@ updatePreGame msg model =
                     let
                         currentGame =
                             model.game
-
-                        -- _ =
-                        --     Debug.log "GameReceived: " dbGame
                     in
                     ( { model
                         | game =
@@ -213,10 +203,6 @@ updatePreGame msg model =
                 )
 
             else
-                -- let
-                --     _ =
-                --         Debug.log "" "Name exists"
-                -- in
                 ( { model | error = Just (UserAlreadyExists model.currentNewPlayerName) }
                 , Cmd.none
                 )
@@ -318,8 +304,6 @@ updateValues dbValues oldValues players =
 updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
 updateGame msg model =
     let
-        -- _ =
-        --     Debug.log "updateGame:" msg
         currentPlayerMaybe =
             getCurrentPlayer model.game.values model.game.players
     in
@@ -333,9 +317,6 @@ updateGame msg model =
 
                         values =
                             updateValues dbValues model.game.values model.game.players
-
-                        -- _ =
-                        --     Debug.log "RemoteValuesReceived: " dbValues
                     in
                     ( { model
                         | game =
@@ -460,13 +441,6 @@ updateGame msg model =
                     ( model, Cmd.none )
 
         Nothing ->
-            -- let
-            --     _ =
-            --         Debug.log "Nothing returned from Update:" msg
-            -- in
-            -- handle product not found here
-            -- likely return the model unchanged
-            -- or set an error message on the model
             ( { model | error = Just NoCurrentPlayer }, Cmd.none )
 
 
@@ -478,8 +452,6 @@ updatePostGame msg model =
 
         CountValuesTick newTime ->
             let
-                -- _ =
-                --     Debug.log "Update(), CountValuesTick:" newTime
                 nextValueToAnimateMaybe =
                     getNextValueToAnimate model.game.players model.game.values
             in
@@ -611,10 +583,6 @@ createDummyValues player existingValues =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    -- let
-    --     _ =
-    --         Debug.log "update(): " msg
-    -- in]
     case model of
         SelectedMode mode ->
             case mode of
@@ -675,9 +643,6 @@ update msg model =
                                                     }
                                                 )
                                                 dbGames
-
-                                        -- _ =
-                                        --     Debug.log "GameReceived: " dbGame
                                     in
                                     ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)), Cmd.none )
 
@@ -730,8 +695,6 @@ update msg model =
 
                                                 Just dbValues ->
                                                     let
-                                                        -- _ =
-                                                        --     Debug.log "GameReceived: " dbGame
                                                         updatedValues =
                                                             updateValues dbValues game.values game.players
 
@@ -753,10 +716,6 @@ update msg model =
                                             ( SelectedMode (Individual (EnterGameCode "" [])), Cmd.none )
 
                                 RemoteValuesReceived dbValues ->
-                                    -- let
-                                    --     _ =
-                                    --         Debug.log "update(), RemoteValuesReceived" dbValues
-                                    -- in
                                     case gameMaybe of
                                         Nothing ->
                                             ( SelectedMode
@@ -772,13 +731,9 @@ update msg model =
 
                                         Just game ->
                                             let
-                                                -- _ =
-                                                --     Debug.log "update(), RemoteValuesReceived, game.players: " game.players
                                                 updatedValues =
                                                     updateValues dbValues game.values game.players
 
-                                                -- _ =
-                                                --     Debug.log "update(), RemoteValuesReceived, updatedValues: " updatedValues
                                                 newGame =
                                                     { game | values = updatedValues }
                                             in
@@ -834,48 +789,24 @@ update msg model =
                                             , Cmd.none
                                             )
 
-                                -- if List.length selectPlayerModel.markedPlayers == 1 then
-                                --     case List.head selectPlayerModel.markedPlayers of
-                                --         Just player ->
-                                --             startIndividualGame selectPlayerModel.game player
-                                --
-                                --         Nothing ->
-                                --             ( model, Cmd.none )
-                                --
-                                -- else
-                                --     startGroupGame selectPlayerModel.game
                                 _ ->
                                     ( model, Cmd.none )
 
                         IndividualPlaying individualPlayingModel ->
                             case msg of
                                 FillWithDummyValues player ->
-                                    let
-                                        _ =
-                                            Debug.log "FillWithDummyValues" player
-                                    in
                                     ( model, fillWithDummyValues (encodeValues (createDummyValues player individualPlayingModel.gamePlaying.game.values)) )
 
                                 _ ->
-                                    -- let
-                                    --     gameModel =
-                                    --         Tuple.mapFirst Playing <| updateGame msg gamePlaying
-                                    -- in
                                     let
                                         gameModel =
                                             updateGame msg individualPlayingModel.gamePlaying
 
                                         gamePlaying =
                                             Tuple.first gameModel
-
-                                        --     playingModel =
-                                        --         Tuple.mapFirst IndividualPlaying <| updateGame msg individualPlayingModel.playingModel
                                     in
                                     if isGameFinished gamePlaying.game then
                                         let
-                                            _ =
-                                                Debug.log "game.values" (Debug.toString game.values)
-
                                             game =
                                                 gamePlaying.game
 
@@ -927,10 +858,6 @@ update msg model =
                         Playing gamePlaying ->
                             case msg of
                                 FillWithDummyValues player ->
-                                    let
-                                        _ =
-                                            Debug.log "FillWithDummyValues" player
-                                    in
                                     ( model, fillWithDummyValues (encodeValues (createDummyValues player gamePlaying.game.values)) )
 
                                 _ ->
@@ -1007,22 +934,6 @@ update msg model =
 
 
 ---- VIEW ----
-
-
-viewInput : String -> Html Msg
-viewInput task =
-    div
-        [ class "header" ]
-        [ h1 [] [ text "todos" ]
-        , input
-            [ class "new-todo"
-            , placeholder "What needs to be done?"
-            , autofocus True
-            , value task
-            , name "newTodo"
-            ]
-            []
-        ]
 
 
 view : Model -> Html Msg
@@ -1212,66 +1123,40 @@ remoteUsersUpdated usersJson =
             RemoteUsers users
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in remoteUsersUpdated:" err
-            -- in
             NoOp
 
 
 gameCreated : Json.Decode.Value -> Msg
 gameCreated gameJson =
     let
-        -- _ =
-        --     Debug.log "gameJson" gameJson
         gameMaybe =
             Json.Decode.decodeValue gameResultDecoder gameJson
     in
     case gameMaybe of
         Ok gameResult ->
-            -- let
-            --     _ =
-            --         Debug.log "dbGame" dbGame
-            -- in
             GameReceived (Just gameResult.game)
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in mapWorkerUpdated:" err
-            -- in
             GameReceived Nothing
 
 
 gamesUpdated : Json.Decode.Value -> Msg
 gamesUpdated gamesJson =
     let
-        -- _ =
-        --     Debug.log "gameJson" gameJson
         gamesMaybe =
             Json.Decode.decodeValue gamesDecoder gamesJson
     in
     case gamesMaybe of
         Ok games ->
-            -- let
-            --     _ =
-            --         Debug.log "dbGame" dbGame
-            -- in
             GamesReceived games
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in mapWorkerUpdated:" err
-            -- in
             NoOp
 
 
 remoteValuesUpdated : Json.Decode.Value -> Msg
 remoteValuesUpdated valuesJson =
     let
-        -- _ =
-        --     Debug.log "remoteValuesUpdated: valuesJson" valuesJson
         valuesMaybe =
             Json.Decode.decodeValue valuesDecoder valuesJson
     in
@@ -1280,10 +1165,6 @@ remoteValuesUpdated valuesJson =
             RemoteValuesReceived values
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "Error in remoteValuesUpdated:" err
-            -- in
             NoOp
 
 
