@@ -1,5 +1,6 @@
 @import "animations";
 @import "colors";
+@import "breakpoints";
 
 @import "dialog";
 
@@ -23,9 +24,10 @@ body {
   color: #293c4b;
   background: white;
   min-height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+  width: 100%;
 }
 //
 // button,
