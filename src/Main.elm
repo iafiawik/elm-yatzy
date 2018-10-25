@@ -889,7 +889,7 @@ update msg model =
                                                     }
                                                 )
                                             )
-                                        , Cmd.none
+                                        , getUsers ()
                                         )
 
                                     else
