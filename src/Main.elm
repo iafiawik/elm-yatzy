@@ -712,7 +712,7 @@ update msg model =
                                                     , code = dbGame.code
                                                     , players = dbGame.users
                                                     , values = []
-                                                    , finished = False
+                                                    , finished = dbGame.finished
                                                     }
                                             in
                                             case dbValuesMaybe of
@@ -1049,41 +1049,49 @@ view model =
                                 game =
                                     gamePlayingModel.gamePlaying.game
 
-                                gameState =
-                                    stateToString playingModel.state
-
-                                playingModel =
-                                    gamePlayingModel.gamePlaying
-
-                                currentPlayerMaybe =
-                                    getCurrentPlayer game.values game.players
+                                selectedPlayer =
+                                    gamePlayingModel.selectedPlayer
                             in
-                            case currentPlayerMaybe of
-                                Just currentPlayer ->
-                                    let
-                                        content =
-                                            case playingModel.state of
-                                                Idle ->
-                                                    div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
-                                                        ]
+                            if game.finished == True then
+                                div [] [ individualHighscore selectedPlayer game.players game.values ]
 
-                                                Input box isEdit ->
-                                                    div []
-                                                        [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
-                                                        , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
-                                                        ]
-                                    in
-                                    div
-                                        []
-                                        [ div [ classList [ ( gameState, True ) ] ] [ content ]
-                                        ]
+                            else
+                                let
+                                    gameState =
+                                        stateToString playingModel.state
 
-                                Nothing ->
-                                    div [] [ text "No player found" ]
+                                    playingModel =
+                                        gamePlayingModel.gamePlaying
+
+                                    currentPlayerMaybe =
+                                        getCurrentPlayer game.values game.players
+                                in
+                                case currentPlayerMaybe of
+                                    Just currentPlayer ->
+                                        let
+                                            content =
+                                                case playingModel.state of
+                                                    Idle ->
+                                                        div []
+                                                            [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
+                                                            ]
+
+                                                    Input box isEdit ->
+                                                        div []
+                                                            [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
+                                                            , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                            ]
+                                        in
+                                        div
+                                            []
+                                            [ div [ classList [ ( gameState, True ) ] ] [ content ]
+                                            ]
+
+                                    Nothing ->
+                                        div [] [ text "No player found" ]
 
                         IndividualPostGame postGame ->
-                            div [] [ span [] [ text "Game is finished" ], individualHighscore postGame.selectedPlayer postGame.game.players postGame.game.values ]
+                            div [] [ individualHighscore postGame.selectedPlayer postGame.game.players postGame.game.values ]
 
                 Group groupModel ->
                     case groupModel of
