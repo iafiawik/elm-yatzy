@@ -42,6 +42,7 @@ type Msg
     | HideNotification
     | ShowGameInfo
     | HideGameInfo
+    | FillWithDummyValues Player
     | NoOp
 
 

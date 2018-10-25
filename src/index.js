@@ -35,12 +35,19 @@ Data.getUsers(users => {
   app.ports.usersReceived.send(users);
 });
 
+app.ports.fillWithDummyValues.subscribe(function(values) {
+  values.forEach(function(value) {
+    Data.createValue(value, gameId);
+  });
+});
+
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
     console.log("index.js: Data.getUsers", users);
     app.ports.usersReceived.send(users);
   });
 });
+
 app.ports.getValues.subscribe(function(gameId) {
   Data.getValues(gameId, values => {
     console.log("index.js: Data.getValues", values);
