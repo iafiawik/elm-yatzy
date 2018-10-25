@@ -99,9 +99,16 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
                     th [ classList classNames ] [ span [] [ text name ] ]
                 )
                 players
+
+        currentTopBar =
+            if game.finished == False then
+                topBar (hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == True) currentPlayer
+
+            else
+                div [] []
     in
     div [ class "score-card-wrapper" ]
-        [ topBar (hasSelectedPlayer == True && isPlayerTheSelectedPlayer selectedPlayer currentPlayer == True) currentPlayer
+        [ currentTopBar
         , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
             ([ tr []
                 ([ th []

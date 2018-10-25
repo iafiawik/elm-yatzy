@@ -1,4 +1,4 @@
-module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
+module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -16,7 +16,8 @@ type Msg
     = SelectGroup
     | SelectIndividual
     | EnterGame
-    | PlayerMarked (List Player)
+    | PlayerMarked Player
+    | AllPlayersMarked
     | AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
@@ -75,9 +76,15 @@ type GroupModel
     | PostGame GameResult
 
 
+type MarkedPlayer
+    = Single Player
+    | All
+    | NoPlayer
+
+
 type alias SelectPlayerModel =
     { game : Game
-    , markedPlayers : List Player
+    , markedPlayer : MarkedPlayer
     }
 
 

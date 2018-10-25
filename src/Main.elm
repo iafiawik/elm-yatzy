@@ -20,7 +20,7 @@ import Model.GameState exposing (GameState(..))
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
 import Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valuesDecoder)
-import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
 import Uuid
@@ -721,7 +721,7 @@ update msg model =
                                                                 (Individual
                                                                     (SelectPlayer
                                                                         { game = newGame
-                                                                        , markedPlayers = []
+                                                                        , markedPlayer = NoPlayer
                                                                         }
                                                                     )
                                                                 )
@@ -765,7 +765,7 @@ update msg model =
                                                         (Individual
                                                             (SelectPlayer
                                                                 { game = newGame
-                                                                , markedPlayers = []
+                                                                , markedPlayer = NoPlayer
                                                                 }
                                                             )
                                                         )
@@ -777,26 +777,52 @@ update msg model =
 
                                 SelectPlayer selectPlayerModel ->
                                     case msg of
-                                        PlayerMarked players ->
+                                        PlayerMarked player ->
                                             ( SelectedMode
                                                 (Individual
-                                                    (SelectPlayer { selectPlayerModel | markedPlayers = players })
+                                                    (SelectPlayer { selectPlayerModel | markedPlayer = Single player })
+                                                )
+                                            , Cmd.none
+                                            )
+
+                                        AllPlayersMarked ->
+                                            ( SelectedMode
+                                                (Individual
+                                                    (SelectPlayer { selectPlayerModel | markedPlayer = All })
                                                 )
                                             , Cmd.none
                                             )
 
                                         Start ->
-                                            if List.length selectPlayerModel.markedPlayers == 1 then
-                                                case List.head selectPlayerModel.markedPlayers of
-                                                    Just player ->
-                                                        startIndividualGame selectPlayerModel.game player
+                                            case selectPlayerModel.markedPlayer of
+                                                Single player ->
+                                                    startIndividualGame selectPlayerModel.game player
 
-                                                    Nothing ->
-                                                        ( model, Cmd.none )
+                                                All ->
+                                                    startGroupGame selectPlayerModel.game
 
-                                            else
-                                                startGroupGame selectPlayerModel.game
+                                                NoPlayer ->
+                                                    ( SelectedMode
+                                                        (Individual
+                                                            (SelectPlayer
+                                                                { selectPlayerModel
+                                                                    | markedPlayer = NoPlayer
+                                                                }
+                                                            )
+                                                        )
+                                                    , Cmd.none
+                                                    )
 
+                                        -- if List.length selectPlayerModel.markedPlayers == 1 then
+                                        --     case List.head selectPlayerModel.markedPlayers of
+                                        --         Just player ->
+                                        --             startIndividualGame selectPlayerModel.game player
+                                        --
+                                        --         Nothing ->
+                                        --             ( model, Cmd.none )
+                                        --
+                                        -- else
+                                        --     startGroupGame selectPlayerModel.game
                                         _ ->
                                             ( model, Cmd.none )
 
@@ -937,7 +963,7 @@ view model =
                             div [] [ span [] [ text "Waiting for game ..." ] ]
 
                         SelectPlayer selectPlayerModel ->
-                            selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayers
+                            selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayer
 
                         IndividualPlaying gamePlayingModel ->
                             let
