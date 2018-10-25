@@ -505,6 +505,51 @@ updatePostGame msg model =
             ( model, Cmd.none )
 
 
+startIndividualGame : Game -> Player -> ( Model, Cmd Msg )
+startIndividualGame game selectedPlayer =
+    ( SelectedMode
+        (Individual
+            (IndividualPlaying
+                { gamePlaying =
+                    { game = game
+                    , boxes = getBoxes
+                    , state = Idle
+                    , currentValue = -1
+                    , showGameInfo = False
+                    , error = Nothing
+                    }
+                , selectedPlayer = selectedPlayer
+                }
+            )
+        )
+    , Cmd.none
+    )
+
+
+startGroupGame : Game -> ( Model, Cmd Msg )
+startGroupGame game =
+    ( SelectedMode
+        (Group
+            (Playing
+                { game =
+                    { id = game.id
+                    , code = game.code
+                    , players = game.players
+                    , values = []
+                    , finished = False
+                    }
+                , boxes = getBoxes
+                , state = Idle
+                , currentValue = 0
+                , showGameInfo = False
+                , error = Nothing
+                }
+            )
+        )
+    , getValues (E.string game.id)
+    )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     -- let
