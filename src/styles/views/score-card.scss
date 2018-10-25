@@ -33,6 +33,40 @@
   border-collapse: collapse;
   border: 10px solid $primary-color;
 
+  .inactive {
+    background: white;
+  }
+
+  &.show-counted-values {
+    td.counted {
+      animation: bonus 1.5s linear forwards !important;
+    }
+  }
+
+  &.allow-interaction {
+    th.active span {
+      animation: flash 3s linear infinite;
+      display: block;
+    }
+
+    td.active {
+      background: $primary-color;
+      border: 1px solid white;
+    }
+
+    &:not(.has-selected-player) {
+      td.active:hover {
+        cursor: pointer;
+        background: white;
+      }
+    }
+
+    .new {
+      animation: new-value 13s linear alternate-reverse;
+      // animation-iteration-count: 3;
+    }
+  }
+
   &.show-total-sum {
     tr:last-of-type {
       display: table-row;
@@ -41,20 +75,6 @@
 
   tr:last-of-type {
     display: none;
-  }
-
-  .new {
-    animation: new-value 13s linear alternate-reverse;
-    animation-iteration-count: 3;
-  }
-
-  .inactive {
-    background: white;
-  }
-
-  th.active span {
-    animation: flash 3s linear infinite;
-    display: block;
   }
 
   &.has-selected-player {
@@ -80,12 +100,6 @@
     }
   }
 
-  &:not(.has-selected-player) {
-    td.active:hover {
-      cursor: pointer;
-      background: white;
-    }
-  }
   td {
     border: 1px solid $primary-color;
     padding: 10px 20px;
@@ -100,17 +114,8 @@
     background: $primary-color;
   }
 
-  td.active {
-    background: $primary-color;
-    border: 1px solid white;
-  }
-
   td.box {
     background: white;
-  }
-
-  td.counted {
-    animation: bonus 1.5s linear forwards !important;
   }
 
   td:first-of-type {

@@ -109,7 +109,7 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
     in
     div [ classList [ ( "score-card-wrapper", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
         [ currentTopBar
-        , table [ classList [ ( "score-card", True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ) ] ]
+        , table [ classList [ ( "score-card", True ), ( "allow-interaction", allowInteraction == True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ), ( "show-counted-values", showCountedValues ) ] ]
             ([ tr []
                 ([ th []
                     [ text "" ]
@@ -160,7 +160,7 @@ renderCell box boxes values player currentPlayer selectedPlayer allowInteraction
         Just value ->
             let
                 classNames =
-                    [ ( "inactive", True ), ( "selected", isSelectedPlayer ), ( "new", value.new ) ]
+                    [ ( "inactive", True ), ( "selected", isSelectedPlayer ), ( "new", value.new ), ( "counted", value.counted ) ]
             in
             if allowEditAdd then
                 td [ classList classNames, onClick (ShowEditValue value) ] [ text (getValueText value.value) ]
@@ -196,7 +196,7 @@ renderCell box boxes values player currentPlayer selectedPlayer allowInteraction
             else if isCurrentPlayer || isSelectedPlayer && hasSelectedPlayer then
                 let
                     classNames =
-                        [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ) ]
+                        [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ), ( "counted", False ) ]
                 in
                 if box.category == None then
                     td [ classList classNames ] [ text "" ]
