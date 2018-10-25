@@ -106,7 +106,7 @@ app.ports.createGame.subscribe(function(game) {
 });
 
 app.ports.editGame.subscribe(function(game) {
-  alert("index.js: Edit game " + JSON.stringify(game));
+  console.log("index.js: Edit game " + JSON.stringify(game));
   Data.editGame(game, gameId);
 });
 
