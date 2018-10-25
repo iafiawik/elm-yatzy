@@ -1,4 +1,4 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getInteractiveBoxes, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
 import List.Extra exposing (find, findIndex, removeAt)
 import Model.Box exposing (Box)
@@ -10,6 +10,7 @@ import Models exposing (Model, PlayerAndNumberOfValues)
 import Ordering exposing (Ordering)
 
 
+getBoxes : List Box
 getBoxes =
     [ { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 }
     , { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 2, category = Upper, order = 1 }
@@ -30,6 +31,11 @@ getBoxes =
     , { id_ = "yatzy", friendlyName = "Yatzy", boxType = SameKind, category = Lower, order = 14 }
     , { id_ = "total_sum", friendlyName = "Summa", boxType = TotalSum, category = None, order = -1 }
     ]
+
+
+getInteractiveBoxes : List Box
+getInteractiveBoxes =
+    List.filter (\box -> box.category /= None) getBoxes
 
 
 getDefaultMarkedValue : Box -> Maybe Int
