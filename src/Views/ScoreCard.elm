@@ -88,7 +88,7 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
 
                         name =
                             if isSelectedPlayer then
-                                "Jag"
+                                player.user.name
 
                             else
                                 player.user.name
