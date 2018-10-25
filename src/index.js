@@ -71,7 +71,7 @@ app.ports.getGame.subscribe(function(gameCode) {
         app.ports.valuesReceived.send(values);
       });
 
-      app.ports.gameReceived.ssnd({ game: game, result: "ok" });
+      app.ports.gameReceived.send({ game: game, result: "ok" });
     })
     .catch(function(error) {
       console.error("index.js: getGame(): Unable to get game. Error: ", error);
