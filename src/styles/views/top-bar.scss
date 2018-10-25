@@ -29,9 +29,13 @@
 
   .top-bar-info-button {
     position: absolute;
-
+    background-image: url("cog.svg");
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+    background-position: center center;
     height: 100%;
     width: 50px;
     right: 0px;
+    background-color: $primary-color;
   }
 }
