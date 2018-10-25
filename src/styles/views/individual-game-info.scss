@@ -1,0 +1,35 @@
+.individual-game-info {
+  .indivudal-game-info-restart {
+    margin: 0px;
+    margin-top: 20px;
+    font-weight: 100;
+    a {
+      font-weight: bold;
+      color: $primary-color;
+
+      &:hover {
+        cursor: pointer;
+        color: black;
+      }
+    }
+  }
+}
+
+.individual-game-info {
+}
+
+.individual-game-info h1 {
+  margin: 0px;
+}
+
+.individual-game-info h2 {
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.individual-game-info-link {
+  a {
+    margin-left: 10px;
+  }
+}
