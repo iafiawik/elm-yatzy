@@ -29,6 +29,7 @@ import Views.EnterGameCode exposing (enterGameCode)
 import Views.GameFinished exposing (gameFinished)
 import Views.GameInfo exposing (gameInfo)
 import Views.Highscore exposing (highscore)
+import Views.IndividualGameInfo exposing (individualGameInfo)
 import Views.IndividualHighscore exposing (individualHighscore)
 import Views.IndividualJoinInfo exposing (individualJoinInfo)
 import Views.Notification exposing (notification)
@@ -624,219 +625,227 @@ update msg model =
                             ( model, Cmd.none )
 
                 Individual individualModel ->
-                    case individualModel of
-                        EnterGameCode gameCode games ->
-                            case msg of
-                                GamesReceived dbGames ->
-                                    let
-                                        currentModel =
-                                            individualModel
+                    if msg == Restart then
+                        ( SelectedMode
+                            (Individual
+                                (EnterGameCode
+                                    ""
+                                    []
+                                )
+                            )
+                        , getGames ()
+                        )
 
-                                        allGames =
-                                            List.map
-                                                (\dbGame ->
-                                                    { id = dbGame.id
-                                                    , code = dbGame.code
-                                                    , players = dbGame.users
-                                                    , values = []
-                                                    , finished = dbGame.finished
-                                                    }
-                                                )
-                                                dbGames
-                                    in
-                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)), Cmd.none )
-
-                                EnterGame ->
-                                    ( SelectedMode
-                                        (Individual
-                                            (WaitingForData
-                                                ( Nothing, Nothing )
-                                            )
-                                        )
-                                    , getGame (E.string gameCode)
-                                    )
-
-                                GameCodeInputChange value ->
-                                    let
-                                        currentModel =
-                                            individualModel
-                                    in
-                                    ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)), Cmd.none )
-
-                                _ ->
-                                    ( model, Cmd.none )
-
-                        WaitingForData ( gameMaybe, dbValuesMaybe ) ->
-                            case msg of
-                                GameReceived dbGameMaybe ->
-                                    case dbGameMaybe of
-                                        Just dbGame ->
-                                            let
-                                                game =
-                                                    { id = dbGame.id
-                                                    , code = dbGame.code
-                                                    , players = dbGame.users
-                                                    , values = []
-                                                    , finished = dbGame.finished
-                                                    }
-                                            in
-                                            case dbValuesMaybe of
-                                                Nothing ->
-                                                    ( SelectedMode
-                                                        (Individual
-                                                            (WaitingForData
-                                                                ( Just game
-                                                                , dbValuesMaybe
-                                                                )
-                                                            )
-                                                        )
-                                                    , Cmd.none
-                                                    )
-
-                                                Just dbValues ->
-                                                    let
-                                                        updatedValues =
-                                                            updateValues dbValues game.values game.players
-
-                                                        newGame =
-                                                            { game | values = updatedValues }
-                                                    in
-                                                    ( SelectedMode
-                                                        (Individual
-                                                            (SelectPlayer
-                                                                { game = newGame
-                                                                , markedPlayer = NoPlayer
-                                                                }
-                                                            )
-                                                        )
-                                                    , Cmd.none
-                                                    )
-
-                                        Nothing ->
-                                            ( SelectedMode (Individual (EnterGameCode "" [])), Cmd.none )
-
-                                RemoteValuesReceived dbValues ->
-                                    case gameMaybe of
-                                        Nothing ->
-                                            ( SelectedMode
-                                                (Individual
-                                                    (WaitingForData
-                                                        ( gameMaybe
-                                                        , Just dbValues
-                                                        )
-                                                    )
-                                                )
-                                            , Cmd.none
-                                            )
-
-                                        Just game ->
-                                            let
-                                                updatedValues =
-                                                    updateValues dbValues game.values game.players
-
-                                                newGame =
-                                                    { game | values = updatedValues }
-                                            in
-                                            ( SelectedMode
-                                                (Individual
-                                                    (SelectPlayer
-                                                        { game = newGame
-                                                        , markedPlayer = NoPlayer
-                                                        }
-                                                    )
-                                                )
-                                            , Cmd.none
-                                            )
-
-                                _ ->
-                                    ( model, Cmd.none )
-
-                        SelectPlayer selectPlayerModel ->
-                            case msg of
-                                PlayerMarked player ->
-                                    ( SelectedMode
-                                        (Individual
-                                            (SelectPlayer { selectPlayerModel | markedPlayer = Single player })
-                                        )
-                                    , Cmd.none
-                                    )
-
-                                AllPlayersMarked ->
-                                    ( SelectedMode
-                                        (Individual
-                                            (SelectPlayer { selectPlayerModel | markedPlayer = All })
-                                        )
-                                    , Cmd.none
-                                    )
-
-                                Start ->
-                                    case selectPlayerModel.markedPlayer of
-                                        Single player ->
-                                            startIndividualGame selectPlayerModel.game player
-
-                                        All ->
-                                            startGroupGame selectPlayerModel.game
-
-                                        NoPlayer ->
-                                            ( SelectedMode
-                                                (Individual
-                                                    (SelectPlayer
-                                                        { selectPlayerModel
-                                                            | markedPlayer = NoPlayer
-                                                        }
-                                                    )
-                                                )
-                                            , Cmd.none
-                                            )
-
-                                _ ->
-                                    ( model, Cmd.none )
-
-                        IndividualPlaying individualPlayingModel ->
-                            case msg of
-                                FillWithDummyValues player ->
-                                    ( model, fillWithDummyValues (encodeValues (createDummyValues player individualPlayingModel.gamePlaying.game.values)) )
-
-                                _ ->
-                                    let
-                                        gameModel =
-                                            updateGame msg individualPlayingModel.gamePlaying
-
-                                        gamePlaying =
-                                            Tuple.first gameModel
-                                    in
-                                    if isGameFinished gamePlaying.game then
+                    else
+                        case individualModel of
+                            EnterGameCode gameCode games ->
+                                case msg of
+                                    GamesReceived dbGames ->
                                         let
-                                            game =
-                                                gamePlaying.game
+                                            currentModel =
+                                                individualModel
 
-                                            currentGame =
-                                                { id = ""
-                                                , code = game.code
-                                                , players = game.players
-                                                , values = game.values
-                                                , finished = True
-                                                }
+                                            allGames =
+                                                List.map
+                                                    (\dbGame ->
+                                                        { id = dbGame.id
+                                                        , code = dbGame.code
+                                                        , players = dbGame.users
+                                                        , values = []
+                                                        , finished = dbGame.finished
+                                                        }
+                                                    )
+                                                    dbGames
                                         in
+                                        ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)), Cmd.none )
+
+                                    EnterGame ->
                                         ( SelectedMode
                                             (Individual
-                                                (IndividualPostGame
-                                                    { game = currentGame, selectedPlayer = individualPlayingModel.selectedPlayer }
+                                                (WaitingForData
+                                                    ( Nothing, Nothing )
                                                 )
                                             )
-                                        , Cmd.batch [ Tuple.second gameModel, finishGame currentGame ]
+                                        , getGame (E.string gameCode)
                                         )
 
-                                    else
-                                        ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer }))
-                                        , Tuple.second gameModel
+                                    GameCodeInputChange value ->
+                                        let
+                                            currentModel =
+                                                individualModel
+                                        in
+                                        ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)), Cmd.none )
+
+                                    _ ->
+                                        ( model, Cmd.none )
+
+                            WaitingForData ( gameMaybe, dbValuesMaybe ) ->
+                                case msg of
+                                    GameReceived dbGameMaybe ->
+                                        case dbGameMaybe of
+                                            Just dbGame ->
+                                                let
+                                                    game =
+                                                        { id = dbGame.id
+                                                        , code = dbGame.code
+                                                        , players = dbGame.users
+                                                        , values = []
+                                                        , finished = dbGame.finished
+                                                        }
+                                                in
+                                                case dbValuesMaybe of
+                                                    Nothing ->
+                                                        ( SelectedMode
+                                                            (Individual
+                                                                (WaitingForData
+                                                                    ( Just game
+                                                                    , dbValuesMaybe
+                                                                    )
+                                                                )
+                                                            )
+                                                        , Cmd.none
+                                                        )
+
+                                                    Just dbValues ->
+                                                        let
+                                                            updatedValues =
+                                                                updateValues dbValues game.values game.players
+
+                                                            newGame =
+                                                                { game | values = updatedValues }
+                                                        in
+                                                        ( SelectedMode
+                                                            (Individual
+                                                                (SelectPlayer
+                                                                    { game = newGame
+                                                                    , markedPlayer = NoPlayer
+                                                                    }
+                                                                )
+                                                            )
+                                                        , Cmd.none
+                                                        )
+
+                                            Nothing ->
+                                                ( SelectedMode (Individual (EnterGameCode "" [])), Cmd.none )
+
+                                    RemoteValuesReceived dbValues ->
+                                        case gameMaybe of
+                                            Nothing ->
+                                                ( SelectedMode
+                                                    (Individual
+                                                        (WaitingForData
+                                                            ( gameMaybe
+                                                            , Just dbValues
+                                                            )
+                                                        )
+                                                    )
+                                                , Cmd.none
+                                                )
+
+                                            Just game ->
+                                                let
+                                                    updatedValues =
+                                                        updateValues dbValues game.values game.players
+
+                                                    newGame =
+                                                        { game | values = updatedValues }
+                                                in
+                                                ( SelectedMode
+                                                    (Individual
+                                                        (SelectPlayer
+                                                            { game = newGame
+                                                            , markedPlayer = NoPlayer
+                                                            }
+                                                        )
+                                                    )
+                                                , Cmd.none
+                                                )
+
+                                    _ ->
+                                        ( model, Cmd.none )
+
+                            SelectPlayer selectPlayerModel ->
+                                case msg of
+                                    PlayerMarked player ->
+                                        ( SelectedMode
+                                            (Individual
+                                                (SelectPlayer { selectPlayerModel | markedPlayer = Single player })
+                                            )
+                                        , Cmd.none
                                         )
 
-                        IndividualPostGame postGame ->
-                            if msg == Restart then
-                                ( SelectedMode SelectMode, Cmd.none )
+                                    AllPlayersMarked ->
+                                        ( SelectedMode
+                                            (Individual
+                                                (SelectPlayer { selectPlayerModel | markedPlayer = All })
+                                            )
+                                        , Cmd.none
+                                        )
 
-                            else
+                                    Start ->
+                                        case selectPlayerModel.markedPlayer of
+                                            Single player ->
+                                                startIndividualGame selectPlayerModel.game player
+
+                                            All ->
+                                                startGroupGame selectPlayerModel.game
+
+                                            NoPlayer ->
+                                                ( SelectedMode
+                                                    (Individual
+                                                        (SelectPlayer
+                                                            { selectPlayerModel
+                                                                | markedPlayer = NoPlayer
+                                                            }
+                                                        )
+                                                    )
+                                                , Cmd.none
+                                                )
+
+                                    _ ->
+                                        ( model, Cmd.none )
+
+                            IndividualPlaying individualPlayingModel ->
+                                case msg of
+                                    FillWithDummyValues player ->
+                                        ( model, fillWithDummyValues (encodeValues (createDummyValues player individualPlayingModel.gamePlaying.game.values)) )
+
+                                    _ ->
+                                        let
+                                            gameModel =
+                                                updateGame msg individualPlayingModel.gamePlaying
+
+                                            gamePlaying =
+                                                Tuple.first gameModel
+                                        in
+                                        if isGameFinished gamePlaying.game then
+                                            let
+                                                game =
+                                                    gamePlaying.game
+
+                                                currentGame =
+                                                    { id = ""
+                                                    , code = game.code
+                                                    , players = game.players
+                                                    , values = game.values
+                                                    , finished = True
+                                                    }
+                                            in
+                                            ( SelectedMode
+                                                (Individual
+                                                    (IndividualPostGame
+                                                        { game = currentGame, selectedPlayer = individualPlayingModel.selectedPlayer }
+                                                    )
+                                                )
+                                            , Cmd.batch [ Tuple.second gameModel, finishGame currentGame ]
+                                            )
+
+                                        else
+                                            ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer }))
+                                            , Tuple.second gameModel
+                                            )
+
+                            IndividualPostGame postGame ->
                                 ( model, Cmd.none )
 
                 Group groupModel ->
@@ -976,6 +985,13 @@ view model =
 
                                     currentPlayerMaybe =
                                         getCurrentPlayer game.values game.players
+
+                                    gameInformation =
+                                        if playingModel.showGameInfo then
+                                            individualGameInfo playingModel.game
+
+                                        else
+                                            div [] []
                                 in
                                 case currentPlayerMaybe of
                                     Just currentPlayer ->
@@ -984,7 +1000,8 @@ view model =
                                                 case playingModel.state of
                                                     Idle ->
                                                         div []
-                                                            [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
+                                                            [ gameInformation
+                                                            , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
                                                             ]
 
                                                     Input box isEdit ->
