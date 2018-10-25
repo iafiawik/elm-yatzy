@@ -14,11 +14,12 @@ valuesDecoder =
 
 valueDecoder : Decoder DbValue
 valueDecoder =
-    Decode.map4 DbValue
+    Decode.map5 DbValue
         (Decode.field "id" Decode.string)
         (Decode.field "boxId" Decode.string)
         (Decode.field "userId" Decode.string)
         (Decode.field "value" Decode.int)
+        (Decode.field "dateCreated" Decode.int)
 
 
 encodeValue : Value -> E.Value
@@ -50,6 +51,7 @@ type alias DbValue =
     , boxId : String
     , userId : String
     , value : Int
+    , dateCreated : Int
     }
 
 
@@ -60,6 +62,7 @@ type alias Value =
     , value : Int
     , counted : Bool
     , new : Bool
+    , dateCreated : Int
     }
 
 

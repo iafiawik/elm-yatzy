@@ -271,18 +271,19 @@ getBoxById id =
     Maybe.withDefault { id = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id == id) getBoxes)
 
 
-fromDbValueToValue : DbValue -> List Value -> List Player -> Value
-fromDbValueToValue dbValue oldValues players =
+fromDbValueToValue : DbValue -> Maybe DbValue -> List Player -> Value
+fromDbValueToValue dbValue newestDbValueMaybe players =
     let
         player =
             getPlayerByUserId dbValue.userId players
 
         new =
-            if find (\v -> v.id == dbValue.id) oldValues == Nothing then
-                True
+            case newestDbValueMaybe of
+                Just newestDbValue ->
+                    newestDbValue.id == dbValue.id
 
-            else
-                False
+                Nothing ->
+                    False
     in
     { id = dbValue.id
     , box = getBoxById dbValue.boxId
@@ -290,14 +291,34 @@ fromDbValueToValue dbValue oldValues players =
     , value = dbValue.value
     , counted = False
     , new = new
+    , dateCreated = dbValue.dateCreated
     }
+
+
+flippedComparison a b =
+    case compare a.dateCreated b.dateCreated of
+        LT ->
+            GT
+
+        EQ ->
+            EQ
+
+        GT ->
+            LT
 
 
 updateValues : List DbValue -> List Value -> List Player -> List Value
 updateValues dbValues oldValues players =
+    let
+        _ =
+            Debug.log "UpdateValues" (String.fromInt (List.length dbValues) ++ String.fromInt (List.length oldValues))
+
+        newestMaybe =
+            List.head (List.sortWith flippedComparison dbValues)
+    in
     List.map
         (\v ->
-            fromDbValueToValue v oldValues players
+            fromDbValueToValue v newestMaybe players
         )
         dbValues
 
@@ -305,6 +326,9 @@ updateValues dbValues oldValues players =
 updateGame : Msg -> GamePlaying -> ( GamePlaying, Cmd Msg )
 updateGame msg model =
     let
+        _ =
+            Debug.log "updateGame" (Debug.toString msg)
+
         currentPlayerMaybe =
             getCurrentPlayer model.game.values model.game.players
     in
@@ -363,6 +387,7 @@ updateGame msg model =
                                         , value = model.currentValue
                                         , counted = False
                                         , new = False
+                                        , dateCreated = 1
                                         }
                                 in
                                 ( { model
@@ -577,6 +602,7 @@ createDummyValues player existingValues =
             , value = selectedValue
             , counted = False
             , new = False
+            , dateCreated = 1
             }
         )
         boxes
@@ -1106,12 +1132,11 @@ view model =
                                                     div []
                                                         [ div [] [ gameFinished ]
                                                         , div [] [ staticScoreCard currentPlayer finishedModel.game False False ]
-                                                        , button [ onClick CountValues ] [ text "Count" ]
                                                         ]
 
                                                 ShowCountedValues ->
                                                     div []
-                                                        [ div [] [ staticScoreCard currentPlayer finishedModel.game False True ]
+                                                        [ div [] [ staticScoreCard currentPlayer finishedModel.game True True ]
                                                         ]
 
                                                 ShowResults ->
@@ -1174,6 +1199,9 @@ gamesUpdated gamesJson =
 remoteValuesUpdated : Json.Decode.Value -> Msg
 remoteValuesUpdated valuesJson =
     let
+        _ =
+            Debug.log "remoteValuesUpdated" ""
+
         valuesMaybe =
             Json.Decode.decodeValue valuesDecoder valuesJson
     in

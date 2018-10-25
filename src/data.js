@@ -290,7 +290,8 @@ const createValue = (value, gameId) => {
       gameId: gameId,
       boxId: value.boxId,
       userId: value.userId,
-      value: value.value
+      value: value.value,
+      dateCreated: Date.now()
     })
     .then(function(docRef) {
       console.log("createValue(): Document written with ID: ", docRef.id);
@@ -349,19 +350,19 @@ const getValues = (gameId, onValuesChange) => {
     .collection("values")
     .where("gameId", "==", gameId)
     .onSnapshot(function(snapshot) {
-      var addedValueIds = [];
-      snapshot.docChanges().forEach(function(change) {
-        if (change.type === "added") {
-          addedValueIds.push(change.doc.id);
-          console.log("New city: ", change.doc.data());
-        }
-        if (change.type === "modified") {
-          console.log("Modified city: ", change.doc.data());
-        }
-        if (change.type === "removed") {
-          console.log("Removed city: ", change.doc.data());
-        }
-      });
+      // var addedValueIds = [];
+      // snapshot.docChanges().forEach(function(change) {
+      //   if (change.type === "added") {
+      //     addedValueIds.push(change.doc.id);
+      //     console.log("New city: ", change.doc.data());
+      //   }
+      //   if (change.type === "modified") {
+      //     console.log("Modified city: ", change.doc.data());
+      //   }
+      //   if (change.type === "removed") {
+      //     console.log("Removed city: ", change.doc.data());
+      //   }
+      // });
 
       var values = snapshot.docs.map(value => {
         return { id: value.id, ...value.data() };
