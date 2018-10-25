@@ -683,7 +683,7 @@ update msg model =
                                                         (Individual
                                                             (SelectPlayer
                                                                 { game = newGame
-                                                                , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
+                                                                , markedPlayers = []
                                                                 }
                                                             )
                                                         )
@@ -727,7 +727,7 @@ update msg model =
                                                 (Individual
                                                     (SelectPlayer
                                                         { game = newGame
-                                                        , markedPlayer = { user = { id = "", name = "", userName = "" }, order = -1 }
+                                                        , markedPlayers = []
                                                         }
                                                     )
                                                 )
@@ -739,32 +739,25 @@ update msg model =
 
                         SelectPlayer selectPlayerModel ->
                             case msg of
-                                PlayerMarked player ->
+                                PlayerMarked players ->
                                     ( SelectedMode
                                         (Individual
-                                            (SelectPlayer { selectPlayerModel | markedPlayer = player })
+                                            (SelectPlayer { selectPlayerModel | markedPlayers = players })
                                         )
                                     , Cmd.none
                                     )
 
                                 Start ->
-                                    ( SelectedMode
-                                        (Individual
-                                            (IndividualPlaying
-                                                { gamePlaying =
-                                                    { game = selectPlayerModel.game
-                                                    , boxes = getBoxes
-                                                    , state = Idle
-                                                    , currentValue = -1
-                                                    , showGameInfo = False
-                                                    , error = Nothing
-                                                    }
-                                                , selectedPlayer = selectPlayerModel.markedPlayer
-                                                }
-                                            )
-                                        )
-                                    , Cmd.none
-                                    )
+                                    if List.length selectPlayerModel.markedPlayers == 1 then
+                                        case List.head selectPlayerModel.markedPlayers of
+                                            Just player ->
+                                                startIndividualGame selectPlayerModel.game player
+
+                                            Nothing ->
+                                                ( model, Cmd.none )
+
+                                    else
+                                        startGroupGame selectPlayerModel.game
 
                                 _ ->
                                     ( model, Cmd.none )
@@ -785,26 +778,7 @@ update msg model =
                     case groupModel of
                         PreGame preGame ->
                             if msg == Start then
-                                ( SelectedMode
-                                    (Group
-                                        (Playing
-                                            { game =
-                                                { id = preGame.game.id
-                                                , code = preGame.game.code
-                                                , players = preGame.game.players
-                                                , values = []
-                                                , finished = False
-                                                }
-                                            , boxes = getBoxes
-                                            , state = Idle
-                                            , currentValue = 0
-                                            , showGameInfo = False
-                                            , error = Nothing
-                                            }
-                                        )
-                                    )
-                                , getValues (E.string preGame.game.id)
-                                )
+                                startGroupGame preGame.game
 
                             else if msg == HideNotification then
                                 ( SelectedMode (Group (PreGame { preGame | error = Nothing })), Cmd.none )
@@ -925,7 +899,7 @@ view model =
                             div [] [ span [] [ text "Waiting for game ..." ] ]
 
                         SelectPlayer selectPlayerModel ->
-                            selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayer
+                            selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayers
 
                         IndividualPlaying gamePlayingModel ->
                             let

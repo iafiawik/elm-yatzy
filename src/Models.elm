@@ -16,7 +16,7 @@ type Msg
     = SelectGroup
     | SelectIndividual
     | EnterGame
-    | PlayerMarked Player
+    | PlayerMarked (List Player)
     | AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
@@ -76,7 +76,7 @@ type GroupModel
 
 type alias SelectPlayerModel =
     { game : Game
-    , markedPlayer : Player
+    , markedPlayers : List Player
     }
 
 
