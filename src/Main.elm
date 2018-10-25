@@ -280,7 +280,7 @@ getPlayerByUserId id players =
 
 getBoxById : String -> Box
 getBoxById id =
-    Maybe.withDefault { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id_ == id) getBoxes)
+    Maybe.withDefault { id = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id == id) getBoxes)
 
 
 fromDbValueToValue : DbValue -> List Value -> List Player -> Value

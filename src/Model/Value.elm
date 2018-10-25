@@ -25,7 +25,7 @@ encodeValue : Value -> E.Value
 encodeValue value =
     E.object
         [ ( "id", E.string value.id )
-        , ( "boxId", E.string value.box.id_ )
+        , ( "boxId", E.string value.box.id )
         , ( "userId", E.string value.player.user.id )
         , ( "value", E.int value.value )
         ]
@@ -37,7 +37,7 @@ encodeValues values =
         (\value ->
             E.object
                 [ ( "id", E.string value.id )
-                , ( "boxId", E.string value.box.id_ )
+                , ( "boxId", E.string value.box.id )
                 , ( "userId", E.string value.player.user.id )
                 , ( "value", E.int value.value )
                 ]
