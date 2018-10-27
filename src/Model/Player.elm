@@ -12,16 +12,17 @@ playersDecoder =
 
 playerDecoder : Decoder Player
 playerDecoder =
-    Decode.map2 Player
+    Decode.map3 Player
         (Decode.field "user" userDecoder)
         (Decode.field "order" Decode.int)
+        (Decode.field "score" Decode.int)
 
 
 encodePlayer : Player -> E.Value
 encodePlayer player =
     E.object
-        [ ( "userId", E.string player.user.id ), ( "order", E.int player.order ) ]
+        [ ( "userId", E.string player.user.id ), ( "order", E.int player.order ), ( "score", E.int player.score ) ]
 
 
 type alias Player =
-    { user : User, order : Int }
+    { user : User, order : Int, score : Int }

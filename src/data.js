@@ -138,7 +138,8 @@ const getGame = gameCode => {
                 user: dbUsers.find(function(dbUser) {
                   return dbUser.id == user.userId;
                 }),
-                order: user.order
+                order: user.order,
+                score: user.score
               };
             });
 
@@ -237,7 +238,8 @@ const createGame = users => {
                     user: dbUsers.find(function(dbUser) {
                       return dbUser.id == user.userId;
                     }),
-                    order: user.order
+                    order: user.order,
+                    score: user.score
                   };
                 });
                 var dbGame = { ...game, users: realUsers };
