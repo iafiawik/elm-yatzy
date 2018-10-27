@@ -29,6 +29,7 @@ encodeValue value =
         , ( "boxId", E.string value.box.id )
         , ( "userId", E.string value.player.user.id )
         , ( "value", E.int value.value )
+        , ( "dateCreated", E.int value.dateCreated )
         ]
 
 

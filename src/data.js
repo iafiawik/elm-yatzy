@@ -311,7 +311,8 @@ const editValue = (value, gameId) => {
       gameId: gameId,
       boxId: value.boxId,
       userId: value.userId,
-      value: value.value
+      value: value.value,
+      dateCreated: value.dateCreated
     })
     .then(function() {
       console.log(
