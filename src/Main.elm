@@ -9,7 +9,7 @@ import Html.Events exposing (onClick, onInput)
 import Html.Lazy exposing (lazy)
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Json.Encode as E
-import List.Extra exposing (find, findIndex, getAt, removeAt)
+import List.Extra exposing (find, findIndex, getAt, notMember, removeAt)
 import Logic exposing (..)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
@@ -211,7 +211,7 @@ updatePreGame msg model =
         AddPlayer user ->
             let
                 newPlayer =
-                    { user = user, order = List.length model.game.players }
+                    { user = user, order = List.length model.game.players, score = 0 }
 
                 newPlayers =
                     sortPlayersByOrder (newPlayer :: model.game.players)
@@ -250,7 +250,7 @@ updatePreGame msg model =
                 game =
                     { id = ""
                     , code = ""
-                    , players = model.game.players
+                    , players = List.map (\p -> { p | score = getTotalSum model.game.values p }) model.game.players
                     , values = []
                     , finished = False
                     }
@@ -263,7 +263,7 @@ updatePreGame msg model =
 
 getPlayerByUserId : String -> List Player -> Player
 getPlayerByUserId id players =
-    Maybe.withDefault { user = { name = "", userName = "", id = "" }, order = 0 } (find (\p -> p.user.id == id) players)
+    Maybe.withDefault { user = { name = "", userName = "", id = "" }, order = 0, score = 0 } (find (\p -> p.user.id == id) players)
 
 
 getBoxById : String -> Box
@@ -361,12 +361,31 @@ updateGame msg model =
                                         let
                                             editedValue =
                                                 existingValue
+
+                                            valueIndex =
+                                                findIndex (\v -> v.player == currentPlayer && v.box == box && v.value == model.currentValue) model.game.values
+
+                                            valueExists =
+                                                case valueIndex of
+                                                    Just index ->
+                                                        if index > -1 then
+                                                            True
+
+                                                        else
+                                                            False
+
+                                                    Nothing ->
+                                                        False
                                         in
                                         ( { model
                                             | state = Idle
                                             , currentValue = -1
                                           }
-                                        , editValue (encodeValue { editedValue | value = model.currentValue })
+                                        , if valueExists then
+                                            Cmd.none
+
+                                          else
+                                            editValue (encodeValue { editedValue | value = model.currentValue })
                                         )
 
                                     Nothing ->
@@ -383,12 +402,28 @@ updateGame msg model =
                                         , new = False
                                         , dateCreated = 1
                                         }
+
+                                    valueIndex =
+                                        findIndex (\v -> v.player == currentPlayer && v.box == box) model.game.values
                                 in
                                 ( { model
                                     | state = Idle
                                     , currentValue = -1
                                   }
-                                , createValue (encodeValue newValue)
+                                , case valueIndex of
+                                    Just index ->
+                                        let
+                                            _ =
+                                                Debug.log "AddValue" "add value, value already exists"
+                                        in
+                                        Cmd.none
+
+                                    Nothing ->
+                                        let
+                                            _ =
+                                                Debug.log "AddValue" "add value, value does not exist - create it"
+                                        in
+                                        createValue (encodeValue newValue)
                                 )
 
                         _ ->
@@ -556,7 +591,16 @@ finishGame game =
         currentGame =
             { id = ""
             , code = game.code
-            , players = game.players
+            , players =
+                List.map
+                    (\p ->
+                        let
+                            score =
+                                getTotalSum (List.map (\v -> { v | counted = True }) game.values) p
+                        in
+                        { p | score = score }
+                    )
+                    game.players
             , values = game.values
             , finished = True
             }
