@@ -53,10 +53,6 @@ type alias GameResult =
 
 encodeGame : Game -> E.Value
 encodeGame game =
-    let
-        users =
-            List.map (\p -> encodePlayer p) game.players
-    in
     E.object
         [ ( "id", E.string game.id )
         , ( "code", E.string game.code )
