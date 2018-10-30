@@ -29,15 +29,13 @@ body {
   color: #293c4b;
   background: white;
   min-height: 100%;
-  // display: flex;
-  // justify-content: center;
-  // align-items: center;
   width: 100%;
 }
 
 .container {
-  max-width: $screen-md-min;
+  max-width: 100%;
   width: $screen-md-min;
+  box-sizing: border-box;
   padding-right: 15px;
   padding-left: 15px;
   margin-right: auto;
