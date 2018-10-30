@@ -46,6 +46,13 @@ app.ports.fillWithDummyValues.subscribe(function(values) {
   });
 });
 
+app.ports.getGlobalHighscore.subscribe(function() {
+  Data.getHighscore(highscore => {
+    console.log("index.js: Data.getHighscore", highscore);
+    app.ports.highscoreReceived.send(highscore);
+  });
+});
+
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
     console.log("index.js: Data.getUsers", users);

@@ -42,6 +42,9 @@ import Views.SelectPlayer exposing (selectPlayer)
 port fillWithDummyValues : List E.Value -> Cmd msg
 
 
+port getGlobalHighscore : () -> Cmd msg
+
+
 port getGame : E.Value -> Cmd msg
 
 
@@ -667,7 +670,7 @@ update msg model =
     in
     case msg of
         ShowStartPage ->
-            ( SelectedMode (SelectMode []), Cmd.none )
+            ( SelectedMode (SelectMode []), getGlobalHighscore () )
 
         _ ->
             case model of
