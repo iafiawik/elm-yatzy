@@ -14,7 +14,8 @@ import Uuid
 
 
 type Msg
-    = SelectGroup
+    = ShowStartPage
+    | SelectGroup
     | SelectIndividual
     | EnterGame
     | PlayerMarked Player
