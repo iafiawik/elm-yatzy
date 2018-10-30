@@ -23,6 +23,16 @@
   margin-bottom: 20px;
 }
 
+.game-info .large-button {
+  margin-top: auto;
+}
+
+.game-info > div {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .game-info-link {
   a {
     margin-left: 10px;
