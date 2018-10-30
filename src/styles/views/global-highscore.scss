@@ -1,7 +1,7 @@
 @import "../colors";
 
 .global-highscore {
-  background: $primary-color;
+  background: white;
   top: 0px;
   left: 0px;
   width: 100%;
@@ -10,25 +10,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  color: $primary-color;
 }
 
 .global-highscore-content {
-  width: 500px;
-  max-width: 100%;
-  padding: 40px 40px;
-  box-sizing: border-box;
-  margin-right: auto;
-  margin-left: auto;
-  border: 1px solid red;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  min-height: 300px;
-  background: $primary-color;
-  border: 1px solid white;
-  box-shadow: 2px 2px 0px white, 3px 3px 0px white, 4px 4px 0px white,
-    5px 5px 0px white, 6px 6px 0px white, 7px 7px 0px white;
-
   .loader-container {
     margin-left: auto;
     margin-right: auto;
@@ -39,31 +24,32 @@
 .global-highscore-content table {
   margin-right: auto;
   margin-left: auto;
-  width: 80%;
+  width: $screen-sm-min;
+  max-width: 100%;
   border-collapse: collapse;
   margin-bottom: 100px;
 }
 
-.highscore-content td {
-  border-bottom: 1px solid white;
+.global-highscore-content td {
+  border-bottom: 1px solid $primary-color;
   padding: 10px 0px;
 }
 
-.highscore-content td:first-of-type {
+.global-highscore-content td:first-of-type {
   text-align: left;
   padding-left: 5px;
 }
 
-.highscore-content td:last-of-type {
+.global-highscore-content td:last-of-type {
   text-align: right;
   padding-right: 5px;
 }
 
-.highscore-content tr:first-of-type {
+.global-highscore-content tr:first-of-type {
   font-weight: bold;
 }
 
-.highscore-content .large-button {
+.global-highscore-content .large-button {
   background: white;
   color: black;
   margin-top: auto;
@@ -71,7 +57,7 @@
   opacity: 0;
 }
 
-.highscore-content .large-button:hover {
+.global-highscore-content .large-button:hover {
   background: black;
   color: white;
   box-shadow: 2px 2px 0px white, 3px 3px 0px white, 4px 4px 0px white,
