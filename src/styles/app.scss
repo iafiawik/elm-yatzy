@@ -1,9 +1,11 @@
+@import "mixins";
 @import "animations";
 @import "colors";
 @import "breakpoints";
 
 @import "dialog";
 
+@import "./views/start-page";
 @import "./views/add-remove-players";
 @import "./views/game-finished";
 @import "./views/score-card";
@@ -31,6 +33,17 @@ body {
   // justify-content: center;
   // align-items: center;
   width: 100%;
+}
+
+.container {
+  max-width: $screen-md-min;
+  width: $screen-md-min;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  height: 100%;
+  border: 1px solid red;
 }
 //
 // button,
@@ -63,8 +76,7 @@ button {
   display: inline-block;
   margin-top: auto;
   transition: all 0.3s linear;
-  box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
-    5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+  @include box-shadow(black);
 }
 
 .waiting-for-game {
