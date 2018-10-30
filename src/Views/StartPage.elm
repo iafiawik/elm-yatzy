@@ -16,10 +16,15 @@ startPage highscoreItems =
             [ div [ class "start-page-select-mode-content container" ]
                 [ h1 []
                     [ text "Yatzy" ]
+                , p
+                    []
+                    [ text "Who administrates the Yatzy protocol?" ]
+                , p [] [ text "Everyone." ]
+                , p [] [ text "Enter your own values and watch how they turn up on a shared screen." ]
                 , div
                     [ class "start-page-select-mode-buttons" ]
-                    [ div [ class "large-button", onClick SelectGroup ] [ text "Skapa spel" ]
-                    , div [ class "large-button", onClick SelectIndividual ] [ text "Joina spel" ]
+                    [ div [ class "large-button", onClick SelectGroup ] [ text "Create new game" ]
+                    , div [ class "large-button", onClick SelectIndividual ] [ text "Join existing game" ]
                     ]
                 ]
             ]
