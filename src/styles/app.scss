@@ -9,6 +9,7 @@
 @import "./views/score-card";
 @import "./views/score-dialog";
 @import "./views/highscore";
+@import "./views/global-highscore";
 @import "./views/notification";
 @import "./views/game-info";
 @import "./views/select-player";
@@ -16,6 +17,7 @@
 @import "./views/individual-join-info";
 @import "./views/individual-game-info";
 @import "./views/enter-game-code";
+@import "./views/loader";
 
 html,
 body {
@@ -63,4 +65,12 @@ button {
   transition: all 0.3s linear;
   box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
     5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+}
+
+.waiting-for-game {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

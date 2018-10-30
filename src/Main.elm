@@ -34,6 +34,7 @@ import Views.Highscore exposing (highscore)
 import Views.IndividualGameInfo exposing (individualGameInfo)
 import Views.IndividualHighscore exposing (individualHighscore)
 import Views.IndividualJoinInfo exposing (individualJoinInfo)
+import Views.Loader exposing (loader)
 import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
@@ -1056,10 +1057,13 @@ view model =
                 Individual individualModel ->
                     case individualModel of
                         EnterGameCode gameCode games ->
-                            enterGameCode gameCode games
+                            enterGameCode gameCode
+                                games
 
                         WaitingForData ( game, values ) ->
-                            div [] [ span [] [ text "Waiting for game ..." ] ]
+                            div [ class "waiting-for-game" ]
+                                [ loader "Ansluter till spelet ..." True
+                                ]
 
                         SelectPlayer selectPlayerModel ->
                             selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayer
