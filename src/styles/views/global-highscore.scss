@@ -59,6 +59,6 @@
 .global-highscore-content .large-button:hover {
   background: black;
   color: white;
-  box-shadow: 2px 2px 0px white, 3px 3px 0px white, 4px 4px 0px white,
-    5px 5px 0px white, 6px 6px 0px white, 7px 7px 0px white;
+
+  @include box-shadow(white);
 }

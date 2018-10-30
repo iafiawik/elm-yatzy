@@ -37,12 +37,10 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 2px 0px $primary-color, 3px 3px 0px $primary-color,
-    4px 4px 0px $primary-color, 5px 5px 0px $primary-color,
-    6px 6px 0px $primary-color, 7px 7px 0px $primary-color;
   animation-duration: 0.5s !important;
   animation-fill-mode: backwards !important;
 
+  @include box-shadow($primary-color);
   @include md {
     padding: 50px 20px 30px 20px;
   }
