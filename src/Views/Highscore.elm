@@ -42,5 +42,5 @@ highscore players values =
             , ( "eight-players", numberOfPlayers == 8 )
             ]
         ]
-        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick Restart, class "large-button \n        " ] [ text "Spela en gång till" ] ]
+        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick HideHighscore, class "large-button \n        " ] [ text "Stäng" ] ]
         ]
