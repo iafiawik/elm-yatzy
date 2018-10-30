@@ -41,6 +41,7 @@ type Msg
     | GameCodeInputChange String
     | CountValues
     | CountValuesTick Time.Posix
+    | HideHighscore
     | Restart
     | HideNotification
     | ShowGameInfo
@@ -136,6 +137,7 @@ type GameResultState
     = GameFinished
     | ShowCountedValues
     | ShowResults
+    | HideResults
 
 
 type PreGameState
