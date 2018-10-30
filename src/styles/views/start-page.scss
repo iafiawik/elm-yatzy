@@ -1,0 +1,53 @@
+.start-page {
+  color: white;
+}
+
+.start-page-select-mode {
+  min-height: 100vh;
+
+  position: relative;
+  background: $primary-color;
+}
+
+.start-page-select-mode-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  min-height: 100vh;
+
+  h1 {
+    display: block;
+    font-size: 100px;
+  }
+}
+
+.start-page-select-mode-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: $primary-color;
+  flex-direction: column;
+
+  .large-button {
+    background: white;
+    color: black;
+    margin: 10px;
+
+    &:hover {
+      background: black;
+      color: white;
+      cursor: pointer;
+      @include box-shadow(white);
+    }
+  }
+}
+
+.start-page-global-highscore {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  position: relative;
+}

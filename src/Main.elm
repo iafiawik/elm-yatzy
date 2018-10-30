@@ -39,6 +39,7 @@ import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
 import Views.SelectPlayer exposing (selectPlayer)
+import Views.StartPage exposing (startPage)
 
 
 port fillWithDummyValues : List E.Value -> Cmd msg
@@ -1046,13 +1047,7 @@ view model =
         SelectedMode mode ->
             case mode of
                 SelectMode highscoreItems ->
-                    div []
-                        [ div []
-                            [ div [ onClick SelectIndividual ] [ text "Joina spel" ]
-                            , div [ onClick SelectGroup ] [ text "Skapa spel" ]
-                            ]
-                        , globalHighscore highscoreItems
-                        ]
+                    startPage highscoreItems
 
                 Individual individualModel ->
                     case individualModel of
