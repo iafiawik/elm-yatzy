@@ -13,7 +13,7 @@ enterGameCode gameCode games =
         gameButtons =
             List.map (\g -> button [ class "enter-game-code-active-game-button", onClick (GameCodeInputChange g.code) ] [ span [] [ text g.code ] ]) games
     in
-    div [ class "dialog-wrapper" ]
+    div [ class "enter-game-code-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
         , div [ class "enter-game-code dialog-content animated jackInTheBox" ]
             [ button [ class "score-dialog-cancel-button button", onClick ShowStartPage ] [ text "X" ]

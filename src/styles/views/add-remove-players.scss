@@ -1,5 +1,9 @@
 @import "../colors";
 
+.add-players-dialog-wrapper {
+  background: $primary-color;
+}
+
 .add-players-dialog h1 {
   margin: 0px;
 }
@@ -17,7 +21,7 @@
 
 .add-players-dialog.dialog-content {
   padding: 20px 20px 30px 20px;
-
+  background: white;
   max-height: 100%;
   height: 100%;
   position: absolute;
