@@ -14,9 +14,10 @@ enterGameCode gameCode games =
             List.map (\g -> button [ class "enter-game-code-active-game-button", onClick (GameCodeInputChange g.code) ] [ span [] [ text g.code ] ]) games
     in
     div [ class "dialog-wrapper" ]
-        [ div [ class "dialog-background  animated fadeIn" ] []
+        [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
         , div [ class "enter-game-code dialog-content animated jackInTheBox" ]
-            [ h1 [] [ text "Ange spelets kod" ]
+            [ button [ class "score-dialog-cancel-button button", onClick ShowStartPage ] [ text "X" ]
+            , h1 [] [ text "Ange spelets kod" ]
             , h2 [] [ text "Skriv den fyrsiffriga koden här:" ]
             , input [ value gameCode, onInput GameCodeInputChange ] []
             , h2 [] [ text "... eller leta upp koden här:" ]
