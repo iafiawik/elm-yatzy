@@ -16,7 +16,7 @@ enterGameCode gameCode games =
     div [ class "enter-game-code-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
         , div [ class "enter-game-code dialog-content animated jackInTheBox" ]
-            [ button [ class "score-dialog-cancel-button button", onClick ShowStartPage ] [ text "X" ]
+            [ button [ class "dialog-content-cancel-button button", onClick ShowStartPage ] [ text "X" ]
             , h1 [] [ text "Ange spelets kod" ]
             , h2 [] [ text "Skriv den fyrsiffriga koden här:" ]
             , input [ value gameCode, onInput GameCodeInputChange ] []

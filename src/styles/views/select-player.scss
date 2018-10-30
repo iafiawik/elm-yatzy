@@ -13,11 +13,21 @@
   }
 }
 
+.select-player-buttons {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.select-player-button-all-players {
+  text-align: left;
+}
+
 .select-player-button {
   border: 3px solid $primary-color;
-  display: block;
+  display: inline-block;
   padding: 5px 10px;
   margin-bottom: 5px;
+  margin: 3px;
   color: $primary-color;
   background: white;
 
@@ -29,4 +39,8 @@
     background: $primary-color;
     color: white;
   }
+}
+
+.select-player .large-button {
+  margin-top: auto;
 }

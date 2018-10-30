@@ -1,4 +1,41 @@
-.game-info {
+.game-info-restart {
+  margin-top: auto;
+  font-size: 12px;
+  font-weight: 100;
+  text-align: center;
+  border-top: 1px solid $primary-color;
+  padding-top: 20px;
+}
+
+.game-info-not-finished {
+  height: 600px;
+  max-height: 600px;
+}
+
+.game-info-finished {
+  height: 300px;
+  max-height: 300px;
+
+  .large-button {
+    margin-top: auto !important;
+  }
+}
+
+.game-info-dialog-wrapper,
+.individual-game-info-dialog-wrapper,
+.score-dialog-dialog-wrapper,
+.highscore-dialog-wrapper,
+.game-finished-dialog-wrapper {
+  z-index: 4;
+  position: fixed;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.5);
+  top: 0px;
+
+  @include md {
+    height: 100%;
+    background: none;
+  }
 }
 
 .game-info h1 {
@@ -20,23 +57,32 @@
 .game-info li {
   width: auto;
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .game-info .large-button {
-  margin-top: auto;
+  margin-top: 20px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
 }
 
-.game-info > div {
+.game-info {
   display: flex;
   flex-direction: column;
   height: 100%;
+  flex: 1;
 }
 
 .game-info-link {
   a {
     margin-left: 10px;
   }
+}
+
+.game-info .game-info-code {
+  margin-left: -30px;
+  margin-right: 10px;
 }
 
 .game-info-code {
@@ -48,5 +94,6 @@
   font-size: 40px;
   letter-spacing: 4px;
   margin-top: 20px;
+  margin-bottom: 20px;
   text-align: center;
 }

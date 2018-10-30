@@ -2,40 +2,56 @@
 
 .game-finished {
   background: $primary-color;
-  position: fixed;
+  color: white;
   top: 0px;
   left: 0px;
   width: 100%;
   height: 100%;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1;
-  opacity: 0;
-  animation: show 1s linear forwards;
-  animation-delay: 1s;
+
+  @include md {
+    height: 100%;
+    background: none;
+    min-height: inherit;
+  }
 }
 
+// .game-finished-content {
+//   width: 500px;
+//   max-width: 100%;
+//   padding: 40px 40px;
+//   box-sizing: border-box;
+//   margin-right: auto;
+//   margin-left: auto;
+//   border: 1px solid red;
+//   color: white;
+//   display: flex;
+//   flex-direction: column;
+//   min-height: 300px;
+//   background: $primary-color;
+//   border: 1px solid white;
+//   opacity: 0;
+//   animation: bounceIn 1s linear forwards;
+//   animation-delay: 5s;
+//
+//   @include box-shadow(white);
+// }
+
 .game-finished-content {
-  width: 500px;
-  max-width: 100%;
-  padding: 40px 20px;
-  box-sizing: border-box;
-  margin-right: auto;
-  margin-left: auto;
-  border: 1px solid red;
-  color: white;
   display: flex;
   flex-direction: column;
-  min-height: 300px;
-  background: $primary-color;
-  border: 1px solid white;
+}
 
-  opacity: 0;
-  animation: bounceIn 1s linear forwards;
-  animation-delay: 2s;
-
-  @include box-shadow(white);
+.game-finished-content table {
+  margin-right: auto;
+  margin-left: auto;
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 100px;
 }
 
 .game-finished-content .large-button {
@@ -43,11 +59,12 @@
   color: black;
   margin-top: auto;
   animation-delay: 6s;
+  opacity: 0;
 }
 
 .game-finished-content .large-button:hover {
   background: black;
   color: white;
-
-  @include box-shadow(white);
+  box-shadow: 2px 2px 0px white, 3px 3px 0px white, 4px 4px 0px white,
+    5px 5px 0px white, 6px 6px 0px white, 7px 7px 0px white;
 }

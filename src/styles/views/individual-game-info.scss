@@ -1,17 +1,9 @@
 .individual-game-info {
   .indivudal-game-info-restart {
-    margin: 0px;
-    margin-top: 20px;
+    margin-top: auto;
+    font-size: 14px;
     font-weight: 100;
-    a {
-      font-weight: bold;
-      color: $primary-color;
-
-      &:hover {
-        cursor: pointer;
-        color: black;
-      }
-    }
+    text-align: center;
   }
 }
 
@@ -32,4 +24,11 @@
   a {
     margin-left: 10px;
   }
+}
+
+.individual-game-info .large-button {
+  margin-top: 20px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
 }

@@ -7,6 +7,14 @@ import Models exposing (Model, Msg(..))
 
 
 gameFinished =
-    div [ class "game-finished" ]
-        [ div [ class "game-finished-content" ] [ h1 [] [ text "Spelet är slut!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Visa resultat" ] ]
+    div [ class "game-finished-dialog-wrapper dialog-wrapper" ]
+        [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
+        , div
+            [ classList
+                [ ( "game-finished dialog-content animated jackInTheBox", True )
+                ]
+            ]
+            [ div [ class "game-finished-content container" ]
+                [ h1 [] [ text "Spelet är slut!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Visa resultat" ] ]
+            ]
         ]

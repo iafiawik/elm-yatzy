@@ -13,15 +13,16 @@ gameInfo game =
     let
         content =
             if game.finished then
-                div []
-                    [ button [ class "score-dialog-cancel-button button", onClick HideGameInfo ] [ text "X" ]
+                div [ class "game-info dialog-content animated jackInTheBox game-info-finished" ]
+                    [ button [ class "dialog-content-cancel-button button", onClick HideGameInfo ] [ text "X" ]
                     , h1 [] [ text "Spelet är slut!" ]
                     , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick Restart ] [ text "Skapa nytt spel" ]
                     ]
 
             else
-                div []
-                    [ h1 [] [ text "Om du vill:" ]
+                div [ class "game-info dialog-content animated jackInTheBox game-info-not-finished" ]
+                    [ button [ class "dialog-content-cancel-button button", onClick HideGameInfo ] [ text "X" ]
+                    , h1 [] [ text "Om du vill:" ]
                     , h2 [] [ text "gör så här för att joina detta spel på din mobil" ]
                     , ol []
                         [ li [] [ span [ class "game-info-link" ] [ span [] [ text "Gå till" ], a [ href "http://soph.se/yatzy" ] [ text "http://soph.se/yatzy" ] ] ]
@@ -29,12 +30,15 @@ gameInfo game =
                         , li [] [ text "Välj ditt namn" ]
                         , li [] [ text "Spela!" ]
                         ]
-                    , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick HideGameInfo ] [ text "Stäng" ]
+                    , div [ class "game-info-restart" ]
+                        [ span [] [ text "Om du vill lämna detta spel eller byta spelare kan du klicka på knappen nedan. Detta kommer inte ta bort dig från spelet från permanent - du kan ansluta till spelet igen genom att ange koden ovan." ]
+                        , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick ShowStartPage ] [ text "Lämna spel" ]
+                        ]
                     ]
     in
-    div [ class "dialog-wrapper" ]
+    div [ class "game-info-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn" ] []
-        , div [ class "game-info dialog-content animated jackInTheBox" ]
+        , div []
             [ content
             ]
         ]

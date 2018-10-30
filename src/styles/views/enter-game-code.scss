@@ -1,5 +1,10 @@
 .enter-game-code-dialog-wrapper {
   background: $primary-color;
+  height: 100vh;
+}
+
+.enter-game-code {
+  height: auto;
 }
 
 .enter-game-code h1 {
@@ -41,6 +46,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   height: 170px;
+  text-align: left;
+  margin-bottom: 10px;
 }
 
 .enter-game-code-active-game-button {
@@ -53,7 +60,6 @@
   font-size: 14px;
   background: $primary-color;
   color: white;
-
   &:hover {
     color: $primary-color;
     background: white;

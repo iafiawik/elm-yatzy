@@ -55,7 +55,7 @@ addRemovePlayers model =
     div [ class "add-players-dialog-wrapper dialog-wrapper" ]
         [ div [ class "add-players-dialog-background dialog-background animated fadeIn", onClick ShowStartPage ] []
         , div [ class "add-players-dialog dialog-content a animated jackInTheBox" ]
-            [ button [ class "score-dialog-cancel-button button", onClick ShowStartPage ] [ text "X" ]
+            [ button [ class "dialog-content-cancel-button button", onClick ShowStartPage ] [ text "X" ]
             , div [] [ h1 [] [ text "Yatzy" ], h2 [] [ text "Lägg till spelare" ] ]
             , div [ class "add-players-dialog-user-buttons" ] userButtons
             , div [ class "add-players-dialog-add-new-user" ]

@@ -168,8 +168,8 @@
   display: inline-block;
   margin-top: auto;
   transition: all 0.3s linear;
-  box-shadow: 2px 2px 0px black, 3px 3px 0px black, 4px 4px 0px black,
-    5px 5px 0px black, 6px 6px 0px black, 7px 7px 0px black;
+
+  @include box-shadow(black);
 }
 
 .score-dialog-submit-button:not(.enabled) {
@@ -194,21 +194,6 @@
 .score-dialog-number-button.marked {
   background-color: black;
   color: white;
-}
-
-.score-dialog-cancel-button {
-  background: $primary-color;
-  color: white;
-  width: 30px;
-  height: 30px;
-  border: none;
-  padding: 0px;
-  font: inherit;
-  cursor: pointer;
-  outline: inherit;
-  position: absolute;
-  top: 20px;
-  right: 20px;
 }
 
 .score-dialog-input-field {

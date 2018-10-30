@@ -39,11 +39,11 @@ scoreDialog model box currentPlayer isEdit =
                 )
                 acceptedValues
     in
-    div [ class "dialog-wrapper" ]
+    div [ class "dialog-wrapper score-dialog-dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn", onClick HideAddValue ] []
         , div [ class "score-dialog dialog-content animated jackInTheBox" ]
             [ div []
-                [ button [ class "score-dialog-cancel-button button", onClick HideAddValue ] [ text "X" ]
+                [ button [ class "dialog-content-cancel-button button", onClick HideAddValue ] [ text "X" ]
                 , h1 [] [ span [] [ text box.friendlyName ], button [ classList [ ( "score-dialog-delete-button button", True ), ( "enabled", model.currentValue >= 0 ), ( "visible", isEdit ) ], disabled (model.currentValue < 0), onClick RemoveValue ] [ text "(ta bort)" ] ]
                 , h2 [] [ text currentPlayer.user.name ]
                 ]

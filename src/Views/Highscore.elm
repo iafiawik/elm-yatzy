@@ -29,18 +29,26 @@ highscore players values =
                 )
                 (getRoundHighscore players values)
     in
-    div
-        [ classList
-            [ ( "highscore", True )
-            , ( "one-player", numberOfPlayers == 1 )
-            , ( "two-players", numberOfPlayers == 2 )
-            , ( "three-players", numberOfPlayers == 3 )
-            , ( "four-players", numberOfPlayers == 4 )
-            , ( "five-players", numberOfPlayers == 5 )
-            , ( "six-players", numberOfPlayers == 6 )
-            , ( "seven-players", numberOfPlayers == 7 )
-            , ( "eight-players", numberOfPlayers == 8 )
+    div [ class "highscore-dialog-wrapper dialog-wrapper" ]
+        [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
+        , div
+            [ classList
+                [ ( "highscore dialog-content animated jackInTheBox", True )
+                , ( "highscore", True )
+                , ( "one-player", numberOfPlayers == 1 )
+                , ( "two-players", numberOfPlayers == 2 )
+                , ( "three-players", numberOfPlayers == 3 )
+                , ( "four-players", numberOfPlayers == 4 )
+                , ( "five-players", numberOfPlayers == 5 )
+                , ( "six-players", numberOfPlayers == 6 )
+                , ( "seven-players", numberOfPlayers == 7 )
+                , ( "eight-players", numberOfPlayers == 8 )
+                ]
             ]
-        ]
-        [ div [ class "highscore-content" ] [ h1 [] [ text "Resultat" ], table [] ([] ++ playerButtons), button [ onClick HideHighscore, class "large-button \n        " ] [ text "Stäng" ] ]
+            [ div [ class "highscore-content container" ]
+                [ h1 [] [ text "Resultat" ]
+                , table [] ([] ++ playerButtons)
+                , button [ onClick HideHighscore, class "large-button" ] [ text "Stäng" ]
+                ]
+            ]
         ]

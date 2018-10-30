@@ -19,7 +19,7 @@ $screen-xl-min: 1200px;
 
 // Medium devices
 @mixin md {
-  @media (min-width: #{$screen-md-min}) {
+  @media (min-width: #{$screen-md-min}) and (min-height: #{$screen-md-min}) {
     @content;
   }
 }
@@ -40,7 +40,7 @@ $screen-xl-min: 1200px;
 
 // Custom devices
 @mixin rwd($screen) {
-  @media (min-width: $screen+"px") {
+  @media (min-height: $screen+"px") {
     @content;
   }
 }

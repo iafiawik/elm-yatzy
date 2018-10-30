@@ -1105,8 +1105,8 @@ view model =
 
                                                     Input box isEdit ->
                                                         div []
-                                                            [ div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
-                                                            , div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                            [ div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                            , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
                                                             ]
                                         in
                                         div
