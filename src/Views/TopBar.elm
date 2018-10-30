@@ -7,11 +7,14 @@ import Model.Player exposing (Player)
 import Models exposing (Msg(..))
 
 
-topBar : Bool -> Player -> Html Msg
-topBar isMyTurn currentPlayer =
+topBar : Bool -> Bool -> Player -> Html Msg
+topBar showCurrentPlayer isMyTurn currentPlayer =
     let
         currentPlayerInfo =
-            if isMyTurn then
+            if showCurrentPlayer == False then
+                div [] []
+
+            else if isMyTurn then
                 div [ class "top-bar-not-waiting", onClick (FillWithDummyValues currentPlayer) ] [ span [] [ text "Det är din tur!" ] ]
 
             else
