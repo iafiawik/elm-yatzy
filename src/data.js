@@ -35,6 +35,56 @@ db.settings({
 //       });
 //   });
 
+const getHighscore = onHighscoreChange => {
+  db
+    .collection("games")
+    .where("finished", "==", true)
+    .onSnapshot(function(snapshot) {
+      var games = snapshot.docs.map(game => {
+        return { id: game.id, ...game.data() };
+      });
+
+      var users = [];
+      games.forEach(function(game) {
+        users = users.concat(
+          game.users.map(function(user) {
+            return user.userId;
+          })
+        );
+      });
+
+      console.log("getHighscore(), users: ", users);
+
+      getUsersByIds(users).then(function(dbUsers) {
+        var dbGames = games.map(function(game) {
+          var realUsers = game.users.map(function(user) {
+            return {
+              user: dbUsers.find(function(dbUser) {
+                return dbUser.id == user.userId;
+              }),
+              order: user.order,
+              score: user.score
+            };
+          });
+          return { ...game, users: realUsers };
+        });
+
+        var allResults = [];
+        dbGames.forEach(function(game) {
+          game.users.forEach(function(user) {
+            allResults.push({ game: game, user: user });
+          });
+        });
+
+        allResults.sort(function(a, b) {
+          return b.user.score - a.user.score;
+        });
+
+        onHighscoreChange && onHighscoreChange(allResults);
+      });
+    });
+};
+
 const getUsers = onUsersChange => {
   db.collection("users").onSnapshot(function(snapshot) {
     var users = snapshot.docs.map(user => {
@@ -64,15 +114,6 @@ const getGames = onGameChange => {
       });
 
       getUsersByIds(users).then(function(dbUsers) {
-        // var realUsers = game.users.map(function(user) {
-        //   return {
-        //     user: dbUsers.find(function(dbUser) {
-        //       return dbUser.id == user.userId;
-        //     }),
-        //     order: user.order
-        //   };
-        // });
-
         var dbGames = games.map(function(game) {
           var realUsers = [];
           game.users.forEach(function(user) {
@@ -379,6 +420,7 @@ const getValues = (gameId, onValuesChange) => {
 };
 
 export default {
+  getHighscore,
   createUser,
   getUsers,
   getGame,

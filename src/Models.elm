@@ -5,6 +5,7 @@ import Model.Box exposing (Box)
 import Model.Error exposing (Error(..))
 import Model.Game exposing (DbGame, Game)
 import Model.GameState exposing (GameState)
+import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
 import Model.Value exposing (DbValue, Value)
@@ -24,6 +25,7 @@ type Msg
     | RemoteValuesReceived (List DbValue)
     | GameReceived (Maybe DbGame)
     | GamesReceived (List DbGame)
+    | GlobalHighscoreReceived (List GlobalHighscoreItem)
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -58,7 +60,7 @@ type Model
 
 
 type Mode
-    = SelectMode
+    = SelectMode (List GlobalHighscoreItem)
     | Individual IndividualModel
     | Group GroupModel
 

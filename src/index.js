@@ -35,6 +35,11 @@ Data.getUsers(users => {
   app.ports.usersReceived.send(users);
 });
 
+Data.getHighscore(highscore => {
+  console.log("index.js: Data.getHighscore", highscore);
+  app.ports.highscoreReceived.send(highscore);
+});
+
 app.ports.fillWithDummyValues.subscribe(function(values) {
   values.forEach(function(value) {
     Data.createValue(value, gameId);

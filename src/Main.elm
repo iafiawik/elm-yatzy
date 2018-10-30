@@ -17,6 +17,7 @@ import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
 import Model.Game exposing (Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
 import Model.GameState exposing (GameState(..))
+import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder, globalHighscoreItemsDecoder)
 import Model.Player exposing (Player)
 import Model.User exposing (User, usersDecoder)
 import Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valuesDecoder)
@@ -83,6 +84,9 @@ port gamesReceived : (Json.Decode.Value -> msg) -> Sub msg
 port valuesReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
+port highscoreReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
 
 ---- MODEL ----
 
@@ -94,7 +98,7 @@ type alias Flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     -- ( SelectedMode (Individual (EnterGameCode "RVBG")) [], Cmd.none )
-    ( SelectedMode SelectMode, Cmd.none )
+    ( SelectedMode (SelectMode []), Cmd.none )
 
 
 
@@ -648,11 +652,18 @@ createDummyValues player existingValues =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        _ =
+            Debug.log "Update(), msg: " msg
+    in
     case model of
         SelectedMode mode ->
             case mode of
-                SelectMode ->
+                SelectMode highscoreItems ->
                     case msg of
+                        GlobalHighscoreReceived items ->
+                            ( SelectedMode (SelectMode items), Cmd.none )
+
                         SelectIndividual ->
                             ( SelectedMode
                                 (Individual
@@ -1014,8 +1025,14 @@ view model =
     case model of
         SelectedMode mode ->
             case mode of
-                SelectMode ->
-                    div [] [ div [ onClick SelectIndividual ] [ text "Joina spel" ], div [ onClick SelectGroup ] [ text "Skapa spel" ] ]
+                SelectMode highscoreItems ->
+                    div []
+                        [ div []
+                            [ div [ onClick SelectIndividual ] [ text "Joina spel" ]
+                            , div [ onClick SelectGroup ] [ text "Skapa spel" ]
+                            ]
+                        , div [] (List.map (\h -> div [] [ div [] [ text h.player.user.name ], div [] [ text (String.fromInt h.player.score) ] ]) highscoreItems)
+                        ]
 
                 Individual individualModel ->
                     case individualModel of
@@ -1211,6 +1228,9 @@ gameCreated gameJson =
     let
         gameMaybe =
             Json.Decode.decodeValue gameResultDecoder gameJson
+
+        _ =
+            Debug.log "gameCreated()" (Debug.toString gameMaybe)
     in
     case gameMaybe of
         Ok gameResult ->
@@ -1231,6 +1251,10 @@ gamesUpdated gamesJson =
             GamesReceived games
 
         Err err ->
+            let
+                _ =
+                    Debug.log "gamesUpdated" (Debug.toString err)
+            in
             NoOp
 
 
@@ -1245,6 +1269,28 @@ remoteValuesUpdated valuesJson =
             RemoteValuesReceived values
 
         Err err ->
+            let
+                _ =
+                    Debug.log "remoteValuesUpdated" (Debug.toString err)
+            in
+            NoOp
+
+
+globalHighscoreUpdated : Json.Decode.Value -> Msg
+globalHighscoreUpdated valuesJson =
+    let
+        itemsMaybe =
+            Json.Decode.decodeValue globalHighscoreItemsDecoder valuesJson
+    in
+    case itemsMaybe of
+        Ok items ->
+            GlobalHighscoreReceived items
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "globalHighscoreUpdated" (Debug.toString err)
+            in
             NoOp
 
 
@@ -1256,6 +1302,7 @@ subscriptions model =
             , gameReceived gameCreated
             , valuesReceived remoteValuesUpdated
             , gamesReceived gamesUpdated
+            , highscoreReceived globalHighscoreUpdated
             ]
     in
     case model of
