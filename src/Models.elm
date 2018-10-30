@@ -130,6 +130,7 @@ type alias GameResult =
     , state : GameResultState
     , countedPlayers : List Player
     , countedValues : List Value
+    , showGameInfo : Bool
     , error : Maybe Error
     }
 
