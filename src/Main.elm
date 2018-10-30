@@ -29,6 +29,7 @@ import Views.AddRemovePlayers exposing (addRemovePlayers)
 import Views.EnterGameCode exposing (enterGameCode)
 import Views.GameFinished exposing (gameFinished)
 import Views.GameInfo exposing (gameInfo)
+import Views.GlobalHighscore exposing (globalHighscore)
 import Views.Highscore exposing (highscore)
 import Views.IndividualGameInfo exposing (individualGameInfo)
 import Views.IndividualHighscore exposing (individualHighscore)
@@ -1049,7 +1050,7 @@ view model =
                             [ div [ onClick SelectIndividual ] [ text "Joina spel" ]
                             , div [ onClick SelectGroup ] [ text "Skapa spel" ]
                             ]
-                        , div [] (List.map (\h -> div [] [ div [] [ text h.player.user.name ], div [] [ text (String.fromInt h.player.score) ] ]) highscoreItems)
+                        , globalHighscore highscoreItems
                         ]
 
                 Individual individualModel ->
