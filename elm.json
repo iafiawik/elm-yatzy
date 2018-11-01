@@ -7,7 +7,6 @@
   "homepage": "http://soph.se/yatzy/",
   "dependencies": {
     "direct": {
-      "danyx23/elm-uuid": "2.1.2",
       "elm/browser": "1.0.0",
       "elm/core": "1.0.0",
       "elm/html": "1.0.0",

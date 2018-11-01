@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "firebase": "^5.5.4",
-    "node-sass": "^4.9.3",
+    "node-sass": "^4.9.4",
     "sass-loader": "^7.1.0"
   }
 }
