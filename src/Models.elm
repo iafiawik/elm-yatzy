@@ -10,7 +10,6 @@ import Model.Player exposing (Player)
 import Model.User exposing (User)
 import Model.Value exposing (DbValue, Value)
 import Time
-import Uuid
 
 
 type Msg

@@ -24,7 +24,6 @@ import Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valuesDe
 import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
-import Uuid
 import Views.AddRemovePlayers exposing (addRemovePlayers)
 import Views.EnterGameCode exposing (enterGameCode)
 import Views.GameFinished exposing (gameFinished)
