@@ -13,8 +13,9 @@
 }
 
 .game-info-finished {
-  height: 300px;
-  max-height: 300px;
+  height: 300px !important;
+  max-height: 300px !important;
+  min-height: 300px;
 
   .large-button {
     margin-top: auto !important;

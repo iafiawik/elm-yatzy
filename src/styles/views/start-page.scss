@@ -1,5 +1,7 @@
 .start-page {
   color: white;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .start-page-select-mode {
@@ -37,6 +39,7 @@
   align-items: center;
   background: $primary-color;
   flex-direction: column;
+  margin-bottom: 60px;
 
   .large-button {
     background: white;

@@ -30,11 +30,10 @@ highscore players values =
                 (getRoundHighscore players values)
     in
     div [ class "highscore-dialog-wrapper dialog-wrapper" ]
-        [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
+        [ div [ class "dialog-background  animated fadeIn" ] []
         , div
             [ classList
                 [ ( "highscore dialog-content animated jackInTheBox", True )
-                , ( "highscore", True )
                 , ( "one-player", numberOfPlayers == 1 )
                 , ( "two-players", numberOfPlayers == 2 )
                 , ( "three-players", numberOfPlayers == 3 )

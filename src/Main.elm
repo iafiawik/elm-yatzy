@@ -422,17 +422,17 @@ updateGame msg model =
                                   }
                                 , case valueIndex of
                                     Just index ->
-                                        let
-                                            _ =
-                                                Debug.log "AddValue" "add value, value already exists"
-                                        in
+                                        -- let
+                                        --     _ =
+                                        --         Debug.log "AddValue" "add value, value already exists"
+                                        -- in
                                         Cmd.none
 
                                     Nothing ->
-                                        let
-                                            _ =
-                                                Debug.log "AddValue" "add value, value does not exist - create it"
-                                        in
+                                        -- let
+                                        --     _ =
+                                        --         Debug.log "AddValue" "add value, value does not exist - create it"
+                                        -- in
                                         createValue (encodeValue newValue)
                                 )
 
@@ -667,10 +667,10 @@ createDummyValues player existingValues =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            Debug.log "Update(), msg: " msg
-    in
+    -- let
+    --     _ =
+    --         Debug.log "Update(), msg: " msg
+    -- in
     case msg of
         ShowStartPage ->
             ( SelectedMode (SelectMode []), getGlobalHighscore () )
@@ -1263,8 +1263,8 @@ gameCreated gameJson =
         gameMaybe =
             Json.Decode.decodeValue gameResultDecoder gameJson
 
-        _ =
-            Debug.log "gameCreated()" (Debug.toString gameMaybe)
+        -- _ =
+        --     Debug.log "gameCreated()" (Debug.toString gameMaybe)
     in
     case gameMaybe of
         Ok gameResult ->
@@ -1285,10 +1285,10 @@ gamesUpdated gamesJson =
             GamesReceived games
 
         Err err ->
-            let
-                _ =
-                    Debug.log "gamesUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "gamesUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
@@ -1303,10 +1303,10 @@ remoteValuesUpdated valuesJson =
             RemoteValuesReceived values
 
         Err err ->
-            let
-                _ =
-                    Debug.log "remoteValuesUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "remoteValuesUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
@@ -1321,10 +1321,10 @@ globalHighscoreUpdated valuesJson =
             GlobalHighscoreReceived items
 
         Err err ->
-            let
-                _ =
-                    Debug.log "globalHighscoreUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "globalHighscoreUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 

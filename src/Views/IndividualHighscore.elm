@@ -94,23 +94,26 @@ individualHighscore currentPlayer players values =
             else
                 getPositionText position
     in
-    div
-        [ classList
-            [ ( "highscore", True )
-            , ( "one-player", numberOfPlayers == 1 )
-            , ( "two-players", numberOfPlayers == 2 )
-            , ( "three-players", numberOfPlayers == 3 )
-            , ( "four-players", numberOfPlayers == 4 )
-            , ( "five-players", numberOfPlayers == 5 )
-            , ( "six-players", numberOfPlayers == 6 )
-            , ( "seven-players", numberOfPlayers == 7 )
-            , ( "eight-players", numberOfPlayers == 8 )
+    div [ class "highscore-dialog-wrapper dialog-wrapper" ]
+        [ div [ class "dialog-background  animated fadeIn" ] []
+        , div
+            [ classList
+                [ ( "highscore", True )
+                , ( "one-player", numberOfPlayers == 1 )
+                , ( "two-players", numberOfPlayers == 2 )
+                , ( "three-players", numberOfPlayers == 3 )
+                , ( "four-players", numberOfPlayers == 4 )
+                , ( "five-players", numberOfPlayers == 5 )
+                , ( "six-players", numberOfPlayers == 6 )
+                , ( "seven-players", numberOfPlayers == 7 )
+                , ( "eight-players", numberOfPlayers == 8 )
+                ]
             ]
-        ]
-        [ div [ class "highscore-content" ]
-            [ h1 [] [ text "Resultat" ]
-            , h2 [] [ positionText ]
-            , table [] ([] ++ playerButtons)
-            , button [ onClick Restart, class "large-button \n        " ] [ text "Avsluta" ]
+            [ div [ class "highscore-content container" ]
+                [ h1 [] [ text "Resultat" ]
+                , h2 [] [ positionText ]
+                , table [] ([] ++ playerButtons)
+                , button [ onClick Restart, class "large-button \n        " ] [ text "Avsluta" ]
+                ]
             ]
         ]

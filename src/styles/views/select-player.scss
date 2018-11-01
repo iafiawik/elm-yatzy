@@ -42,5 +42,9 @@
 }
 
 .select-player .large-button {
-  margin-top: auto;
+  margin-top: 40px;
+
+  @include md {
+    margin-top: auto;
+  }
 }

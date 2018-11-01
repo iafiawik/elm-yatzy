@@ -8,7 +8,7 @@ import Models exposing (Model, Msg(..))
 
 gameFinished =
     div [ class "game-finished-dialog-wrapper dialog-wrapper" ]
-        [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []
+        [ div [ class "dialog-background  animated fadeIn" ] []
         , div
             [ classList
                 [ ( "game-finished dialog-content animated jackInTheBox", True )

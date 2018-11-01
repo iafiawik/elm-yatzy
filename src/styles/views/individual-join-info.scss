@@ -1,5 +1,14 @@
-.individual-join-info {
+.individual-join-info > div {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // flex: 1;
 }
+
+.individual-join-info .large-button {
+  // margin-top: auto;
+}
+
 .individual-join-info.loading {
   justify-content: center;
   align-items: center;
