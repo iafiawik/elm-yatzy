@@ -17,20 +17,20 @@ globalHighscore items =
 
             else
                 table []
-                    ([]
+                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ] ] ]
                         ++ List.indexedMap
                             (\index highscoreItem ->
                                 let
                                     name =
-                                        highscoreItem.player.user.name
+                                        highscoreItem.user.name
 
                                     score =
-                                        highscoreItem.player.score
+                                        highscoreItem.score
                                 in
-                                tr [] [ td [] [ text (String.fromInt (index + 1) ++ ". " ++ name) ], td [] [ text (String.fromInt score) ] ]
+                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ] ]
                             )
                             (List.take
-                                10
+                                20
                                 items
                             )
                     )

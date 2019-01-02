@@ -10,6 +10,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+    padding-top: 40px;
+    box-sizing: content-box;
 }
 
 .global-highscore-content {
@@ -26,22 +28,28 @@
   width: 100%;
   max-width: 100vw;
   border-collapse: collapse;
-  margin-bottom: 100px;
+  border: 1px solid $primary-color;
 }
 
-.global-highscore-content td {
+.global-highscore-content td,.global-highscore-content th {
   border-bottom: 1px solid $primary-color;
-  padding: 10px 0px;
+  padding: 10px 20px;
 }
 
-.global-highscore-content td:first-of-type {
-  text-align: left;
-  padding-left: 5px;
+.global-highscore-content td,.global-highscore-content th {
+  text-align: center;
+  border-right: 1px solid $primary-color;
 }
 
-.global-highscore-content td:last-of-type {
-  text-align: right;
-  padding-right: 5px;
+.global-highscore-content th {
+  text-align: center;
+  background: $primary-color;
+  color: white;
+  border-color: white;
+}
+
+.global-highscore-content td:last-of-type,.global-highscore-content th:last-of-type{
+  border-right: 0px;
 }
 
 .global-highscore-content tr:first-of-type {
