@@ -112,6 +112,9 @@ exports.calulateUserScores = functions.firestore.document('/games/{gameId}')
           ))
         );
 
+        var lastOrder = 0;
+        var lastScore = 0;
+
         var sortedList = uniqueList.map((user,index)=> {
           var dbUser = allUsers.find((dbUser)=>dbUser.id === user.user.id);
 
@@ -119,8 +122,19 @@ exports.calulateUserScores = functions.firestore.document('/games/{gameId}')
             return reject(new Error("Unable to find user with ID " + user.id));
           }
 
+          var currentOrder = 0;
+          if (user.score === lastScore) {
+            currentOrder = lastOrder;
+          }
+          else {
+            currentOrder = (index)
+          }
+
+          lastOrder = currentOrder;
+          lastScore = user.score;
+
           var sorted = user;
-          sorted.order = index;
+          sorted.order = currentOrder;
           sorted.user = dbUser;
           return sorted;
         });
