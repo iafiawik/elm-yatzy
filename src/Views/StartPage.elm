@@ -15,7 +15,7 @@ startPage highscoreItems =
             [ class "start-page-select-mode" ]
             [ div [ class "start-page-select-mode-content container" ]
                 [ h1 []
-                    [ text "Yatzy" ]
+                    [ text "iatzy" ]
                 , p
                     []
                     [ text "Who administrates the Yatzy protocol?" ]
