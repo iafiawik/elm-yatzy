@@ -15,13 +15,14 @@ import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
-import Model.Game exposing (Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
+import Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder, globalHighscoreItemsDecoder)
 import Model.Player exposing (Player)
-import Model.User exposing (User, usersDecoder)
+import Model.User exposing (User, userDecoder, usersDecoder)
 import Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valuesDecoder)
-import Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+import Model.WindowState exposing (WindowState(..))
+import Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 import Task
 import Time
 import Views.AddRemovePlayers exposing (addRemovePlayers)
@@ -39,6 +40,8 @@ import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Views.ScoreDialog exposing (scoreDialog)
 import Views.SelectPlayer exposing (selectPlayer)
 import Views.StartPage exposing (startPage)
+import Views.WindowBlurred exposing (windowBlurred)
+import Views.WindowFocused exposing (windowFocused)
 
 
 port fillWithDummyValues : List E.Value -> Cmd msg
@@ -50,13 +53,19 @@ port getGlobalHighscore : () -> Cmd msg
 port getGame : E.Value -> Cmd msg
 
 
+port startIndividualGameCommand : ( E.Value, E.Value, E.Value ) -> Cmd msg
+
+
+port startGroupGameCommand : E.Value -> Cmd msg
+
+
+port endGameCommand : () -> Cmd msg
+
+
 port getGames : () -> Cmd msg
 
 
 port getUsers : () -> Cmd msg
-
-
-port getValues : E.Value -> Cmd msg
 
 
 port createUser : E.Value -> Cmd msg
@@ -92,6 +101,12 @@ port valuesReceived : (Json.Decode.Value -> msg) -> Sub msg
 port highscoreReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
+port onBlurReceived : (Int -> msg) -> Sub msg
+
+
+port onFocusReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
 
 ---- MODEL ----
 
@@ -103,7 +118,7 @@ type alias Flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     -- ( SelectedMode (Individual (EnterGameCode "RVBG")) [], Cmd.none )
-    ( SelectedMode (SelectMode []), Cmd.none )
+    ( SelectedMode (SelectMode []) Focused, Cmd.none )
 
 
 
@@ -572,7 +587,8 @@ startIndividualGame game selectedPlayer =
                 }
             )
         )
-    , Cmd.none
+        Focused
+    , startIndividualGameCommand ( E.string selectedPlayer.user.id, E.string game.id, E.string game.code )
     )
 
 
@@ -597,7 +613,8 @@ startGroupGame game =
                 }
             )
         )
-    , getValues (E.string game.id)
+        Focused
+    , startGroupGameCommand (encodeGame game)
     )
 
 
@@ -669,22 +686,103 @@ createDummyValues player existingValues =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    -- let
-    --     _ =
-    --         Debug.log "Update(), msg: " msg
-    -- in
+    let
+        _ =
+            Debug.log "Update(), msg: " msg
+    in
     case msg of
         ShowStartPage ->
-            ( SelectedMode (SelectMode []), getGlobalHighscore () )
+            ( SelectedMode (SelectMode []) Focused, endGameCommand () )
+
+        WindowFocusedReceived dbGame userId ->
+            ( SelectedMode (BlurredGame (Reconnecting dbGame userId)) Blurred
+            , startIndividualGameCommand
+                ( E.string
+                    userId
+                , E.string dbGame.id
+                , E.string dbGame.code
+                )
+            )
+
+        WindowBlurredReceived ->
+            ( SelectedMode (BlurredGame Inactive) Blurred, Cmd.none )
 
         _ ->
             case model of
-                SelectedMode mode ->
+                SelectedMode mode windowState ->
                     case mode of
+                        BlurredGame blurredModel ->
+                            case blurredModel of
+                                Reconnecting dbGame userId ->
+                                    case msg of
+                                        RemoteValuesReceived dbValues ->
+                                            let
+                                                updatedValues =
+                                                    updateValues dbValues [] dbGame.users
+
+                                                game =
+                                                    { id = dbGame.id
+                                                    , code = dbGame.code
+                                                    , players = dbGame.users
+                                                    , values = updatedValues
+                                                    , finished = dbGame.finished
+                                                    , dateCreated = dbGame.dateCreated
+                                                    }
+
+                                                newGame =
+                                                    { game | values = updatedValues }
+
+                                                playerMaybe =
+                                                    find (\p -> p.user.id == userId) dbGame.users
+                                            in
+                                            case playerMaybe of
+                                                Just player ->
+                                                    ( SelectedMode
+                                                        (Individual
+                                                            (IndividualPlaying
+                                                                { gamePlaying =
+                                                                    { game = game
+                                                                    , boxes = getBoxes
+                                                                    , state = Idle
+                                                                    , currentValue = -1
+                                                                    , showGameInfo = False
+                                                                    , error = Nothing
+                                                                    }
+                                                                , selectedPlayer = player
+                                                                }
+                                                            )
+                                                        )
+                                                        Focused
+                                                    , Cmd.none
+                                                    )
+
+                                                Nothing ->
+                                                    ( SelectedMode
+                                                        (Group
+                                                            (Playing
+                                                                { game = game
+                                                                , boxes = getBoxes
+                                                                , state = Idle
+                                                                , currentValue = -1
+                                                                , showGameInfo = False
+                                                                , error = Nothing
+                                                                }
+                                                            )
+                                                        )
+                                                        Focused
+                                                    , Cmd.none
+                                                    )
+
+                                        _ ->
+                                            ( model, Cmd.none )
+
+                                _ ->
+                                    ( model, Cmd.none )
+
                         SelectMode highscoreItems ->
                             case msg of
                                 GlobalHighscoreReceived items ->
-                                    ( SelectedMode (SelectMode items), Cmd.none )
+                                    ( SelectedMode (SelectMode items) windowState, Cmd.none )
 
                                 SelectIndividual ->
                                     ( SelectedMode
@@ -694,6 +792,7 @@ update msg model =
                                                 []
                                             )
                                         )
+                                        windowState
                                     , getGames ()
                                     )
 
@@ -716,6 +815,7 @@ update msg model =
                                                 }
                                             )
                                         )
+                                        windowState
                                     , getUsers ()
                                     )
 
@@ -731,6 +831,7 @@ update msg model =
                                             []
                                         )
                                     )
+                                    windowState
                                 , getGames ()
                                 )
 
@@ -756,7 +857,7 @@ update msg model =
                                                             )
                                                             dbGames
                                                 in
-                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)), Cmd.none )
+                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)) windowState, Cmd.none )
 
                                             EnterGame ->
                                                 ( SelectedMode
@@ -765,6 +866,7 @@ update msg model =
                                                             ( Nothing, Nothing )
                                                         )
                                                     )
+                                                    windowState
                                                 , getGame (E.string gameCode)
                                                 )
 
@@ -773,7 +875,7 @@ update msg model =
                                                     currentModel =
                                                         individualModel
                                                 in
-                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)), Cmd.none )
+                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)) windowState, Cmd.none )
 
                                             _ ->
                                                 ( model, Cmd.none )
@@ -803,6 +905,7 @@ update msg model =
                                                                             )
                                                                         )
                                                                     )
+                                                                    windowState
                                                                 , Cmd.none
                                                                 )
 
@@ -822,11 +925,12 @@ update msg model =
                                                                             }
                                                                         )
                                                                     )
+                                                                    windowState
                                                                 , Cmd.none
                                                                 )
 
                                                     Nothing ->
-                                                        ( SelectedMode (Individual (EnterGameCode "" [])), getGames () )
+                                                        ( SelectedMode (Individual (EnterGameCode "" [])) windowState, getGames () )
 
                                             RemoteValuesReceived dbValues ->
                                                 case gameMaybe of
@@ -839,6 +943,7 @@ update msg model =
                                                                     )
                                                                 )
                                                             )
+                                                            windowState
                                                         , Cmd.none
                                                         )
 
@@ -858,6 +963,7 @@ update msg model =
                                                                     }
                                                                 )
                                                             )
+                                                            windowState
                                                         , Cmd.none
                                                         )
 
@@ -871,6 +977,7 @@ update msg model =
                                                     (Individual
                                                         (SelectPlayer { selectPlayerModel | markedPlayer = Single player })
                                                     )
+                                                    windowState
                                                 , Cmd.none
                                                 )
 
@@ -879,6 +986,7 @@ update msg model =
                                                     (Individual
                                                         (SelectPlayer { selectPlayerModel | markedPlayer = All })
                                                     )
+                                                    windowState
                                                 , Cmd.none
                                                 )
 
@@ -899,6 +1007,7 @@ update msg model =
                                                                     }
                                                                 )
                                                             )
+                                                            windowState
                                                         , Cmd.none
                                                         )
 
@@ -938,11 +1047,12 @@ update msg model =
                                                                 { game = currentGame, selectedPlayer = individualPlayingModel.selectedPlayer }
                                                             )
                                                         )
+                                                        windowState
                                                     , Cmd.batch [ Tuple.second gameModel, finishGame currentGame ]
                                                     )
 
                                                 else
-                                                    ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer }))
+                                                    ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer })) windowState
                                                     , Tuple.second gameModel
                                                     )
 
@@ -956,14 +1066,14 @@ update msg model =
                                         startGroupGame preGame.game
 
                                     else if msg == HideNotification then
-                                        ( SelectedMode (Group (PreGame { preGame | error = Nothing })), Cmd.none )
+                                        ( SelectedMode (Group (PreGame { preGame | error = Nothing })) windowState, Cmd.none )
 
                                     else
                                         let
                                             newModel =
                                                 Tuple.mapFirst PreGame <| updatePreGame msg preGame
                                         in
-                                        ( SelectedMode (Group (Tuple.first newModel)), Tuple.second newModel )
+                                        ( SelectedMode (Group (Tuple.first newModel)) windowState, Tuple.second newModel )
 
                                 Playing gamePlaying ->
                                     case msg of
@@ -1001,11 +1111,13 @@ update msg model =
                                                                     }
                                                                 )
                                                             )
+                                                            windowState
                                                         , Cmd.batch [ Tuple.second gameModel, finishGame playingModel.game ]
                                                         )
 
                                                     else
                                                         ( SelectedMode (Group (Tuple.first gameModel))
+                                                            windowState
                                                         , Tuple.second gameModel
                                                         )
 
@@ -1034,6 +1146,7 @@ update msg model =
                                                     }
                                                 )
                                             )
+                                            windowState
                                         , getUsers ()
                                         )
 
@@ -1042,7 +1155,7 @@ update msg model =
                                             newModel =
                                                 Tuple.mapFirst PostGame <| updatePostGame msg postGame
                                         in
-                                        ( SelectedMode (Group (Tuple.first newModel)), Tuple.second newModel )
+                                        ( SelectedMode (Group (Tuple.first newModel)) windowState, Tuple.second newModel )
 
 
 
@@ -1052,81 +1165,94 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model of
-        SelectedMode mode ->
+        SelectedMode mode windowState ->
             case mode of
+                BlurredGame blurredModel ->
+                    case blurredModel of
+                        Inactive ->
+                            windowBlurred
+
+                        Reconnecting game userId ->
+                            windowFocused
+
                 SelectMode highscoreItems ->
                     startPage highscoreItems
 
                 Individual individualModel ->
-                    case individualModel of
-                        EnterGameCode gameCode games ->
-                            enterGameCode gameCode
-                                games
+                    case windowState of
+                        Blurred ->
+                            windowBlurred
 
-                        WaitingForData ( game, values ) ->
-                            div [ class "waiting-for-game" ]
-                                [ loader "Ansluter till spelet ..." True
-                                ]
+                        _ ->
+                            case individualModel of
+                                EnterGameCode gameCode games ->
+                                    enterGameCode gameCode
+                                        games
 
-                        SelectPlayer selectPlayerModel ->
-                            selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayer
+                                WaitingForData ( game, values ) ->
+                                    div [ class "waiting-for-game" ]
+                                        [ loader "Ansluter till spelet ..." True
+                                        ]
 
-                        IndividualPlaying gamePlayingModel ->
-                            let
-                                game =
-                                    gamePlayingModel.gamePlaying.game
+                                SelectPlayer selectPlayerModel ->
+                                    selectPlayer selectPlayerModel.game selectPlayerModel.markedPlayer
 
-                                selectedPlayer =
-                                    gamePlayingModel.selectedPlayer
-                            in
-                            if game.finished == True then
-                                div [] [ individualHighscore selectedPlayer game.players game.values ]
+                                IndividualPlaying gamePlayingModel ->
+                                    let
+                                        game =
+                                            gamePlayingModel.gamePlaying.game
 
-                            else
-                                let
-                                    gameState =
-                                        stateToString playingModel.state
+                                        selectedPlayer =
+                                            gamePlayingModel.selectedPlayer
+                                    in
+                                    if game.finished == True then
+                                        div [] [ individualHighscore selectedPlayer game.players game.values ]
 
-                                    playingModel =
-                                        gamePlayingModel.gamePlaying
-
-                                    currentPlayerMaybe =
-                                        getCurrentPlayer game.values game.players
-
-                                    gameInformation =
-                                        if playingModel.showGameInfo then
-                                            individualGameInfo playingModel.game
-
-                                        else
-                                            div [] []
-                                in
-                                case currentPlayerMaybe of
-                                    Just currentPlayer ->
+                                    else
                                         let
-                                            content =
-                                                case playingModel.state of
-                                                    Idle ->
-                                                        div []
-                                                            [ gameInformation
-                                                            , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
-                                                            ]
+                                            gameState =
+                                                stateToString playingModel.state
 
-                                                    Input box isEdit ->
-                                                        div []
-                                                            [ div [] [ scoreDialog playingModel box currentPlayer isEdit ]
-                                                            , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
-                                                            ]
+                                            playingModel =
+                                                gamePlayingModel.gamePlaying
+
+                                            currentPlayerMaybe =
+                                                getCurrentPlayer game.values game.players
+
+                                            gameInformation =
+                                                if playingModel.showGameInfo then
+                                                    individualGameInfo playingModel.game
+
+                                                else
+                                                    div [] []
                                         in
-                                        div
-                                            []
-                                            [ div [ classList [ ( gameState, True ) ] ] [ content ]
-                                            ]
+                                        case currentPlayerMaybe of
+                                            Just currentPlayer ->
+                                                let
+                                                    content =
+                                                        case playingModel.state of
+                                                            Idle ->
+                                                                div []
+                                                                    [ gameInformation
+                                                                    , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
+                                                                    ]
 
-                                    Nothing ->
-                                        div [] [ text "No player found" ]
+                                                            Input box isEdit ->
+                                                                div []
+                                                                    [ div [] [ scoreDialog playingModel box currentPlayer isEdit ]
+                                                                    , div [] [ interactiveScoreCard currentPlayer (Just gamePlayingModel.selectedPlayer) game False ]
+                                                                    ]
+                                                in
+                                                div
+                                                    []
+                                                    [ div [ classList [ ( gameState, True ) ] ] [ content ]
+                                                    ]
 
-                        IndividualPostGame postGame ->
-                            div [] [ individualHighscore postGame.selectedPlayer postGame.game.players postGame.game.values ]
+                                            Nothing ->
+                                                div [] [ text "No player found" ]
+
+                                IndividualPostGame postGame ->
+                                    div [] [ individualHighscore postGame.selectedPlayer postGame.game.players postGame.game.values ]
 
                 Group groupModel ->
                     case groupModel of
@@ -1336,6 +1462,36 @@ globalHighscoreUpdated valuesJson =
             NoOp
 
 
+windowBlurUpdated : Int -> Msg
+windowBlurUpdated windowState =
+    WindowBlurredReceived
+
+
+windowStateFocused : Json.Decode.Value -> Msg
+windowStateFocused valuesJson =
+    let
+        focusedGameAndUserMaybe =
+            Json.Decode.decodeValue
+                (Json.Decode.map2 GameAndUserId
+                    (Json.Decode.field "game" gameDecoder)
+                    (Json.Decode.field "userId" Json.Decode.string)
+                )
+                valuesJson
+    in
+    case focusedGameAndUserMaybe of
+        Ok focusedGameAndUser ->
+            WindowFocusedReceived
+                focusedGameAndUser.game
+                focusedGameAndUser.userId
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "windowStateFocused" (Debug.toString err)
+            in
+            NoOp
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
@@ -1345,10 +1501,12 @@ subscriptions model =
             , valuesReceived remoteValuesUpdated
             , gamesReceived gamesUpdated
             , highscoreReceived globalHighscoreUpdated
+            , onBlurReceived windowBlurUpdated
+            , onFocusReceived windowStateFocused
             ]
     in
     case model of
-        SelectedMode mode ->
+        SelectedMode mode windowState ->
             case mode of
                 Group groupModel ->
                     case groupModel of

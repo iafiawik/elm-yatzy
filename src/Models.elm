@@ -1,4 +1,4 @@
-module Models exposing (GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
+module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -9,6 +9,7 @@ import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
 import Model.Value exposing (DbValue, Value)
+import Model.WindowState exposing (WindowState)
 import Time
 
 
@@ -26,6 +27,8 @@ type Msg
     | GameReceived (Maybe DbGame)
     | GamesReceived (List DbGame)
     | GlobalHighscoreReceived (List GlobalHighscoreItem)
+    | WindowFocusedReceived DbGame String
+    | WindowBlurredReceived
     | AddPlayer User
     | RemovePlayer Player
     | NewPlayerInputValueChange String
@@ -57,13 +60,19 @@ type Msg
 
 
 type Model
-    = SelectedMode Mode
+    = SelectedMode Mode WindowState
 
 
 type Mode
     = SelectMode (List GlobalHighscoreItem)
     | Individual IndividualModel
     | Group GroupModel
+    | BlurredGame BlurredModel
+
+
+type BlurredModel
+    = Reconnecting DbGame String
+    | Inactive
 
 
 type IndividualModel
@@ -149,4 +158,10 @@ type PreGameState
 type alias PlayerAndNumberOfValues =
     { numberOfValues : Int
     , player : Player
+    }
+
+
+type alias GameAndUserId =
+    { game : DbGame
+    , userId : String
     }

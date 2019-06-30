@@ -29,7 +29,7 @@ function calculateTotalScore (values) {
 exports.calulateUserScores = functions.firestore.document('/games/{gameId}')
   .onUpdate((change, context) => {
     var gameId = context.params.gameId;
-    console.error("Game " + gameId + " has been updated, trying to calculate user scores");
+    console.log("Game " + gameId + " has been updated, trying to calculate user scores");
     // Get an object representing the current document
     const newGame = change.after.data();
     const game = newGame;

@@ -21,8 +21,135 @@ import "./styles/app.scss";
 //   initElm(values[0]);
 // });
 
+
 window.config = {
   devMode: false
+}
+
+window.gameId = "";
+
+var container = document.createElement("div");   // Create a <button> element
+container.style.position = "absolute";
+container.style.top = "0px";
+container.style.left = "0px";
+
+var input = document.createElement("input");   // Create a <button> element
+input.value = "OUVV";
+
+var btn = document.createElement("button");   // Create a <button> element
+btn.innerHTML = "CLICK ME";
+
+container.appendChild(input);
+container.appendChild(btn);
+document.body.appendChild(container);
+
+btn.onclick = () => {
+  var gameCode = input.value;
+
+  Data.getGame(gameCode)
+    .then(function(game) {
+      Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
+        alert("hej");
+      }).catch((e)=>{
+        alert("error", e);
+        console.error("error", e);
+      })
+
+    });
+};
+
+window.onblur = function() {
+  console.log('blur');
+
+  if (oldGameAndUserExist())
+  {
+    const gameCode = getGameInLocalStorage();
+
+    Data.getGame(gameCode)
+      .then(function(game) {
+        console.log("window.onblur(), gameId: ", game.id)
+
+        app.ports.onBlurReceived.send(1);
+
+      }).catch(function() {
+        console.log("window.onblur(), could not find game with code ", gameCode);
+      });
+  }
+}
+
+window.onfocus = function() { console.log('focus', gameId); checkLastPlayedGame(); }
+window.onload = function() { console.log("load"); checkLastPlayedGame(); }
+
+const gameIdKey = "last-played-game-code";
+const userIdKey = "last-played-user-id";
+
+const checkLastPlayedGame = () => {
+
+  if (oldGameAndUserExist()) {
+    const gameCode = getGameInLocalStorage();
+    const userId = getUserIdInLocalStorage();
+
+    Data.getGame(gameCode)
+      .then(function(game) {
+        console.log("checkLastPlayedGame(), gameId: ", game.id)
+
+        window.gameId = game.id;
+
+        app.ports.onFocusReceived.send({game: game, userId: userId});
+      }).catch(function() {
+        console.log("checkLastPlayedGame(), could not find game with code ", gameCode);
+      });
+      console.log("checkLastPlayedGame(), last played game was gameId ", gameId, " and userId ", userId)
+  }
+  else {
+    console.log("checkLastPlayedGame(), either no game or no user was found.")
+  }
+}
+
+const oldGameAndUserExist = () => {
+  const lastGame = getGameInLocalStorage();
+  const lastUser = getUserIdInLocalStorage();
+
+
+  const exists = typeof lastGame !== "undefined" && typeof lastUser !== "undefined";;
+  console.log("oldGameAndUserExist", lastGame, lastUser, exists)
+  return exists;
+}
+
+const setGameInLocalStorage = (gameId) => {
+  setValueInLocalStorage(gameIdKey, gameId);
+}
+
+const getGameInLocalStorage = () => {
+  return getValueInLocalStorage(gameIdKey);
+}
+
+const deleteGameInLocalStorage = () => {
+  deleteValueInLocalStorage(gameIdKey);
+}
+
+const setUserIdInLocalStorage = (userId) => {
+  setValueInLocalStorage(userIdKey, userId);
+}
+
+const getUserIdInLocalStorage = () => {
+  return getValueInLocalStorage(userIdKey);
+}
+
+const deleteUserIdInLocalStorage = () => {
+  deleteValueInLocalStorage(userIdKey);
+}
+
+const setValueInLocalStorage = (key, value) => {
+  localStorage.setItem("iatzy-" + key, value)
+}
+
+const getValueInLocalStorage = (key) => {
+  return localStorage.getItem("iatzy-" + key)
+}
+
+const deleteValueInLocalStorage = (key) => {
+  localStorage.removeItem("iatzy-" + key)
 }
 
 console.log("index.js: initElm");
@@ -45,20 +172,20 @@ Data.getHighscore(highscore => {
 });
 
 app.ports.fillWithDummyValues.subscribe(function(values) {
-
+  console.log("fillWithDummyValues")
   if (window.config.devMode) {
     values.forEach(function(value) {
-      Data.createValue(value, gameId);
+      Data.createValue(value, window.gameId);
     });
   }
 });
 
-app.ports.getGlobalHighscore.subscribe(function() {
-  Data.getHighscore(highscore => {
-    console.log("index.js: Data.getHighscore", highscore);
-    app.ports.highscoreReceived.send(highscore);
-  });
-});
+// app.ports.getGlobalHighscore.subscribe(function() {
+//   Data.getHighscore(highscore => {
+//     console.log("index.js: Data.getHighscore", highscore);
+//     app.ports.highscoreReceived.send(highscore);
+//   });
+// });
 
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
@@ -67,12 +194,17 @@ app.ports.getUsers.subscribe(function() {
   });
 });
 
-app.ports.getValues.subscribe(function(gameId) {
+const getValues = (gameId) => {
   Data.getValues(gameId, values => {
     console.log("index.js: Data.getValues", values);
     app.ports.valuesReceived.send(values);
   });
-});
+}
+
+// app.ports.getValues.subscribe(function(gameId) {
+//   getValues(gameId);
+// });
+
 app.ports.getGames.subscribe(function() {
   Data.getGames(games => {
     console.log("index.js: Data.getGames", games);
@@ -84,9 +216,35 @@ app.ports.getGames.subscribe(function() {
 //   app.ports.remoteUsers.send(users);
 // });
 
-var gameId = "";
+app.ports.startIndividualGameCommand.subscribe(function(params) {
+    const userId = params[0];
+    const gameId = params[1];
+    const gameCode = params[2];
 
-app.ports.getGame.subscribe(function(gameCode) {
+    setUserIdInLocalStorage(userId);
+    setGameInLocalStorage(gameCode);
+
+    getValues(gameId);
+});
+
+app.ports.startGroupGameCommand.subscribe(function(game) {
+    setUserIdInLocalStorage("all");
+    setGameInLocalStorage(game.code);
+
+    getValues(game.id);
+});
+
+app.ports.endGameCommand.subscribe(function(game) {
+  deleteGameInLocalStorage();
+  deleteUserIdInLocalStorage();
+
+  Data.getHighscore(highscore => {
+    console.log("index.js: Data.getHighscore", highscore);
+    app.ports.highscoreReceived.send(highscore);
+  });
+});
+
+const getGame = (gameCode) => {
   console.log("index.js: getGame " + gameCode);
   Data.getGame(gameCode)
     .then(function(game) {
@@ -104,6 +262,10 @@ app.ports.getGame.subscribe(function(gameCode) {
 
       app.ports.gameReceived.send({ game: {}, result: "not found" });
     });
+}
+
+app.ports.getGame.subscribe(function(gameCode) {
+    getGame(gameCode);
 });
 
 app.ports.createUser.subscribe(function(name) {
@@ -126,17 +288,21 @@ app.ports.createGame.subscribe(function(game) {
 
 app.ports.editGame.subscribe(function(game) {
   console.log("index.js: Edit game " + JSON.stringify(game));
+
+  deleteGameInLocalStorage();
+  deleteUserIdInLocalStorage();
+
   Data.editGame(game, gameId);
 });
 
 app.ports.createValue.subscribe(function(value) {
-  console.log("index.js: Create value " + JSON.stringify(value));
-  Data.createValue(value, gameId);
+  console.log("index.js: Create value " + JSON.stringify(value), "gameId", window.gameId);
+  Data.createValue(value, window.gameId);
 });
 
 app.ports.editValue.subscribe(function(value) {
   console.log("Edit value " + JSON.stringify(value));
-  Data.editValue(value, gameId);
+  Data.editValue(value, window.gameId);
 });
 
 app.ports.deleteValue.subscribe(function(value) {
