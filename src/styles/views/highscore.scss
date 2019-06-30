@@ -71,10 +71,10 @@
   margin-bottom: 100px;
 }
 
-$initial-animation-delay: 7;
+$initial-animation-delay: 1.5;
 
 @mixin replayButton ($numberOfPlayers) {
-  $animationDelay: $initial-animation-delay + ($numberOfPlayers * 0.5);
+  $animationDelay: $initial-animation-delay + 1 + ($numberOfPlayers * 0.5);
 
   .large-button {
     animation: pulse 1s linear forwards infinite,
@@ -86,44 +86,68 @@ $initial-animation-delay: 7;
   @for $i from 1 through $numberOfPlayers {
     .highscore-content tr:nth-of-type(#{$i}) {
       animation-delay: #{(
-          $initial-animation-delay +(($numberOfPlayers - ($i + 1)) * 0.5)
+          $initial-animation-delay + (($numberOfPlayers - ($i + 1)) * 0.5)
         )}s;
     }
   }
+}
+
+@mixin positionHeading ($numberOfPlayers) {
+  @for $i from 1 through $numberOfPlayers {
+    .highscore-content h2 {
+      $animationDelay: $initial-animation-delay + (($numberOfPlayers + 0.5) * 0.5);
+
+      animation: show 0.3s linear #{($animationDelay)}s forwards;
+    }
+  }
+}
+
+
+.highscore-content h2 {
+  color: red;
+  opacity: 0;
 }
 
 .highscore {
   &.one-player {
     @include playerAnimations(1);
     @include replayButton(1);
+    @include positionHeading(1);
   }
   &.two-players {
     @include playerAnimations(2);
     @include replayButton(2);
+    @include positionHeading(2);
   }
   &.three-players {
     @include playerAnimations(3);
     @include replayButton(3);
+    @include positionHeading(3);
   }
   &.four-players {
     @include playerAnimations(4);
     @include replayButton(4);
+    @include positionHeading(4);
   }
   &.five-players {
     @include playerAnimations(5);
     @include replayButton(5);
+    @include positionHeading(5);
   }
   &.six-players {
     @include playerAnimations(6);
     @include replayButton(6);
+    @include positionHeading(6);
   }
   &.seven-players {
     @include playerAnimations(7);
     @include replayButton(7);
+    @include positionHeading(7);
   }
   &.eight-players {
     @include playerAnimations(8);
     @include replayButton(8);
+    @include positionHeading(8);
   }
 
   .highscore-content tr {
