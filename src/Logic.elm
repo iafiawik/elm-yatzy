@@ -18,8 +18,8 @@ getBoxes =
     , { id = "fours", friendlyName = "Fyror", boxType = Regular 4, category = Upper, order = 3 }
     , { id = "fives", friendlyName = "Femmor", boxType = Regular 5, category = Upper, order = 4 }
     , { id = "sixes", friendlyName = "Sexor", boxType = Regular 6, category = Upper, order = 5 }
-    , { id = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None, order = -1 }
     , { id = "upper_sum", friendlyName = "Övre summa", boxType = UpperSum, category = None, order = -1 }
+    , { id = "bonus", friendlyName = "Bonus", boxType = Bonus, category = None, order = -1 }
     , { id = "one_pair", friendlyName = "Ett par", boxType = SameKind, category = Lower, order = 6 }
     , { id = "two_pairs", friendlyName = "Två par", boxType = Combination, category = Lower, order = 7 }
     , { id = "three_of_a_kind", friendlyName = "Tretal", boxType = SameKind, category = Lower, order = 8 }
