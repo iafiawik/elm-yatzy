@@ -21,6 +21,10 @@ import "./styles/app.scss";
 //   initElm(values[0]);
 // });
 
+window.config = {
+  devMode: false
+}
+
 console.log("index.js: initElm");
 
 var app = Elm.Main.init({
@@ -41,9 +45,12 @@ Data.getHighscore(highscore => {
 });
 
 app.ports.fillWithDummyValues.subscribe(function(values) {
-  values.forEach(function(value) {
-    Data.createValue(value, gameId);
-  });
+
+  if (window.config.devMode) {
+    values.forEach(function(value) {
+      Data.createValue(value, gameId);
+    });
+  }
 });
 
 app.ports.getGlobalHighscore.subscribe(function() {
