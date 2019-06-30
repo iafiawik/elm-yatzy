@@ -16,7 +16,8 @@ gameInfo game =
                 div [ class "game-info dialog-content animated jackInTheBox game-info-finished" ]
                     [ button [ class "dialog-content-cancel-button button", onClick HideGameInfo ] [ text "X" ]
                     , h1 [] [ text "Spelet är slut!" ]
-                    , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick Restart ] [ text "Skapa nytt spel" ]
+                    , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick Restart ] [ text "Skapa ny omgång" ]
+                    , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", True ) ], onClick ShowStartPage ] [ text "Återgå till startsidan" ]
                     ]
 
             else
