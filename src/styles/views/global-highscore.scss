@@ -10,8 +10,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-    padding-top: 40px;
-    box-sizing: content-box;
+  padding-top: 40px;
+  box-sizing: content-box;
+  flex-direction: column;
 }
 
 .global-highscore-content {
@@ -20,6 +21,8 @@
     margin-right: auto;
     margin-top: 30px;
   }
+
+  margin-bottom: 100px;
 }
 
 .global-highscore-content table {

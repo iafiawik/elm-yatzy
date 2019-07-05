@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
 import Models exposing (Msg(..))
 import Views.GlobalHighscore exposing (globalHighscore)
+import Views.GlobalHighscoreInverted exposing (globalHighscoreInverted)
 
 
 startPage : List GlobalHighscoreItem -> Html Msg
@@ -27,8 +28,10 @@ startPage highscoreItems =
                     , div [ class "large-button", onClick SelectIndividual ] [ text "Join existing game" ]
                     ]
                 ]
+            , div [ class "start-page-arrow-down" ] []
             ]
-        , div [ class "start-page-global-highscore container" ]
+        , div [ class "global-highscore start-page-global-highscore container" ]
             [ globalHighscore highscoreItems
+            , globalHighscoreInverted highscoreItems
             ]
         ]

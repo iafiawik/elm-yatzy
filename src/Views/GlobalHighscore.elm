@@ -36,6 +36,6 @@ globalHighscore items =
                     )
     in
     div
-        [ class "global-highscore" ]
-        [ div [ class "global-highscore-content" ] [ h1 [] [ text "Global topplista" ], content ]
+        []
+        [ div [ class "global-highscore-content" ] [ h1 [] [ text "Global highscore" ], content ]
         ]
