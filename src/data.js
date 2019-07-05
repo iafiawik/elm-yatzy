@@ -269,7 +269,10 @@ const createGame = users => {
                     score: user.score
                   };
                 });
-                var dbGame = { ...game, users: realUsers };
+                var dateCreated = new Date(game.dateCreated);
+
+                var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
+
                 console.log("DbGame: ", dbGame);
                 resolve(dbGame);
               });
