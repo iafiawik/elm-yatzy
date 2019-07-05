@@ -75,6 +75,8 @@ const getGames = onGameChange => {
     .onSnapshot(function(snapshot) {
       var games = snapshot.docs.map(game => {
         return { id: game.id, ...game.data() };
+      }).filter(game => {
+        return game.dateCreated > (new Date().getTime() - 604800000);
       });
 
       var users = games.map(function(game) {
