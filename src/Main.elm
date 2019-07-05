@@ -262,6 +262,7 @@ updatePreGame msg model =
                     , players = List.map (\p -> { p | score = getTotalSum model.game.values p }) model.game.players
                     , values = []
                     , finished = False
+                    , dateCreated = ""
                     }
             in
             ( { model | state = ShowIndividualJoinInfo }, createGame (encodeGame game) )
@@ -586,6 +587,7 @@ startGroupGame game =
                     , players = game.players
                     , values = []
                     , finished = False
+                    , dateCreated = game.dateCreated
                     }
                 , boxes = getBoxes
                 , state = Idle
@@ -621,6 +623,7 @@ finishGame game =
                     game.players
             , values = game.values
             , finished = True
+            , dateCreated = game.dateCreated
             }
     in
     editGame (encodeGame currentGame)
@@ -705,6 +708,7 @@ update msg model =
                                                     , players = []
                                                     , values = []
                                                     , finished = False
+                                                    , dateCreated = ""
                                                     }
                                                 , error = Nothing
                                                 , currentNewPlayerName = ""
@@ -747,6 +751,7 @@ update msg model =
                                                                 , players = dbGame.users
                                                                 , values = []
                                                                 , finished = dbGame.finished
+                                                                , dateCreated = dbGame.dateCreated
                                                                 }
                                                             )
                                                             dbGames
@@ -785,6 +790,7 @@ update msg model =
                                                                 , players = dbGame.users
                                                                 , values = []
                                                                 , finished = dbGame.finished
+                                                                , dateCreated = dbGame.dateCreated
                                                                 }
                                                         in
                                                         case dbValuesMaybe of
@@ -923,6 +929,7 @@ update msg model =
                                                             , players = game.players
                                                             , values = game.values
                                                             , finished = True
+                                                            , dateCreated = game.dateCreated
                                                             }
                                                     in
                                                     ( SelectedMode
@@ -978,6 +985,7 @@ update msg model =
                                                                 , players = playingModel.game.players
                                                                 , values = playingModel.game.values
                                                                 , finished = True
+                                                                , dateCreated = playingModel.game.dateCreated
                                                                 }
                                                         in
                                                         ( SelectedMode
@@ -1019,6 +1027,7 @@ update msg model =
                                                         , players = postGame.game.players
                                                         , values = []
                                                         , finished = False
+                                                        , dateCreated = ""
                                                         }
                                                     , error = Nothing
                                                     , state = ShowAddRemovePlayers
@@ -1262,8 +1271,8 @@ gameCreated gameJson =
         gameMaybe =
             Json.Decode.decodeValue gameResultDecoder gameJson
 
-        -- _ =
-        --     Debug.log "gameCreated()" (Debug.toString gameMaybe)
+        _ =
+            Debug.log "gameCreated()" (Debug.toString gameMaybe)
     in
     case gameMaybe of
         Ok gameResult ->
@@ -1284,10 +1293,10 @@ gamesUpdated gamesJson =
             GamesReceived games
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "gamesUpdated" (Debug.toString err)
-            -- in
+            let
+                _ =
+                    Debug.log "gamesUpdated" (Debug.toString err)
+            in
             NoOp
 
 

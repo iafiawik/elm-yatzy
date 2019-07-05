@@ -11,7 +11,7 @@ enterGameCode : String -> List Game -> Html Msg
 enterGameCode gameCode games =
     let
         gameButtons =
-            List.map (\g -> button [ class "enter-game-code-active-game-button", onClick (GameCodeInputChange g.code) ] [ span [] [ text g.code ] ]) games
+            List.map (\g -> button [ class "enter-game-code-active-game-button", onClick (GameCodeInputChange g.code) ] [ span [] [ text g.code ], br [] [], span [] [ text g.dateCreated ] ]) games
     in
     div [ class "enter-game-code-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn", onClick ShowStartPage ] []

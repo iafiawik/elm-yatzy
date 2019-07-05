@@ -18,11 +18,12 @@ gamesDecoder =
 
 gameDecoder : Decoder DbGame
 gameDecoder =
-    Decode.map4 DbGame
+    Decode.map5 DbGame
         (Decode.field "id" Decode.string)
         (Decode.field "code" Decode.string)
         (Decode.field "users" (Decode.list playerDecoder))
         (Decode.field "finished" Decode.bool)
+        (Decode.field "dateCreated" Decode.string)
 
 
 gameResultDecoder : Decoder GameResult
@@ -58,6 +59,7 @@ encodeGame game =
         , ( "code", E.string game.code )
         , ( "users", E.list encodePlayer game.players )
         , ( "finished", E.bool game.finished )
+        , ( "dateCreated", E.bool game.finished )
         ]
 
 
@@ -66,6 +68,7 @@ type alias DbGame =
     , code : String
     , users : List Player
     , finished : Bool
+    , dateCreated : String
     }
 
 
@@ -75,6 +78,7 @@ type alias Game =
     , players : List Player
     , values : List Value
     , finished : Bool
+    , dateCreated : String
     }
 
 

@@ -103,7 +103,18 @@ const getGames = onGameChange => {
           return new Date(b.dateCreated) - new Date(a.dateCreated);
         });
 
-        onGameChange && onGameChange(dbGames);
+        var formattedDbGames = dbGames.map(function(game) {
+          var formattedGame = game;
+          var creationDate = new Date(game.dateCreated);
+
+          formattedGame.dateCreated = creationDate.toLocaleDateString("sv-SE");
+
+          return formattedGame;
+        });
+
+        console.log("getGames, formattedDbGames: ", formattedDbGames);
+
+        onGameChange && onGameChange(formattedDbGames);
       });
     });
 };
@@ -154,7 +165,10 @@ const getGame = gameCode => {
               };
             });
 
-            var dbGame = { ...game, users: realUsers };
+            var dateCreated = new Date(game.dateCreated);
+
+            var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
+
             console.log("DbGame: ", dbGame);
             resolve(dbGame);
           });
