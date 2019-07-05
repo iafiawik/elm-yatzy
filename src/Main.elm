@@ -1271,8 +1271,8 @@ gameCreated gameJson =
         gameMaybe =
             Json.Decode.decodeValue gameResultDecoder gameJson
 
-        _ =
-            Debug.log "gameCreated()" (Debug.toString gameMaybe)
+        -- _ =
+        --     Debug.log "gameCreated()" (Debug.toString gameMaybe)
     in
     case gameMaybe of
         Ok gameResult ->
@@ -1293,10 +1293,10 @@ gamesUpdated gamesJson =
             GamesReceived games
 
         Err err ->
-            let
-                _ =
-                    Debug.log "gamesUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "gamesUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
