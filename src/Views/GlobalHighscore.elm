@@ -17,7 +17,7 @@ globalHighscore items =
 
             else
                 table []
-                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ] ] ]
+                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ], th [ class "hidden" ] [ text "Game ID" ] ] ]
                         ++ List.indexedMap
                             (\index highscoreItem ->
                                 let
@@ -26,8 +26,11 @@ globalHighscore items =
 
                                     score =
                                         highscoreItem.score
+
+                                    gameId =
+                                        highscoreItem.gameId
                                 in
-                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ] ]
+                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text gameId ] ]
                             )
                             (List.take
                                 20

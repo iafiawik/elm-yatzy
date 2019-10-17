@@ -73,3 +73,11 @@
 
   @include box-shadow(white);
 }
+
+.is-admin .global-highscore-content table .hidden {
+  display: block;
+}
+
+.global-highscore-content table .hidden {
+  display: none;
+}
