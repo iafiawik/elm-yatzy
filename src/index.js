@@ -27,10 +27,23 @@ window.config = {
 }
 
 window.gameId = "";
-var urlParams = new URLSearchParams(window.location.search);
-var isAdmin = urlParams.get('admin');
+window.isAdmin = isUserAdmin();
 
-if (isAdmin) {
+
+function isUserAdmin() {
+  var field = 'admin';
+  var url = window.location.href;
+  if(url.indexOf('?' + field) != -1)
+      return true;
+  else if(url.indexOf('&' + field) != -1)
+      return true;
+  return false
+}
+
+if (window.isAdmin) {
+  var root = document.getElementById("container");
+  root.classList.add("is-admin");
+
   var container = document.createElement("div");
   container.style.position = "absolute";
   container.style.top = "0px";
