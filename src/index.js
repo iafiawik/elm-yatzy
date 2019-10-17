@@ -27,36 +27,40 @@ window.config = {
 }
 
 window.gameId = "";
+var urlParams = new URLSearchParams(window.location.search);
+var isAdmin = urlParams.get('admin');
 
-var container = document.createElement("div");   // Create a <button> element
-container.style.position = "absolute";
-container.style.top = "0px";
-container.style.left = "0px";
+if (isAdmin) {
+  var container = document.createElement("div");
+  container.style.position = "absolute";
+  container.style.top = "0px";
+  container.style.left = "0px";
 
-var input = document.createElement("input");   // Create a <button> element
-input.value = "OUVV";
+  var input = document.createElement("input");
+  input.value = "OUVV";
 
-var btn = document.createElement("button");   // Create a <button> element
-btn.innerHTML = "CLICK ME";
+  var btn = document.createElement("button");
+  btn.innerHTML = "Toggle finished state";
 
-container.appendChild(input);
-container.appendChild(btn);
-document.body.appendChild(container);
+  container.appendChild(input);
+  container.appendChild(btn);
+  document.body.appendChild(container);
 
-btn.onclick = () => {
-  var gameCode = input.value;
+  btn.onclick = () => {
+    var gameCode = input.value;
 
-  Data.getGame(gameCode)
-    .then(function(game) {
-      Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
-        alert("hej");
-      }).catch((e)=>{
-        alert("error", e);
-        console.error("error", e);
-      })
+    Data.getGame(gameCode)
+      .then(function(game) {
+        Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
+          alert("hej");
+        }).catch((e)=>{
+          alert("error", e);
+          console.error("error", e);
+        })
 
-    });
-};
+      });
+  };
+}
 
 window.onblur = function() {
   console.log('blur');
