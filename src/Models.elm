@@ -60,7 +60,7 @@ type Msg
 
 
 type Model
-    = SelectedMode Mode WindowState
+    = SelectedMode Mode WindowState Bool
 
 
 type Mode

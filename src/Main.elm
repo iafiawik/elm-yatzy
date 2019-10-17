@@ -112,13 +112,14 @@ port onFocusReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 type alias Flags =
-    {}
+    { isAdmin : Bool
+    }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     -- ( SelectedMode (Individual (EnterGameCode "RVBG")) [], Cmd.none )
-    ( SelectedMode (SelectMode []) Focused, Cmd.none )
+    ( SelectedMode (SelectMode []) Focused flags.isAdmin, Cmd.none )
 
 
 
@@ -570,8 +571,8 @@ updatePostGame msg model =
             ( model, Cmd.none )
 
 
-startIndividualGame : Game -> Player -> ( Model, Cmd Msg )
-startIndividualGame game selectedPlayer =
+startIndividualGame : Game -> Player -> Bool -> ( Model, Cmd Msg )
+startIndividualGame game selectedPlayer isAdmin =
     ( SelectedMode
         (Individual
             (IndividualPlaying
@@ -588,12 +589,13 @@ startIndividualGame game selectedPlayer =
             )
         )
         Focused
+        isAdmin
     , startIndividualGameCommand ( E.string selectedPlayer.user.id, E.string game.id, E.string game.code )
     )
 
 
-startGroupGame : Game -> ( Model, Cmd Msg )
-startGroupGame game =
+startGroupGame : Game -> Bool -> ( Model, Cmd Msg )
+startGroupGame game isAdmin =
     ( SelectedMode
         (Group
             (Playing
@@ -614,6 +616,7 @@ startGroupGame game =
             )
         )
         Focused
+        isAdmin
     , startGroupGameCommand (encodeGame game)
     )
 
@@ -692,10 +695,10 @@ update msg model =
     in
     case msg of
         ShowStartPage ->
-            ( SelectedMode (SelectMode []) Focused, endGameCommand () )
+            ( SelectedMode (SelectMode []) Focused False, endGameCommand () )
 
         WindowFocusedReceived dbGame userId ->
-            ( SelectedMode (BlurredGame (Reconnecting dbGame userId)) Blurred
+            ( SelectedMode (BlurredGame (Reconnecting dbGame userId)) Blurred False
             , startIndividualGameCommand
                 ( E.string
                     userId
@@ -705,11 +708,11 @@ update msg model =
             )
 
         WindowBlurredReceived ->
-            ( SelectedMode (BlurredGame Inactive) Blurred, Cmd.none )
+            ( SelectedMode (BlurredGame Inactive) Blurred False, Cmd.none )
 
         _ ->
             case model of
-                SelectedMode mode windowState ->
+                SelectedMode mode windowState isAdmin ->
                     case mode of
                         BlurredGame blurredModel ->
                             case blurredModel of
@@ -753,6 +756,7 @@ update msg model =
                                                             )
                                                         )
                                                         Focused
+                                                        isAdmin
                                                     , Cmd.none
                                                     )
 
@@ -770,6 +774,7 @@ update msg model =
                                                             )
                                                         )
                                                         Focused
+                                                        isAdmin
                                                     , Cmd.none
                                                     )
 
@@ -782,7 +787,7 @@ update msg model =
                         SelectMode highscoreItems ->
                             case msg of
                                 GlobalHighscoreReceived items ->
-                                    ( SelectedMode (SelectMode items) windowState, Cmd.none )
+                                    ( SelectedMode (SelectMode items) windowState isAdmin, Cmd.none )
 
                                 SelectIndividual ->
                                     ( SelectedMode
@@ -793,6 +798,7 @@ update msg model =
                                             )
                                         )
                                         windowState
+                                        isAdmin
                                     , getGames ()
                                     )
 
@@ -816,6 +822,7 @@ update msg model =
                                             )
                                         )
                                         windowState
+                                        isAdmin
                                     , getUsers ()
                                     )
 
@@ -832,6 +839,7 @@ update msg model =
                                         )
                                     )
                                     windowState
+                                    isAdmin
                                 , getGames ()
                                 )
 
@@ -857,7 +865,7 @@ update msg model =
                                                             )
                                                             dbGames
                                                 in
-                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)) windowState, Cmd.none )
+                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper gameCode) allGames)) windowState isAdmin, Cmd.none )
 
                                             EnterGame ->
                                                 ( SelectedMode
@@ -867,6 +875,7 @@ update msg model =
                                                         )
                                                     )
                                                     windowState
+                                                    isAdmin
                                                 , getGame (E.string gameCode)
                                                 )
 
@@ -875,7 +884,7 @@ update msg model =
                                                     currentModel =
                                                         individualModel
                                                 in
-                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)) windowState, Cmd.none )
+                                                ( SelectedMode (Individual (EnterGameCode (String.toUpper value) games)) windowState isAdmin, Cmd.none )
 
                                             _ ->
                                                 ( model, Cmd.none )
@@ -906,6 +915,7 @@ update msg model =
                                                                         )
                                                                     )
                                                                     windowState
+                                                                    isAdmin
                                                                 , Cmd.none
                                                                 )
 
@@ -926,11 +936,12 @@ update msg model =
                                                                         )
                                                                     )
                                                                     windowState
+                                                                    isAdmin
                                                                 , Cmd.none
                                                                 )
 
                                                     Nothing ->
-                                                        ( SelectedMode (Individual (EnterGameCode "" [])) windowState, getGames () )
+                                                        ( SelectedMode (Individual (EnterGameCode "" [])) windowState isAdmin, getGames () )
 
                                             RemoteValuesReceived dbValues ->
                                                 case gameMaybe of
@@ -944,6 +955,7 @@ update msg model =
                                                                 )
                                                             )
                                                             windowState
+                                                            isAdmin
                                                         , Cmd.none
                                                         )
 
@@ -964,6 +976,7 @@ update msg model =
                                                                 )
                                                             )
                                                             windowState
+                                                            isAdmin
                                                         , Cmd.none
                                                         )
 
@@ -978,6 +991,7 @@ update msg model =
                                                         (SelectPlayer { selectPlayerModel | markedPlayer = Single player })
                                                     )
                                                     windowState
+                                                    isAdmin
                                                 , Cmd.none
                                                 )
 
@@ -987,16 +1001,17 @@ update msg model =
                                                         (SelectPlayer { selectPlayerModel | markedPlayer = All })
                                                     )
                                                     windowState
+                                                    isAdmin
                                                 , Cmd.none
                                                 )
 
                                             Start ->
                                                 case selectPlayerModel.markedPlayer of
                                                     Single player ->
-                                                        startIndividualGame selectPlayerModel.game player
+                                                        startIndividualGame selectPlayerModel.game player isAdmin
 
                                                     All ->
-                                                        startGroupGame selectPlayerModel.game
+                                                        startGroupGame selectPlayerModel.game isAdmin
 
                                                     NoPlayer ->
                                                         ( SelectedMode
@@ -1008,6 +1023,7 @@ update msg model =
                                                                 )
                                                             )
                                                             windowState
+                                                            isAdmin
                                                         , Cmd.none
                                                         )
 
@@ -1048,11 +1064,12 @@ update msg model =
                                                             )
                                                         )
                                                         windowState
+                                                        isAdmin
                                                     , Cmd.batch [ Tuple.second gameModel, finishGame currentGame ]
                                                     )
 
                                                 else
-                                                    ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer })) windowState
+                                                    ( SelectedMode (Individual (IndividualPlaying { gamePlaying = Tuple.first gameModel, selectedPlayer = individualPlayingModel.selectedPlayer })) windowState isAdmin
                                                     , Tuple.second gameModel
                                                     )
 
@@ -1063,17 +1080,17 @@ update msg model =
                             case groupModel of
                                 PreGame preGame ->
                                     if msg == Start then
-                                        startGroupGame preGame.game
+                                        startGroupGame preGame.game isAdmin
 
                                     else if msg == HideNotification then
-                                        ( SelectedMode (Group (PreGame { preGame | error = Nothing })) windowState, Cmd.none )
+                                        ( SelectedMode (Group (PreGame { preGame | error = Nothing })) windowState isAdmin, Cmd.none )
 
                                     else
                                         let
                                             newModel =
                                                 Tuple.mapFirst PreGame <| updatePreGame msg preGame
                                         in
-                                        ( SelectedMode (Group (Tuple.first newModel)) windowState, Tuple.second newModel )
+                                        ( SelectedMode (Group (Tuple.first newModel)) windowState isAdmin, Tuple.second newModel )
 
                                 Playing gamePlaying ->
                                     case msg of
@@ -1112,12 +1129,14 @@ update msg model =
                                                                 )
                                                             )
                                                             windowState
+                                                            isAdmin
                                                         , Cmd.batch [ Tuple.second gameModel, finishGame playingModel.game ]
                                                         )
 
                                                     else
                                                         ( SelectedMode (Group (Tuple.first gameModel))
                                                             windowState
+                                                            isAdmin
                                                         , Tuple.second gameModel
                                                         )
 
@@ -1147,6 +1166,7 @@ update msg model =
                                                 )
                                             )
                                             windowState
+                                            isAdmin
                                         , getUsers ()
                                         )
 
@@ -1155,7 +1175,7 @@ update msg model =
                                             newModel =
                                                 Tuple.mapFirst PostGame <| updatePostGame msg postGame
                                         in
-                                        ( SelectedMode (Group (Tuple.first newModel)) windowState, Tuple.second newModel )
+                                        ( SelectedMode (Group (Tuple.first newModel)) windowState isAdmin, Tuple.second newModel )
 
 
 
@@ -1165,7 +1185,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model of
-        SelectedMode mode windowState ->
+        SelectedMode mode windowState isAdmin ->
             case mode of
                 BlurredGame blurredModel ->
                     case blurredModel of
@@ -1506,7 +1526,7 @@ subscriptions model =
             ]
     in
     case model of
-        SelectedMode mode windowState ->
+        SelectedMode mode windowState isAdmin ->
             case mode of
                 Group groupModel ->
                     case groupModel of
