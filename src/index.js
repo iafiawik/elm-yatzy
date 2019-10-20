@@ -40,6 +40,48 @@ function isUserAdmin() {
   return false
 }
 
+function createAdminInputField(parent, placeholder, buttonText) {
+  var container = document.createElement("div");
+  container.style.marginBottom = "10px";
+
+  var btn = createButton(buttonText);
+
+  container.appendChild(createInput(placeholder));
+  container.appendChild(btn);
+  parent.appendChild(container);
+
+  return btn;
+}
+
+function createAdminInputFields(parent, placeholder1, placeholder2, buttonText) {
+  var container = document.createElement("div");
+  container.style.marginBottom = "10px";
+
+  var btn = createButton(buttonText);
+
+  container.appendChild(createInput(placeholder1));
+  container.appendChild(createInput(placeholder2));
+
+  container.appendChild(btn);
+  parent.appendChild(container);
+
+  return btn;
+}
+
+
+function createInput(placeholder) {
+  var input = document.createElement("input");
+  input.placeholder = placeholder;
+  return input;
+}
+
+function createButton(buttonText) {
+  var btn = document.createElement("button");
+  btn.innerHTML = buttonText;
+
+  return btn;
+}
+
 if (window.isAdmin) {
   var root = document.getElementById("container");
   root.classList.add("is-admin");
@@ -49,21 +91,33 @@ if (window.isAdmin) {
   container.style.top = "0px";
   container.style.left = "0px";
 
-  var input = document.createElement("input");
-  input.value = "OUVV";
+  var toggleFinishedStateByGameCodeButton = createAdminInputField(container, "Game code", "Toggle finished state");
+  var toggleFinishedStateByGameIdButton = createAdminInputField(container, "Game ID", "Toggle finished state");
+  var recalculateHighscoreButton = createAdminInputFields(container, "Game ID", "User ID", "Mark as invalid");
 
-  var btn = document.createElement("button");
-  btn.innerHTML = "Toggle finished state";
-
-  container.appendChild(input);
-  container.appendChild(btn);
   document.body.appendChild(container);
 
-  btn.onclick = () => {
+  toggleFinishedStateByGameCodeButton.onclick = () => {
     var gameCode = input.value;
 
     Data.getGame(gameCode)
       .then(function(game) {
+        Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
+          alert("hej");
+        }).catch((e)=>{
+          alert("error", e);
+          console.error("error", e);
+        })
+
+      });
+  };
+
+  toggleFinishedStateByGameIdButton.onclick = () => {
+    var gameId = toggleFinishedStateByGameIdButton.previousSibling.value;
+
+    Data.getGameByGameId(gameId)
+      .then(function(game) {
+        alert("update game");
         Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
           alert("hej");
         }).catch((e)=>{
@@ -184,10 +238,12 @@ Data.getUsers(users => {
   app.ports.usersReceived.send(users);
 });
 
-Data.getHighscore(highscore => {
-  console.log("index.js: Data.getHighscore", highscore);
-  app.ports.highscoreReceived.send(highscore);
-});
+Data.getHighscore().then((highscores) => {
+  console.log("index.js: Data.getHighscore", highscores);
+
+  app.ports.highscoreReceived.send(highscores);
+}).catch((error) => console.error("index.js, Data.getHighscore error: ", error));
+
 
 app.ports.fillWithDummyValues.subscribe(function(values) {
   console.log("fillWithDummyValues")

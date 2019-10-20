@@ -15,10 +15,11 @@ globalHighscoreItemsDecoder =
 
 globalHighscoreItemDecoder : Decoder GlobalHighscoreItem
 globalHighscoreItemDecoder =
-    Decode.map5 GlobalHighscoreItem
+    Decode.map6 GlobalHighscoreItem
         (Decode.field "date" Decode.string)
         (Decode.field "gameId" Decode.string)
         (Decode.field "order" Decode.int)
+        (Decode.field "year" Decode.int)
         (Decode.field "score" Decode.int)
         (Decode.field "user" userDecoder)
 
@@ -27,6 +28,7 @@ type alias GlobalHighscoreItem =
     { date : String
     , gameId : String
     , order : Int
+    , year : Int
     , score : Int
     , user : User
     }

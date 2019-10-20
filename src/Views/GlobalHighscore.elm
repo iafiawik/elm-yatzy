@@ -8,8 +8,8 @@ import Models exposing (Msg(..))
 import Views.Loader exposing (loader)
 
 
-globalHighscore : List GlobalHighscoreItem -> Html Msg
-globalHighscore items =
+globalHighscore : List GlobalHighscoreItem -> Int -> Html Msg
+globalHighscore items year =
     let
         content =
             if List.length items == 0 then
@@ -17,7 +17,7 @@ globalHighscore items =
 
             else
                 table []
-                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ], th [ class "hidden" ] [ text "Game ID" ] ] ]
+                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ], th [ class "hidden" ] [ text "User ID" ], th [ class "hidden" ] [ text "Game ID" ] ] ]
                         ++ List.indexedMap
                             (\index highscoreItem ->
                                 let
@@ -30,7 +30,7 @@ globalHighscore items =
                                     gameId =
                                         highscoreItem.gameId
                                 in
-                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text gameId ] ]
+                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text highscoreItem.user.id ], td [ class "hidden" ] [ text gameId ] ]
                             )
                             (List.take
                                 20
@@ -40,5 +40,5 @@ globalHighscore items =
     in
     div
         []
-        [ div [ class "global-highscore-content" ] [ h1 [] [ text "Global highscore" ], content ]
+        [ div [ class "global-highscore-content" ] [ h1 [] [ text ("Global highscore " ++ String.fromInt year) ], content ]
         ]

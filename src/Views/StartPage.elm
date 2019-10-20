@@ -3,14 +3,25 @@ module Views.StartPage exposing (startPage)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
+import Model.GlobalHighscore exposing (GlobalHighscore)
 import Models exposing (Msg(..))
 import Views.GlobalHighscore exposing (globalHighscore)
 import Views.GlobalHighscoreInverted exposing (globalHighscoreInverted)
 
 
-startPage : List GlobalHighscoreItem -> Html Msg
-startPage highscoreItems =
+startPage : List GlobalHighscore -> Html Msg
+startPage highscores =
+    let
+        highscoreLists =
+            List.map
+                (\highscore ->
+                    div []
+                        [ globalHighscore highscore.normal highscore.year
+                        , globalHighscoreInverted highscore.inverted highscore.year
+                        ]
+                )
+                highscores
+    in
     div [ class "start-page" ]
         [ div
             [ class "start-page-select-mode" ]
@@ -31,7 +42,5 @@ startPage highscoreItems =
             , div [ class "start-page-arrow-down" ] []
             ]
         , div [ class "global-highscore start-page-global-highscore container" ]
-            [ globalHighscore highscoreItems
-            , globalHighscoreInverted highscoreItems
-            ]
+            highscoreLists
         ]

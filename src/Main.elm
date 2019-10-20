@@ -17,6 +17,7 @@ import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
 import Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
 import Model.GameState exposing (GameState(..))
+import Model.GlobalHighscore exposing (GlobalHighscore, globalHighscoresDecoder)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder, globalHighscoreItemsDecoder)
 import Model.Player exposing (Player)
 import Model.User exposing (User, userDecoder, usersDecoder)
@@ -786,8 +787,8 @@ update msg model =
 
                         SelectMode highscoreItems ->
                             case msg of
-                                GlobalHighscoreReceived items ->
-                                    ( SelectedMode (SelectMode items) windowState isAdmin, Cmd.none )
+                                GlobalHighscoreReceived highscore ->
+                                    ( SelectedMode (SelectMode highscore) windowState isAdmin, Cmd.none )
 
                                 SelectIndividual ->
                                     ( SelectedMode
@@ -1195,8 +1196,8 @@ view model =
                         Reconnecting game userId ->
                             windowFocused
 
-                SelectMode highscoreItems ->
-                    startPage highscoreItems
+                SelectMode highscore ->
+                    startPage highscore
 
                 Individual individualModel ->
                     case windowState of
@@ -1468,17 +1469,17 @@ globalHighscoreUpdated : Json.Decode.Value -> Msg
 globalHighscoreUpdated valuesJson =
     let
         itemsMaybe =
-            Json.Decode.decodeValue globalHighscoreItemsDecoder valuesJson
+            Json.Decode.decodeValue globalHighscoresDecoder valuesJson
     in
     case itemsMaybe of
         Ok items ->
             GlobalHighscoreReceived items
 
         Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "globalHighscoreUpdated" (Debug.toString err)
-            -- in
+            let
+                _ =
+                    Debug.log "globalHighscoreUpdated" (Debug.toString err)
+            in
             NoOp
 
 

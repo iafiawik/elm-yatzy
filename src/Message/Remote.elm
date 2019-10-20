@@ -12,5 +12,5 @@ type Msg
     | RemoteValuesReceived (List DbValue)
     | GameReceived (Maybe DbGame)
     | GamesReceived (List DbGame)
-    | GlobalHighscoreReceived (List GlobalHighscoreItem)
+    | GlobalHighscoreReceived (List Highscore)
     | WindowStateReceived WindowState

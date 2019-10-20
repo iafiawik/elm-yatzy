@@ -26,6 +26,92 @@ function calculateTotalScore (values) {
   return (values.reduce(reducer, 0)) + bonusSum;
 }
 
+
+exports.calculateResults = functions.https.onRequest((req, res) => {
+  console.log("1758")
+  const resultsRef = admin.firestore().collection("results");
+
+  console.log("calculateResults()");
+
+  var gamesRef = admin
+    .firestore()
+    .collection("games");
+
+    if (gameId) {
+      gamesRef = gamesRef.where("gameId", "==", gameId);
+    }
+
+    gamesRef
+    .get()
+    .then((snapshot) => {
+      console.log("calculateResults(), in game loop");
+
+      var games = snapshot.docs.map(game => {
+        var g = game.data();
+        g.id = game.id;
+        return g;
+      });
+
+      console.log("calculateResults(), found games: ", games.length);
+
+      var results = [];
+
+      games.forEach((game) => {
+        game.users.forEach((user) => {
+          // Do not include test users in the highscore
+          if (user.userId === "1mSEbTIQiiDCFRIsYCNy" || user.userId === "vWAokowhN0XUTHTbyr2n") {
+            return false;
+          }
+
+          if (user.score > 0 && !user.invalid) {
+            results.push({
+              userId: user.userId,
+              score: user.score,
+              dateCreated: game.dateCreated,
+              gameId: game.id,
+              year: new Date(game.dateCreated).getFullYear()
+            });
+          }
+        })
+      });
+
+      console.log("calculateResults(), found results: ", results.length);
+
+      var promises = [];
+      results.forEach((result, index) => {
+        if (index === 0) {
+          console.log("calculateResults(), result: ", result);
+        }
+
+        const resultId = `${result.gameId}-${result.userId}`;
+
+        var promise =
+         resultsRef
+          .doc(resultId)
+          .set(result);
+
+          promises.push(promise);
+      });
+
+      return Promise
+        .all(promises)
+        .then(() => {
+          console.log("calculateResults(), all promises resolved.")
+            return res.end();
+        })
+        .catch((error) => {
+            console.error("calculateResults(),an error occured in promises: ", error)
+            return res.end();
+        })
+
+    })
+    .catch((error) => {
+      console.error("calculateResults(), an error occured: ", error);
+
+      res.end();
+    });
+});
+
 exports.calulateUserScores = functions.firestore.document('/games/{gameId}')
   .onUpdate((change, context) => {
     var gameId = context.params.gameId;

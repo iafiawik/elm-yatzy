@@ -35,7 +35,7 @@ db.settings({
 //       });
 //   });
 
-const getHighscore = onHighscoreChange => {
+const getHighscore2 = onHighscoreChange => {
   db.collection("global").doc("highscore")
     .get()
     .then(function(snapshot) {
@@ -54,6 +54,99 @@ const getHighscore = onHighscoreChange => {
       onHighscoreChange && onHighscoreChange(highscoreList);
     });
 };
+
+const getResults = (options = {
+  sortOrder: "desc",
+  year: 2019
+}) => {
+  var minCreationDate = new Date(options.year, 0, 1).getTime();
+  var maxCreationDate = new Date(options.year, 11, 31, 23, 59, 59).getTime();
+
+  return new Promise(function(resolve, reject) {
+     db
+      .collection("results")
+      .where("year", "==", options.year)
+      .orderBy("score", options.sortOrder)
+      .limit(20)
+      .get()
+      .then((snapshot) => {
+        var results = snapshot.docs.map(result => {
+          return { id: result.id, ...result.data() };
+        });
+
+        console.log("results", results);
+
+        resolve(results);
+      });
+    });
+}
+
+const prepareResults = (results, users) => {
+  return results.map((result, index) => {
+    var combinedResult = {...result, user: users.find((user) => user.id === result.userId)};
+
+    var creationDate = new Date(combinedResult.dateCreated);
+
+    combinedResult.date = creationDate.toLocaleDateString("sv-SE");
+    combinedResult.order = index + 1;
+
+    delete combinedResult.userId;
+    delete combinedResult.dateCreated;
+
+    return combinedResult;
+  });
+}
+
+
+const getHighscore = () => {
+  var startYear = 2018;
+  var currentYear = 2018;
+
+  const yearPromises = [];
+
+  var usersPromise = new Promise(function(resolve, reject) {
+    getUsers((users) => resolve(users));
+  });
+
+  while(currentYear <= new Date().getFullYear()) {
+    console.log("currentYear", currentYear)
+    var year = currentYear;
+    var resultsPromise = getResults({ sortOrder: "desc", year: year });
+    var resultsInvertedPromise = getResults({ sortOrder: "asc", year: year });
+
+    var yearPromise = new Promise((resolve, reject) => {
+      Promise
+        .all([resultsPromise, resultsInvertedPromise, usersPromise])
+        .then((values) => {
+          const results = values[0];
+          const resultsInverted = values[1];
+          const users = values[2];
+
+          const resultsWithUsers = prepareResults(results, users);
+          const resultsInvertedWithUsers = prepareResults(resultsInverted, users);
+
+          var result = {
+            year: results[0].year,
+            normal: resultsWithUsers,
+            inverted: resultsInvertedWithUsers
+          };
+
+          console.log("result", result)
+
+          resolve(result)
+        });
+      });
+
+      yearPromises.push(yearPromise);
+      currentYear++;
+    }
+
+  var totalPromise = new Promise((resolve, reject) => {
+    Promise.all(yearPromises).then(values => resolve(values.sort((a, b) => b.year - a.year)));
+  });
+
+  return totalPromise;
+}
 
 const getUsers = onUsersChange => {
   db.collection("users").onSnapshot(function(snapshot) {
@@ -189,6 +282,58 @@ const getGame = gameCode => {
   });
 };
 
+const getGameByGameId = gameId => {
+  return new Promise(function(resolve, reject) {
+    db
+      .collection("games")
+      .doc(gameId)
+      .get()
+      .then(function(doc) {
+        if (doc.exists) {
+          var game = { id: doc.id, ...doc.data() };
+
+          console.log("Game", game)
+
+          var users = game.users.map(function(user) {
+            return user.userId;
+          });
+
+          getUsersByIds(users).then(function(dbUsers) {
+            var realUsers = game.users.map(function(user) {
+              return {
+                user: dbUsers.find(function(dbUser) {
+                  return dbUser.id == user.userId;
+                }),
+                order: user.order,
+                score: user.score
+              };
+            });
+
+            var dateCreated = new Date(game.dateCreated);
+
+            var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
+
+            console.log("DbGame: ", dbGame);
+            resolve(dbGame);
+          });
+        }
+        else {
+          throw new Error();
+        }
+      })
+      .catch(function(error) {
+        console.error(
+          "Late return Unable to find a game with this game ID: ",
+          gameId,
+          ". Error: ",
+          error
+        );
+
+        reject("Unable to find a game with that ID.");
+      });
+  });
+};
+
 const getUsersByIds = userIds => {
   return new Promise(function(resolve, reject) {
     // var docRef = db.collection("cities").doc(userIds);
@@ -303,7 +448,7 @@ const editGame = (game, gameId) => {
         finished: game.finished
       })
       .then(function(updatedDoc) {
-        console.log("editGame(): Game with ID " + gameId + " has been.");
+        console.log("editGame(): Game with ID " + gameId + " has been updated. Updates: ", game);
       })
       .catch(function(error) {
         console.log(
@@ -413,6 +558,7 @@ export default {
   createUser,
   getUsers,
   getGame,
+  getGameByGameId,
   createGame,
   editGame,
   getGames,
