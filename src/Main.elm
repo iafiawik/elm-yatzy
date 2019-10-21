@@ -1479,10 +1479,10 @@ globalHighscoreUpdated valuesJson =
             GlobalHighscoreReceived items
 
         Err err ->
-            let
-                _ =
-                    Debug.log "globalHighscoreUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "globalHighscoreUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
@@ -1509,10 +1509,10 @@ windowStateFocused valuesJson =
                 focusedGameAndUser.userId
 
         Err err ->
-            let
-                _ =
-                    Debug.log "windowStateFocused" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "windowStateFocused" (Debug.toString err)
+            -- in
             NoOp
 
 

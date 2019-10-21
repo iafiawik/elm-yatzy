@@ -35,10 +35,10 @@ encodeValue value =
 
 encodeValues : List Value -> List E.Value
 encodeValues values =
-    let
-        _ =
-            Debug.log "encodeValues" "add value, value already exists"
-    in
+    -- let
+    -- _ =
+    --     Debug.log "encodeValues" "add value, value already exists"
+    -- in
     List.map
         (\value ->
             E.object
