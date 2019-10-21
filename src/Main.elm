@@ -690,10 +690,10 @@ createDummyValues player existingValues =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            Debug.log "Update(), msg: " msg
-    in
+    -- let
+    --     _ =
+    --         Debug.log "Update(), msg: " msg
+    -- in
     case msg of
         ShowStartPage ->
             ( SelectedMode (SelectMode [] 0) Focused False, endGameCommand () )
