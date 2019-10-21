@@ -6,7 +6,7 @@ import Html.Events exposing (onClick, onInput)
 import List.Extra exposing (find)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
-import Models exposing (GameSetup, Model(..), Msg(..))
+import Models exposing (GameSetup, Model, Msg(..))
 
 
 playerButton : Player -> List (Html Msg) -> Html Msg

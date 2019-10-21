@@ -1,4 +1,4 @@
-module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model(..), Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
+module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model, Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -61,12 +61,16 @@ type Msg
 --     | Nothing
 
 
-type Model
-    = SelectedMode Mode WindowState Bool
+type alias Model =
+    { mode : Mode
+    , highscoreList : List GlobalHighscore
+    , windowState : WindowState
+    , isAdmin : Bool
+    }
 
 
 type Mode
-    = SelectMode (List GlobalHighscore) Int
+    = SelectMode Int
     | Individual IndividualModel
     | Group GroupModel
     | BlurredGame BlurredModel
