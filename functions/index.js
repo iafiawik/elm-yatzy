@@ -45,10 +45,12 @@ function calculateResults(gameId) {
   if (gameId) {
     gamesRef = gamesRef.doc(gameId);
   }
+  else {
+    gamesRef = gamesRef.where("finished", "==", true)
+  }
 
   return new Promise((resolve, reject) => {
     gamesRef
-      .where("finished", "==", true)
       .get()
       .then(snapshot => {
         var rawGames = [];
@@ -269,5 +271,4 @@ exports.calculateGameResults = functions.firestore
     });
 
     return resultsPromise;
-
   });
