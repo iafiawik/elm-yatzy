@@ -5,23 +5,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Model.GlobalHighscore exposing (GlobalHighscore)
 import Models exposing (Msg(..))
-import Views.GlobalHighscore exposing (globalHighscore)
-import Views.GlobalHighscoreInverted exposing (globalHighscoreInverted)
+import Views.GlobalHighscores exposing (globalHighscores)
 
 
-startPage : List GlobalHighscore -> Html Msg
-startPage highscores =
-    let
-        highscoreLists =
-            List.map
-                (\highscore ->
-                    div []
-                        [ globalHighscore highscore.normal highscore.year
-                        , globalHighscoreInverted highscore.inverted highscore.year
-                        ]
-                )
-                highscores
-    in
+startPage : List GlobalHighscore -> Int -> Html Msg
+startPage highscores activeHighscoreTabIndex =
     div [ class "start-page" ]
         [ div
             [ class "start-page-select-mode" ]
@@ -41,6 +29,5 @@ startPage highscores =
                 ]
             , div [ class "start-page-arrow-down" ] []
             ]
-        , div [ class "global-highscore start-page-global-highscore container" ]
-            highscoreLists
+        , div [ class "global-highscore start-page-global-highscore" ] [ globalHighscores highscores activeHighscoreTabIndex ]
         ]

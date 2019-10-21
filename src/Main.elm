@@ -120,7 +120,7 @@ type alias Flags =
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     -- ( SelectedMode (Individual (EnterGameCode "RVBG")) [], Cmd.none )
-    ( SelectedMode (SelectMode []) Focused flags.isAdmin, Cmd.none )
+    ( SelectedMode (SelectMode [] 0) Focused flags.isAdmin, Cmd.none )
 
 
 
@@ -696,7 +696,7 @@ update msg model =
     in
     case msg of
         ShowStartPage ->
-            ( SelectedMode (SelectMode []) Focused False, endGameCommand () )
+            ( SelectedMode (SelectMode [] 0) Focused False, endGameCommand () )
 
         WindowFocusedReceived dbGame userId ->
             ( SelectedMode (BlurredGame (Reconnecting dbGame userId)) Blurred False
@@ -785,10 +785,13 @@ update msg model =
                                 _ ->
                                     ( model, Cmd.none )
 
-                        SelectMode highscoreItems ->
+                        SelectMode highscoreItems activeHighscoreTabIndex ->
                             case msg of
+                                ChangeActiveHighscoreTab nextActiveHighscoreTabIndex ->
+                                    ( SelectedMode (SelectMode highscoreItems nextActiveHighscoreTabIndex) windowState isAdmin, Cmd.none )
+
                                 GlobalHighscoreReceived highscore ->
-                                    ( SelectedMode (SelectMode highscore) windowState isAdmin, Cmd.none )
+                                    ( SelectedMode (SelectMode highscore activeHighscoreTabIndex) windowState isAdmin, Cmd.none )
 
                                 SelectIndividual ->
                                     ( SelectedMode
@@ -1196,8 +1199,8 @@ view model =
                         Reconnecting game userId ->
                             windowFocused
 
-                SelectMode highscore ->
-                    startPage highscore
+                SelectMode highscore activeHighscoreTabIndex ->
+                    startPage highscore activeHighscoreTabIndex
 
                 Individual individualModel ->
                     case windowState of

@@ -25,6 +25,49 @@
   margin-bottom: 100px;
 }
 
+
+.global-highscores-tabs {
+  border-bottom: 4px solid $primary-color;
+  width: 100vw;
+  margin-bottom: 50px;
+}
+
+.global-highscores-tabs .container {
+  display: flex;
+}
+
+.global-highscores-tabs .tab {
+  background: $primary-color;
+  border: 4px solid $primary-color;
+  border-bottom-width: 0px;
+  padding: 10px 20px;
+  color: white;
+  margin-right: -4px;
+  margin-bottom: -4px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.global-highscores-tabs .tab.active {
+  background: white;
+  color: $primary-color;
+  border-color: $primary-color;
+}
+
+.global-highscores-tabs .tab:hover {
+  background: white;
+  color: $primary-color;
+  border-color: $primary-color;
+}
+
+.global-highscores .tab-content {
+  display: none;
+}
+
+.global-highscores .tab-content.active {
+  display: block;
+}
+
 .global-highscore-content table {
   margin-right: auto;
   margin-left: auto;

@@ -8,8 +8,8 @@ import Models exposing (Msg(..))
 import Views.Loader exposing (loader)
 
 
-globalHighscore : List GlobalHighscoreItem -> Int -> Html Msg
-globalHighscore items year =
+globalHighscore : List GlobalHighscoreItem -> String -> Html Msg
+globalHighscore items heading =
     let
         content =
             if List.length items == 0 then
@@ -30,7 +30,7 @@ globalHighscore items year =
                                     gameId =
                                         highscoreItem.gameId
                                 in
-                                tr [] [ td [] [ text (String.fromInt (highscoreItem.order + 1) ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text highscoreItem.user.id ], td [ class "hidden" ] [ text gameId ] ]
+                                tr [] [ td [] [ text (String.fromInt highscoreItem.order ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text highscoreItem.user.id ], td [ class "hidden" ] [ text gameId ] ]
                             )
                             (List.take
                                 20
@@ -40,5 +40,5 @@ globalHighscore items year =
     in
     div
         []
-        [ div [ class "global-highscore-content" ] [ h1 [] [ text ("Global highscore " ++ String.fromInt year) ], content ]
+        [ div [ class "global-highscore-content" ] [ h1 [] [ text heading ], content ]
         ]

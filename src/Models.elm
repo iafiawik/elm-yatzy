@@ -16,6 +16,7 @@ import Time
 
 type Msg
     = ShowStartPage
+    | ChangeActiveHighscoreTab Int
     | SelectGroup
     | SelectIndividual
     | EnterGame
@@ -65,7 +66,7 @@ type Model
 
 
 type Mode
-    = SelectMode (List GlobalHighscore)
+    = SelectMode (List GlobalHighscore) Int
     | Individual IndividualModel
     | Group GroupModel
     | BlurredGame BlurredModel
