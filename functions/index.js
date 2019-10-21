@@ -48,6 +48,7 @@ function calculateResults(gameId) {
 
   return new Promise((resolve, reject) => {
     gamesRef
+      .where("finished", "==", true)
       .get()
       .then(snapshot => {
         var rawGames = [];
