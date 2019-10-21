@@ -93,7 +93,13 @@ if (window.isAdmin) {
 
   var toggleFinishedStateByGameCodeButton = createAdminInputField(container, "Game code", "Toggle finished state");
   var toggleFinishedStateByGameIdButton = createAdminInputField(container, "Game ID", "Toggle finished state");
-  var recalculateHighscoreButton = createAdminInputFields(container, "Game ID", "User ID", "Mark as invalid");
+
+  var recalculateHighscoreButton = document.createElement("a");
+  recalculateHighscoreButton.innerHTML = "Recalculate results";
+  recalculateHighscoreButton.href = "https://us-central1-elm-yatzy.cloudfunctions.net/calculateResultsOnRequest";
+  recalculateHighscoreButton.target = "_blank";
+
+  container.appendChild(recalculateHighscoreButton);
 
   document.body.appendChild(container);
 

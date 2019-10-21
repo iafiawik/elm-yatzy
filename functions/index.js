@@ -1,21 +1,30 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-const functions = require('firebase-functions');
+const functions = require("firebase-functions");
 
 // The Firebase Admin SDK to access the Firebase Realtime Database.
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
 admin.initializeApp();
 
-function calculateTotalScore (values) {
-  const reducer = (accumulator, currentValue) => accumulator + currentValue.value;
+function calculateTotalScore(values) {
+  const reducer = (accumulator, currentValue) =>
+    accumulator + currentValue.value;
 
-  var upperSum = values.filter((value) => {
-    if (value.boxId === "ones" || value.boxId === "twos" || value.boxId === "threes" || value.boxId === "fours" || value.boxId === "fives" || value.boxId ==="sixes") {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }).reduce(reducer, 0);
+  var upperSum = values
+    .filter(value => {
+      if (
+        value.boxId === "ones" ||
+        value.boxId === "twos" ||
+        value.boxId === "threes" ||
+        value.boxId === "fours" ||
+        value.boxId === "fives" ||
+        value.boxId === "sixes"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+    .reduce(reducer, 0);
 
   var bonusSum = 0;
 
@@ -23,219 +32,241 @@ function calculateTotalScore (values) {
     bonusSum = 50;
   }
 
-  return (values.reduce(reducer, 0)) + bonusSum;
+  return values.reduce(reducer, 0) + bonusSum;
 }
 
-
-exports.calculateResults = functions.https.onRequest((req, res) => {
-  console.log("1758")
+function calculateResults(gameId) {
   const resultsRef = admin.firestore().collection("results");
 
-  console.log("calculateResults()");
+  console.log("calculateResults(), gameId: ", gameId);
 
-  var gamesRef = admin
-    .firestore()
-    .collection("games");
+  var gamesRef = admin.firestore().collection("games");
 
-    if (gameId) {
-      gamesRef = gamesRef.where("gameId", "==", gameId);
-    }
+  if (gameId) {
+    gamesRef = gamesRef.doc(gameId);
+  }
 
+  return new Promise((resolve, reject) => {
     gamesRef
-    .get()
-    .then((snapshot) => {
-      console.log("calculateResults(), in game loop");
+      .get()
+      .then(snapshot => {
+        var rawGames = [];
+        var games;
 
-      var games = snapshot.docs.map(game => {
-        var g = game.data();
-        g.id = game.id;
-        return g;
-      });
-
-      console.log("calculateResults(), found games: ", games.length);
-
-      var results = [];
-
-      games.forEach((game) => {
-        game.users.forEach((user) => {
-          // Do not include test users in the highscore
-          if (user.userId === "1mSEbTIQiiDCFRIsYCNy" || user.userId === "vWAokowhN0XUTHTbyr2n") {
-            return false;
-          }
-
-          if (user.score > 0 && !user.invalid) {
-            results.push({
-              userId: user.userId,
-              score: user.score,
-              dateCreated: game.dateCreated,
-              gameId: game.id,
-              year: new Date(game.dateCreated).getFullYear()
-            });
-          }
-        })
-      });
-
-      console.log("calculateResults(), found results: ", results.length);
-
-      var promises = [];
-      results.forEach((result, index) => {
-        if (index === 0) {
-          console.log("calculateResults(), result: ", result);
+        if (!Array.isArray(snapshot.docs)) {
+          rawGames.push(snapshot);
+        } else {
+          rawGames = snapshot.docs;
         }
 
-        const resultId = `${result.gameId}-${result.userId}`;
+        console.log("calculateResults(), fetched games. ", rawGames.length);
 
-        var promise =
-         resultsRef
-          .doc(resultId)
-          .set(result);
+        try {
+          games = rawGames.map(game => {
+            var g = game.data();
+            g.id = game.id;
+            return g;
+          });
+        } catch (e) {
+          console.error("calculateResults(), unable to extract game data, ", e);
+        }
+
+        var results = [];
+
+        games.forEach(game => {
+          game.users.forEach(user => {
+            // Do not include test users in the highscore
+            if (
+              user.userId === "1mSEbTIQiiDCFRIsYCNy" ||
+              user.userId === "vWAokowhN0XUTHTbyr2n"
+            ) {
+              return false;
+            }
+
+            if (user.score > 0 && !user.invalid) {
+              results.push({
+                userId: user.userId,
+                score: user.score,
+                dateCreated: game.dateCreated,
+                gameId: game.id,
+                year: new Date(game.dateCreated).getFullYear()
+              });
+            }
+
+            return false;
+          });
+        });
+
+        console.log("calculateResults(), found results: ", results.length);
+
+        var promises = [];
+        results.forEach((result, index) => {
+          const resultId = `${result.gameId}-${result.userId}`;
+
+          var promise = resultsRef.doc(resultId).set(result);
 
           promises.push(promise);
+        });
+
+        Promise.all(promises)
+          .then(() => {
+            resolve();
+            return false;
+          })
+          .catch(e => {
+            reject(e);
+          });
+
+        return false;
+      })
+      .catch(error => {
+        console.error("calculateResults(), an error occured: ", error);
+        reject(error);
+        return false;
       });
 
-      return Promise
-        .all(promises)
-        .then(() => {
-          console.log("calculateResults(), all promises resolved.")
-            return res.end();
-        })
-        .catch((error) => {
-            console.error("calculateResults(),an error occured in promises: ", error)
-            return res.end();
-        })
+    return false;
+  });
+}
 
-    })
-    .catch((error) => {
-      console.error("calculateResults(), an error occured: ", error);
+exports.calculateResultsOnRequest = functions.https.onRequest((req, res) => {
+  console.log("calculateResultsOnRequest() called.");
 
+  calculateResults()
+    .then(() => {
       res.end();
+
+      console.log("calculateResultsOnRequest(), results are calculated.");
+
+      return false;
+    })
+    .catch(error => {
+      res.send();
+
+      return false;
     });
 });
 
-exports.calulateUserScores = functions.firestore.document('/games/{gameId}')
+exports.calculateGameResults = functions.firestore
+  .document("/games/{gameId}")
   .onUpdate((change, context) => {
     var gameId = context.params.gameId;
-    console.log("Game " + gameId + " has been updated, trying to calculate user scores");
-    // Get an object representing the current document
-    const newGame = change.after.data();
-    const game = newGame;
+    console.log(
+      "calulateUserScores(), Game " +
+        gameId +
+        " has been updated, trying to calculate user scores."
+    );
+    const game = change.after.data();
 
-    // ...or the previous value before this update
-    const oldGame = change.before.data();
+    if (!game.finished) {
+      console.log("calculateUserScores(), game is not finished.");
+      return false;
+    }
+
+    console.log("calculateUserScores(), game is finished. Let's calculate.");
 
     var valuesPromise = new Promise((resolve, reject) => {
-      admin.firestore().collection("values").where("gameId", "==", gameId).get().then((snapshot) => {
-         var values = snapshot.docs.map(value => {
-          return value.data();
+      admin
+        .firestore()
+        .collection("values")
+        .where("gameId", "==", gameId)
+        .get()
+        .then(snapshot => {
+          var values = snapshot.docs.map(value => {
+            return value.data();
+          });
+
+          console.log("calulateUserScores(), values found: ", values.length);
+
+          return resolve(values);
+        })
+        .catch(e => {
+          console.error(
+            "calculateUserScores(), Unable to calculate scores for users.",
+            e
+          );
+          return reject(new Error(e));
         });
-        return resolve(values);
-      })      .catch((e)=>{
-              console.error("Unable to calculate scores for users.", e)
-              return reject(new Error(e))
-            })
-      });
+    });
 
     var usersPromise = new Promise((resolve, reject) => {
-      admin.firestore().collection("users").get().then((snapshot) => {
-         var users = snapshot.docs.map(dbUser => {
-           var user = dbUser.data();
-           user.id = dbUser.id;
-          return user;
-        });
+      admin
+        .firestore()
+        .collection("users")
+        .get()
+        .then(snapshot => {
+          var users = snapshot.docs.map(dbUser => {
+            var user = dbUser.data();
+            user.id = dbUser.id;
+            return user;
+          });
 
-        return resolve(users);
-      })
-      .catch((e)=>{
-          console.error("Unable to calculate scores for users.", e)
-          return reject(new Error(e))
+          console.log("calulateUserScores(), users found: ", users.length);
+
+          return resolve(users);
         })
-      });
-
-    const highscoreRef = admin.firestore().collection("global").doc("highscore");
-    var highscorePromise = new Promise((resolve, reject) => {
-        highscoreRef.get("list").then((snapshot) => {
-          return resolve(snapshot.data().list);
-      })
-      .catch((e) => {
-        console.error("Unable to calculate scores for users.", e)
-        return reject(new Error(e))
-      })
+        .catch(e => {
+          console.error(
+            "calculateUserScores(), Unable to calculate scores for users.",
+            e
+          );
+          return reject(new Error(e));
+        });
     });
 
-    return new Promise((resolve, reject) => {
-       Promise.all([valuesPromise, usersPromise,highscorePromise]).then((allValues) => {
-        const values = allValues[0];
-        const allUsers = allValues[1];
-        const highscoreList = allValues[2];
+    var resultsPromise = new Promise((resolve, reject) => {
+      Promise.all([valuesPromise, usersPromise])
+        .then(allValues => {
+          const values = allValues[0];
+          const allUsers = allValues[1];
 
-        if (!game.finished || game.counted) {
-          return resolve();
-        }
+          var users = game.users;
 
-        var users = game.users;
+          users.forEach(user => {
+            user.score = calculateTotalScore(
+              values.filter(value => value.userId === user.userId)
+            );
+          });
 
-        users.forEach((user) => {
-          user.score = calculateTotalScore(values.filter((value) => value.userId === user.userId));
+          console.log("calulateUserScores(), all users updated.");
+
+          change.after.ref
+            .set(
+              {
+                counted: true,
+                users: users
+              },
+              {
+                merge: true
+              }
+            )
+            .then(() => {
+              console.log(
+                "calulateUserScores(), game updated. Trying to write to results ..."
+              );
+
+              return calculateResults(gameId).then(() => resolve());
+            })
+            .catch(e => {
+              console.error(
+                "calulateUserScores(), unable to write user scores. ",
+                e
+              );
+
+              reject(e);
+            });
+
+          return false;
+        })
+        .catch(error => {
+          console.error(
+            "calculateUserScores(), Unable to write user scores. ",
+            e
+          );
+          return false;
         });
-
-        var usersInThisGame = users.map((user)=>{
-          var dbUser = allUsers.find((dbUser)=>dbUser.id === user.userId);
-
-          if (!dbUser) {
-            return reject(new Error("Unable to find user with ID " + user.userId));
-          }
-
-          return { user: dbUser, score: user.score, gameId: gameId, date: game.dateCreated};
-        });
-
-        var potentialHighscoreList = highscoreList ? highscoreList.concat(usersInThisGame) : usersInThisGame;
-
-        potentialHighscoreList.sort((a, b) => b.score - a.score);
-
-        var uniqueList = potentialHighscoreList.filter((highscoreEntry, index, self) =>
-          index === self.findIndex((h) => (
-            h.user.id === highscoreEntry.user.id && h.gameId === highscoreEntry.gameId
-          ))
-        );
-
-        var lastOrder = 0;
-        var lastScore = 0;
-
-        var sortedList = uniqueList.map((user,index)=> {
-          var dbUser = allUsers.find((dbUser)=>dbUser.id === user.user.id);
-
-          if (!dbUser) {
-            return reject(new Error("Unable to find user with ID " + user.id));
-          }
-
-          var currentOrder = 0;
-          if (user.score === lastScore) {
-            currentOrder = lastOrder;
-          }
-          else {
-            currentOrder = (index)
-          }
-
-          lastOrder = currentOrder;
-          lastScore = user.score;
-
-          var sorted = user;
-          sorted.order = currentOrder;
-          sorted.user = dbUser;
-          return sorted;
-        });
-
-        highscoreRef.set({
-          list: uniqueList
-        });
-
-        return resolve(
-          change.after.ref.set({
-            counted: true,
-            users: users
-          }, { merge: true }));
-      }).catch((e)=>{
-        return reject(e);
-      })
     });
-});
+
+    return resultsPromise;
+
+  });
