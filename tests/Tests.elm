@@ -31,6 +31,48 @@ all =
         , test "String.left" <|
             \_ ->
                 Expect.equal "a" (String.left 1 "abcdefg")
+        , test "Find short, unique names" <|
+            \n ->
+                let
+                    players =
+                        [ "Adam"
+                        , "Henrietta"
+                        , "Alexis"
+                        , "Joe"
+                        ]
+
+                    shortNames =
+                        String.join "" (getShortNames players 1)
+                in
+                Expect.equal shortNames "AdHeAlJo"
+        , test "Handle identical names" <|
+            \n ->
+                let
+                    players =
+                        [ "Adam"
+                        , "Henrietta"
+                        , "Adam"
+                        , "Henrietta"
+                        ]
+
+                    shortNames =
+                        String.join "" (getShortNames players 1)
+                in
+                Expect.equal shortNames "AdamHenriettaAdamHenrietta"
+        , test "Handle unique names" <|
+            \n ->
+                let
+                    players =
+                        [ "Eva"
+                        , "Henrietta"
+                        , "Alexis"
+                        , "Joe"
+                        ]
+
+                    shortNames =
+                        String.join "" (getShortNames players 1)
+                in
+                Expect.equal shortNames "EHAJ"
         , test "Sorting" <|
             \n ->
                 let

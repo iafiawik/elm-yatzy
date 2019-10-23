@@ -3,7 +3,8 @@ module Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Logic exposing (getBonusValue, getBoxes, getTotalSum, getUpperSum, getValuesByPlayer, sum)
+import List.Extra exposing (getAt)
+import Logic exposing (getBonusValue, getBoxes, getShortNames, getTotalSum, getUpperSum, getValuesByPlayer, sum)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
@@ -54,6 +55,22 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
         players =
             game.players
 
+        numberOfPlayers =
+            List.length players
+
+        minLengthOfPlayerNames =
+            if numberOfPlayers > 2 then
+                2
+
+            else if numberOfPlayers > 4 then
+                1
+
+            else
+                10
+
+        playerNames =
+            getShortNames (List.map (\player -> player.user.name) game.players) minLengthOfPlayerNames
+
         hasSelectedPlayer =
             selectedPlayerExists selectedPlayer
 
@@ -90,11 +107,7 @@ scoreCard currentPlayer selectedPlayer game showCountedValues allowInteraction s
                             player == currentPlayer
 
                         name =
-                            if isSelectedPlayer then
-                                player.user.name
-
-                            else
-                                player.user.name
+                            Maybe.withDefault "" (getAt player.order playerNames)
 
                         classNames =
                             [ ( "active", isCurrentPlayer ), ( "selected", isSelectedPlayer ) ]

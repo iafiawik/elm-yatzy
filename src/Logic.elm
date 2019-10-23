@@ -1,6 +1,6 @@
-module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getInteractiveBoxes, getNextValueToAnimate, getRoundHighscore, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
+module Logic exposing (areAllUsersFinished, getAcceptedValues, getBonusValue, getBoxes, getCurrentPlayer, getDefaultMarkedValue, getInteractiveBoxes, getNextValueToAnimate, getRoundHighscore, getShortNames, getTotalSum, getUpperSum, getValuesByPlayer, playerOrdering, sortPLayers, sortPlayersByOrder, sum)
 
-import List.Extra exposing (find, findIndex, removeAt)
+import List.Extra exposing (find, findIndex, last, removeAt, unique)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
@@ -112,6 +112,28 @@ getNextValueToAnimate players values =
 
         Nothing ->
             Nothing
+
+
+getShortNames : List String -> Int -> List String
+getShortNames names currentLength =
+    let
+        retval =
+            List.map (\name -> String.slice 0 currentLength name) names
+
+        longestName =
+            Maybe.withDefault 0 (last (List.sort (List.map (\name -> String.length name) names)))
+
+        allNamesUnique =
+            List.length (unique retval) == List.length names
+    in
+    if allNamesUnique then
+        retval
+
+    else if currentLength >= longestName then
+        names
+
+    else
+        getShortNames names (currentLength + 1)
 
 
 getCurrentPlayer : List Value -> List Player -> Maybe Player
