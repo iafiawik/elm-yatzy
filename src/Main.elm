@@ -125,46 +125,6 @@ init flags =
     ( Model (SelectMode 0) [] Focused flags.isAdmin, Cmd.none )
 
 
-
--- ( SelectedMode
---     (Group
---         (PreGame
---             { users = []
---             , game =
---                 { id = ""
---                 , code = ""
---                 , players = []
---                 , values = []
---                 , finished = False
---                 }
---             , error = Nothing
---             , currentNewPlayerName = ""
---             , state = ShowAddRemovePlayers
---             }
---         )
---     )
---     []
--- , Cmd.none
--- )
--- ( Group
---     (PreGame
---         { users = []
---         , game =
---             { id = ""
---             , code = ""
---             , players = []
---             , values = []
---             , finished = False
---             }
---         , error = Nothing
---         , currentNewPlayerName = ""
---         , state = ShowAddRemovePlayers
---         }
---     )
--- , Cmd.none
--- )
-
-
 stateToString : a -> String
 stateToString state =
     ""
