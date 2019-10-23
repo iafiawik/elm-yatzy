@@ -20,4 +20,4 @@ topBar showCurrentPlayer isMyTurn currentPlayer =
             else
                 div [ class "top-bar-waiting", onClick (FillWithDummyValues currentPlayer) ] [ span [] [ text "Väntar på" ], span [] [ text currentPlayer.user.name ] ]
     in
-    div [ class "top-bar" ] [ button [ class "top-bar-refresh-button", onClick ReloadGame ] [], currentPlayerInfo, button [ class "top-bar-info-button", onClick ReloadGame ] [] ]
+    div [ class "top-bar" ] [ button [ class "top-bar-refresh-button", onClick ReloadGame ] [], currentPlayerInfo, button [ class "top-bar-info-button", onClick ShowGameInfo ] [] ]
