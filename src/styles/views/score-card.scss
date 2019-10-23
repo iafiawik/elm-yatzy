@@ -35,6 +35,10 @@
     background: white;
   }
 
+  .partly-active {
+    @include background-opacity($primary-color, 0.1);
+  }
+
   &.show-counted-values {
     td.counted {
       animation: bonus 1.5s linear forwards !important;
@@ -61,7 +65,8 @@
 
     .new {
       animation: new-value 13s linear alternate-reverse;
-      // animation-iteration-count: 3;
+      animation-iteration-count: 2;
+      font-weight: bold;
     }
   }
 
@@ -114,6 +119,10 @@
 
   td.box {
     background: white;
+  }
+
+  td.box.party-active {
+    @include background-opacity($primary-color, 0.1);
   }
 
   td:first-of-type {
