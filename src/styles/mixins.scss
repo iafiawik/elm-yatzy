@@ -2,3 +2,8 @@
   box-shadow: 2px 2px 0px $color, 3px 3px 0px $color, 4px 4px 0px $color,
     5px 5px 0px $color, 6px 6px 0px $color, 7px 7px 0px $color;
 }
+
+@mixin background-opacity($color, $opacity: 0.3) {
+    background: $color; /* The Fallback */
+    background: rgba($color, $opacity);
+}
