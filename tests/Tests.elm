@@ -3,7 +3,11 @@ module Tests exposing (all)
 import Expect
 import List.Extra exposing (find, findIndex, removeAt)
 import Logic exposing (..)
-import Models exposing (Box, BoxCategory(..), BoxType(..), Player, PlayerAndNumberOfValues, Value)
+import Model.Box exposing (Box)
+import Model.BoxCategory exposing (BoxCategory(..))
+import Model.BoxType exposing (BoxType(..))
+import Model.Player exposing (Player)
+import Model.Value exposing (Value)
 import Ordering exposing (Ordering)
 import Test exposing (..)
 
@@ -31,19 +35,33 @@ all =
             \n ->
                 let
                     adam =
-                        { id_ = "1", order = 0, name = "Adam" }
+                        { score = 22
+                        , order = 0
+                        , user =
+                            { id = "1"
+                            , name = "Adam"
+                            , userName = "Adam"
+                            }
+                        }
 
                     eva =
-                        { id_ = "2", order = 1, name = "Eva" }
+                        { score = 23
+                        , order = 1
+                        , user =
+                            { id = "2"
+                            , name = "Eva"
+                            , userName = "Eva"
+                            }
+                        }
 
                     ones =
-                        { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
+                        { id = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 1 }
 
                     twos =
-                        { id_ = "twos", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
+                        { id = "twos", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 2 }
 
                     threes =
-                        { id_ = "threes", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
+                        { id = "threes", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 3 }
 
                     modelPlayers =
                         [ adam
@@ -51,20 +69,29 @@ all =
                         ]
 
                     modelValues =
-                        [ { box = ones
+                        [ { id = "1"
+                          , box = ones
                           , player = eva
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
-                        , { box = twos
+                        , { id = "2"
+                          , box = twos
                           , player = adam
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
-                        , { box = threes
+                        , { id = "3"
+                          , box = threes
                           , player = adam
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
                         ]
 
@@ -74,7 +101,7 @@ all =
                 case currentPlayerMaybe of
                     Just currentPlayer ->
                         Expect.all
-                            [ Expect.equal currentPlayer.name
+                            [ Expect.equal currentPlayer.user.name
                             ]
                             "Eva"
 
@@ -87,19 +114,33 @@ all =
             \_ ->
                 let
                     adam =
-                        { id_ = "adam", order = 0, name = "Adam" }
+                        { score = 1
+                        , order = 0
+                        , user =
+                            { id = "adam"
+                            , name = "Adam"
+                            , userName = "Adam"
+                            }
+                        }
 
                     eva =
-                        { id_ = "eva", order = 1, name = "Eva" }
+                        { score = 2
+                        , order = 1
+                        , user =
+                            { id = "eva"
+                            , name = "Eva"
+                            , userName = "Eva"
+                            }
+                        }
 
                     ones =
-                        { id_ = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper }
+                        { id = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 1 }
 
                     twos =
-                        { id_ = "twos", friendlyName = "Tvåor", boxType = Regular 1, category = Upper }
+                        { id = "twos", friendlyName = "Tvåor", boxType = Regular 1, category = Upper, order = 2 }
 
                     threes =
-                        { id_ = "threes", friendlyName = "Treor", boxType = Regular 1, category = Upper }
+                        { id = "threes", friendlyName = "Treor", boxType = Regular 1, category = Upper, order = 3 }
 
                     modelPlayers =
                         [ adam
@@ -107,20 +148,29 @@ all =
                         ]
 
                     modelValues =
-                        [ { box = ones
+                        [ { id = "1"
+                          , box = ones
                           , player = eva
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
-                        , { box = ones
+                        , { id = "2"
+                          , box = ones
                           , player = adam
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
-                        , { box = twos
+                        , { id = "3"
+                          , box = twos
                           , player = adam
                           , value = 2
                           , counted = False
+                          , new = False
+                          , dateCreated = 1
                           }
                         ]
 
@@ -132,7 +182,7 @@ all =
                 in
                 case nextValueMaybe of
                     Just nextValue ->
-                        Expect.equal nextValue.player.id_ "adam"
+                        Expect.equal nextValue.player.user.id "adam"
 
                     Nothing ->
                         Expect.notEqual nextValueMaybe Nothing
