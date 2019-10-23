@@ -66,6 +66,9 @@ port endGameCommand : () -> Cmd msg
 port getGames : () -> Cmd msg
 
 
+port getValues : () -> Cmd msg
+
+
 port getUsers : () -> Cmd msg
 
 
@@ -710,6 +713,9 @@ update msg model =
 
         GlobalHighscoreReceived highscore ->
             ( Model model.mode highscore model.windowState model.isAdmin, Cmd.none )
+
+        ReloadGame ->
+            ( model, getValues () )
 
         _ ->
             case model.mode of

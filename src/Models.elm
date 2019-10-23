@@ -50,6 +50,7 @@ type Msg
     | Restart
     | HideNotification
     | ShowGameInfo
+    | ReloadGame
     | HideGameInfo
     | FillWithDummyValues Player
     | NoOp

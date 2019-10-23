@@ -27,6 +27,23 @@
     }
   }
 
+  .top-bar-refresh-button {
+    position: absolute;
+    background-image: url("reload.svg");
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    height: 100%;
+    width: 60px;
+    left: 0px;
+    background-color: $primary-color;
+    opacity: 0;
+
+    &:active {
+      opacity: 1;
+    }
+  }
+
   .top-bar-info-button {
     position: absolute;
     background-image: url("cog.svg");
