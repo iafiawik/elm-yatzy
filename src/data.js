@@ -161,6 +161,17 @@ const getUsers = onUsersChange => {
   });
 };
 
+const getGames2 = onGameChange => {
+  db
+    .collection("games")
+    .where("finished", "==", false)
+    .onSnapshot(function(snapshot) {
+      var games = snapshot.docs.map(game => {
+        return { id: game.id, ...game.data() };
+      });
+      onGameChange(games)
+    })}
+
 const getGames = onGameChange => {
   db
     .collection("games")
@@ -300,13 +311,16 @@ const getGameByGameId = gameId => {
 
           getUsersByIds(users).then(function(dbUsers) {
             var realUsers = game.users.map(function(user) {
-              return {
+              var populatedUser = {
                 user: dbUsers.find(function(dbUser) {
                   return dbUser.id == user.userId;
                 }),
-                order: user.order,
-                score: user.score
+                ...user
               };
+
+            delete populatedUser.userId;
+
+            return populatedUser;
             });
 
             var dateCreated = new Date(game.dateCreated);
@@ -368,7 +382,7 @@ const getUsersByIds = userIds => {
   });
 };
 
-const createGame = users => {
+const createGame2 = users => {
   function id() {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -380,6 +394,7 @@ const createGame = users => {
   }
   var gameId = id();
 
+console.error(users)
   return new Promise(function(resolve, reject) {
     db
       .collection("games")
@@ -439,6 +454,38 @@ const createGame = users => {
   });
 };
 
+const createGame = users => {
+  console.log(users)
+
+  return fetch("firebase.com", {
+    body: JSON.stringify({
+      users: users.map((user => user.userId))
+    }),
+    method: "POST",
+    mode: "cors",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  }).then((response) => {
+
+           console.log("response", response);
+
+    if (!response.ok) {
+         // var error = new Error(response.statusText);
+         // error.status = response.status;
+         throw new Error(response.statusText);
+       }
+
+       var contentType = response.headers.get('content-type');
+       if (contentType && contentType.includes('application/json')) {
+         return response.json();
+       }
+  }).
+  catch((error) => {
+    console.log("error", error)
+  })
+};
+
 const editGame = (game, gameId) => {
   return new Promise(function(resolve, reject) {
     var docRef = db
@@ -449,6 +496,8 @@ const editGame = (game, gameId) => {
       })
       .then(function(updatedDoc) {
         console.log("editGame(): Game with ID " + gameId + " has been updated. Updates: ", game);
+
+        resolve();
       })
       .catch(function(error) {
         console.log(
@@ -562,6 +611,7 @@ export default {
   createGame,
   editGame,
   getGames,
+  getGames2,
   createValue,
   editValue,
   deleteValue,

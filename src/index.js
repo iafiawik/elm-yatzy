@@ -23,12 +23,23 @@ import "./styles/app.scss";
 
 
 window.config = {
-  devMode: false
+  devMode: true
 }
 
 window.gameId = "";
 window.isAdmin = isUserAdmin();
 
+
+
+// Data.getGames2(games => {
+//   console.log("index.js: Data.getGames", games);
+//
+//   games.forEach(game => {
+//     Data.editGame((Object.assign(game, {finished: true})), game.id).then(() => {
+//       console.log("Game " + game.id + " is now finished")
+//     });
+//   })
+// });
 
 function isUserAdmin() {
   var field = 'admin';
@@ -99,6 +110,11 @@ if (window.isAdmin) {
   recalculateHighscoreButton.href = "https://us-central1-elm-yatzy.cloudfunctions.net/calculateResultsOnRequest";
   recalculateHighscoreButton.target = "_blank";
 
+  var recalculateHighscoreButton = document.createElement("a");
+  recalculateHighscoreButton.innerHTML = "Recalculate statistics";
+  recalculateHighscoreButton.href = "https://us-central1-elm-yatzy.cloudfunctions.net/calculateStatisticsOnRequest";
+  recalculateHighscoreButton.target = "_blank";
+
   container.appendChild(recalculateHighscoreButton);
 
   document.body.appendChild(container);
@@ -123,7 +139,6 @@ if (window.isAdmin) {
 
     Data.getGameByGameId(gameId)
       .then(function(game) {
-        alert("update game");
         Data.editGame((Object.assign(game, {finished: !game.finished})), game.id).then(() => {
           alert("hej");
         }).catch((e)=>{
@@ -137,21 +152,21 @@ if (window.isAdmin) {
 
 window.onblur = function() {
   console.log('blur');
-
-  if (oldGameAndUserExist())
-  {
-    const gameCode = getGameInLocalStorage();
-
-    Data.getGame(gameCode)
-      .then(function(game) {
-        console.log("window.onblur(), gameId: ", game.id)
-
-        app.ports.onBlurReceived.send(1);
-
-      }).catch(function() {
-        console.log("window.onblur(), could not find game with code ", gameCode);
-      });
-  }
+  //
+  // if (oldGameAndUserExist())
+  // {
+  //   const gameCode = getGameInLocalStorage();
+  //
+  //   Data.getGame(gameCode)
+  //     .then(function(game) {
+  //       console.log("window.onblur(), gameId: ", game.id)
+  //
+  //       app.ports.onBlurReceived.send(1);
+  //
+  //     }).catch(function() {
+  //       console.log("window.onblur(), could not find game with code ", gameCode);
+  //     });
+  // }
 }
 
 window.onfocus = function() { console.log('focus', gameId); checkLastPlayedGame(); }
@@ -285,6 +300,13 @@ const getValues = (gameId) => {
 //   getValues(gameId);
 // });
 
+app.ports.getValues.subscribe(function() {
+  Data.getValues(gameId, values => {
+    console.log("index.js: Data.getValues", values);
+    app.ports.valuesReceived.send(values);
+  });
+});
+
 app.ports.getGames.subscribe(function() {
   Data.getGames(games => {
     console.log("index.js: Data.getGames", games);
@@ -355,14 +377,21 @@ app.ports.createUser.subscribe(function(name) {
 
 app.ports.createGame.subscribe(function(game) {
   Data.createGame(game.users).then(function(dbGame) {
-    gameId = dbGame.id;
+    // gameId = dbGame.id;
+    //
+    // Data.getValues(gameId, values => {
+    //   console.log("index.js: Data.getValues", values);
+    //   app.ports.valuesReceived.send(values);
+    // });
 
-    Data.getValues(gameId, values => {
-      console.log("index.js: Data.getValues", values);
-      app.ports.valuesReceived.send(values);
-    });
+    console.log("dbGame", dbGame)
 
-    app.ports.gameReceived.send({ game: dbGame, result: "ok" });
+    Data.getGameByGameId(dbGame.id).then((game) => {
+      console.log("game", game)
+      app.ports.gameReceived.send({ game: game, result: "ok" });
+    })
+
+
   });
 });
 

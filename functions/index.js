@@ -1,274 +1,177 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require("firebase-functions");
 
+
+
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require("firebase-admin");
 admin.initializeApp();
 
-function calculateTotalScore(values) {
-  const reducer = (accumulator, currentValue) =>
-    accumulator + currentValue.value;
+const firestore = admin.firestore();
+firestore.settings({ timestampsInSnapshots: true });
 
-  var upperSum = values
-    .filter(value => {
-      if (
-        value.boxId === "ones" ||
-        value.boxId === "twos" ||
-        value.boxId === "threes" ||
-        value.boxId === "fours" ||
-        value.boxId === "fives" ||
-        value.boxId === "sixes"
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    })
-    .reduce(reducer, 0);
 
-  var bonusSum = 0;
+const cors = require("cors")({
+  origin: true
+});
 
-  if (upperSum >= 63) {
-    bonusSum = 50;
-  }
+function createScoreBoard() {
+  return {
+    ones: {
+      v: null,
+      c: 0
+    },
+    twos: {
+      v: null,
+      c: 0
+    },
+    threes: {
+      v: null,
+      c: 0
+    },
+    fives: {
+      v: null,
+      c: 0
+    },
+    sixes: {
+      v: null,
+      c: 0
+    },
+    one_pair: {
+      v: null,
+      c: 0
+    },
+    two_pairs: {
+      v: null,
+      c: 0
+    },
+    three_of_a_kind: {
+      v: null,
+      c: 0
+    },
+    four_of_a_kind: {
+      v: null,
+      c: 0
+    },
+    large_straight: {
+      v: null,
+      c: 0
+    },
+    yatzy: {
+      v: null,
+      c: 0
+    }
+  };
+}
+//
+function generateGameCode() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  return values.reduce(reducer, 0) + bonusSum;
+  for (var i = 0; i < 4; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text.toUpperCase();
 }
 
-function calculateResults(gameId) {
-  const resultsRef = admin.firestore().collection("results");
+exports.test = functions
+  .region("europe-west2")
+  .https.onRequest((req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
 
-  console.log("calculateResults(), gameId: ", gameId);
-
-  var gamesRef = admin.firestore().collection("games");
-
-  if (gameId) {
-    gamesRef = gamesRef.doc(gameId);
-  }
-  else {
-    gamesRef = gamesRef.where("finished", "==", true)
-  }
-
-  return new Promise((resolve, reject) => {
-    gamesRef
-      .get()
-      .then(snapshot => {
-        var rawGames = [];
-        var games;
-
-        if (!Array.isArray(snapshot.docs)) {
-          rawGames.push(snapshot);
-        } else {
-          rawGames = snapshot.docs;
-        }
-
-        console.log("calculateResults(), fetched games. ", rawGames.length);
-
-        try {
-          games = rawGames.map(game => {
-            var g = game.data();
-            g.id = game.id;
-            return g;
-          });
-        } catch (e) {
-          console.error("calculateResults(), unable to extract game data, ", e);
-        }
-
-        var results = [];
-
-        games.forEach(game => {
-          game.users.forEach(user => {
-            // Do not include test users in the highscore
-            if (
-              user.userId === "1mSEbTIQiiDCFRIsYCNy" ||
-              user.userId === "vWAokowhN0XUTHTbyr2n"
-            ) {
-              return false;
-            }
-
-            if (user.score > 0 && !user.invalid) {
-              results.push({
-                userId: user.userId,
-                score: user.score,
-                dateCreated: game.dateCreated,
-                gameId: game.id,
-                year: new Date(game.dateCreated).getFullYear()
-              });
-            }
-
-            return false;
-          });
-        });
-
-        console.log("calculateResults(), found results: ", results.length);
-
-        var promises = [];
-        results.forEach((result, index) => {
-          const resultId = `${result.gameId}-${result.userId}`;
-
-          var promise = resultsRef.doc(resultId).set(result);
-
-          promises.push(promise);
-        });
-
-        Promise.all(promises)
-          .then(() => {
-            resolve();
-            return false;
-          })
-          .catch(e => {
-            reject(e);
-          });
-
-        return false;
-      })
-      .catch(error => {
-        console.error("calculateResults(), an error occured: ", error);
-        reject(error);
-        return false;
-      });
+    if (req.method === "OPTIONS") {
+      // Send response to OPTIONS requests
+      res.set("Access-Control-Allow-Methods", "GET");
+      res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.set("Access-Control-Max-Age", "3600");
+      res.status(204).send("");
+    } else {
+      res.status(200).send("Hello from test");
+    }
 
     return false;
   });
-}
 
-exports.calculateResultsOnRequest = functions.https.onRequest((req, res) => {
-  console.log("calculateResultsOnRequest() called.");
+exports.createNewGame = functions
+  .region("europe-west2")
+  .https.onRequest((req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
 
-  calculateResults()
-    .then(() => {
-      res.end();
-
-      console.log("calculateResultsOnRequest(), results are calculated.");
-
-      return false;
-    })
-    .catch(error => {
-      res.send();
-
-      return false;
-    });
-});
-
-exports.calculateGameResults = functions.firestore
-  .document("/games/{gameId}")
-  .onUpdate((change, context) => {
-    var gameId = context.params.gameId;
-    console.log(
-      "calulateUserScores(), Game " +
-        gameId +
-        " has been updated, trying to calculate user scores."
-    );
-    const game = change.after.data();
-
-    if (!game.finished) {
-      console.log("calculateUserScores(), game is not finished.");
-      return false;
-    }
-
-    console.log("calculateUserScores(), game is finished. Let's calculate.");
-
-    var valuesPromise = new Promise((resolve, reject) => {
+    if (req.method === "OPTIONS") {
+      // Send response to OPTIONS requests
+      res.set("Access-Control-Allow-Methods", "GET");
+      res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.set("Access-Control-Max-Age", "3600");
+      res.status(204).send("");
+    } else {
+      const users = req.body.users;
       admin
         .firestore()
-        .collection("values")
-        .where("gameId", "==", gameId)
-        .get()
-        .then(snapshot => {
-          var values = snapshot.docs.map(value => {
-            return value.data();
-          });
-
-          console.log("calulateUserScores(), values found: ", values.length);
-
-          return resolve(values);
+        .collection("games")
+        .add({
+          code: generateGameCode(),
+          dateCreated: new Date().getTime(),
+          activeUserIndex: 0,
+          users: users.map(user => {
+            return {
+              userId: user,
+              values: createScoreBoard()
+            };
+          })
         })
-        .catch(e => {
-          console.error(
-            "calculateUserScores(), Unable to calculate scores for users.",
-            e
-          );
-          return reject(new Error(e));
-        });
-    });
+        .then(docRef => {
+          console.log("Document written with ID: ", docRef.id);
 
-    var usersPromise = new Promise((resolve, reject) => {
-      admin
-        .firestore()
-        .collection("users")
-        .get()
-        .then(snapshot => {
-          var users = snapshot.docs.map(dbUser => {
-            var user = dbUser.data();
-            user.id = dbUser.id;
-            return user;
-          });
-
-          console.log("calulateUserScores(), users found: ", users.length);
-
-          return resolve(users);
-        })
-        .catch(e => {
-          console.error(
-            "calculateUserScores(), Unable to calculate scores for users.",
-            e
-          );
-          return reject(new Error(e));
-        });
-    });
-
-    var resultsPromise = new Promise((resolve, reject) => {
-      Promise.all([valuesPromise, usersPromise])
-        .then(allValues => {
-          const values = allValues[0];
-          const allUsers = allValues[1];
-
-          var users = game.users;
-
-          users.forEach(user => {
-            user.score = calculateTotalScore(
-              values.filter(value => value.userId === user.userId)
-            );
-          });
-
-          console.log("calulateUserScores(), all users updated.");
-
-          change.after.ref
-            .set(
-              {
-                counted: true,
-                users: users
-              },
-              {
-                merge: true
-              }
-            )
-            .then(() => {
-              console.log(
-                "calulateUserScores(), game updated. Trying to write to results ..."
-              );
-
-              return calculateResults(gameId).then(() => resolve());
-            })
-            .catch(e => {
-              console.error(
-                "calulateUserScores(), unable to write user scores. ",
-                e
-              );
-
-              reject(e);
-            });
+          res.json({ id: docRef.id });
 
           return false;
         })
         .catch(error => {
-          console.error(
-            "calculateUserScores(), Unable to write user scores. ",
-            e
-          );
-          return false;
-        });
-    });
+          console.error("Error adding document: ", error);
 
-    return resultsPromise;
+          res.end();
+        });
+    }
   });
+
+// exports.createNewGame = functions.firestore
+//   .document("/games/{gameId}")
+//   .onCreate((snapshot, context) => {
+//     var gameId = context.params.gameId;
+//     const game = snapshot.data();
+//
+//     console.log("createNewGame(), A new game has been created.");
+//
+//     const users = game.users.map((user, index) => {
+//       let userModel = user;
+//       userModel.values = createScoreBoard();
+//       userModel.active = user.order === 0;
+//
+//       return userModel;
+//     });
+//
+//     console.log("createNewGame(), A new game has been created. Users: ", users.length);
+//
+//     snapshot.ref
+//       .set(
+//         {
+//           users: users
+//         },
+//         {
+//           merge: true
+//         }
+//       )
+//       .then(() => {
+//         console.log(
+//           "createNewGame(), game updated."
+//         );
+//
+//         return false;
+//       })
+//       .catch(e => {
+//         console.error(
+//           "createNewGame(), unable to create a new game.",
+//           e
+//         );
+//       });
+//   });

@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "elm-yatzy"
+    "default": "elm-yatzy",
+    "elm-yatzy-dev": "elm-yatzy-dev"
   }
 }

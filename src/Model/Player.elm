@@ -1,28 +1,66 @@
-module Model.Player exposing (Player, encodePlayer, playerDecoder, playersDecoder)
+module Model.Player exposing (DbPlayer, Player, encodePlayer, fromDbPlayerToPlayer, getShortNames, playerDecoder, playersDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
+import List.Extra exposing (last, unique)
 import Model.User exposing (User, userDecoder)
+import Model.Values exposing (DbValues, Values, fromDbValuesToValues, valuesDecoder)
 
 
-playersDecoder : Decoder (List Player)
+playersDecoder : Decoder (List DbPlayer)
 playersDecoder =
     Decode.list playerDecoder
 
 
-playerDecoder : Decoder Player
+playerDecoder : Decoder DbPlayer
 playerDecoder =
-    Decode.map3 Player
+    Decode.map2 DbPlayer
         (Decode.field "user" userDecoder)
-        (Decode.field "order" Decode.int)
-        (Decode.field "score" Decode.int)
+        (Decode.field "values" valuesDecoder)
 
 
 encodePlayer : Player -> E.Value
 encodePlayer player =
     E.object
-        [ ( "userId", E.string player.user.id ), ( "order", E.int player.order ), ( "score", E.int player.score ) ]
+        [ ( "userId", E.string player.user.id ) ]
 
 
 type alias Player =
-    { user : User, order : Int, score : Int }
+    { user : User, values : Values }
+
+
+type alias DbPlayer =
+    { user : User, values : DbValues }
+
+
+fromDbPlayerToPlayer : DbPlayer -> Player
+fromDbPlayerToPlayer dbPlayer =
+    let
+        _ =
+            Debug.log "fromDbPlayerToPlayer()"
+    in
+    { user = dbPlayer.user
+    , values = fromDbValuesToValues dbPlayer.values
+    }
+
+
+getShortNames : List String -> Int -> List String
+getShortNames names currentLength =
+    let
+        retval =
+            List.map (\name -> String.slice 0 currentLength name) names
+
+        longestName =
+            Maybe.withDefault 0 (last (List.sort (List.map (\name -> String.length name) names)))
+
+        allNamesUnique =
+            List.length (unique retval) == List.length names
+    in
+    if allNamesUnique then
+        retval
+
+    else if currentLength >= longestName then
+        names
+
+    else
+        getShortNames names (currentLength + 1)

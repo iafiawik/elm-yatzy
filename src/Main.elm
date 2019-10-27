@@ -11,11 +11,11 @@ import Json.Decode exposing (Decoder, field, int, map3, string)
 import Json.Encode as E
 import List.Extra exposing (find, findIndex, getAt, notMember, removeAt)
 import Logic exposing (..)
-import Model.Box exposing (Box)
+import Model.Box exposing (Box, getBoxById, getBoxes)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Error exposing (Error(..))
-import Model.Game exposing (DbGame, Game, encodeGame, gameDecoder, gameResultDecoder, gamesDecoder)
+import Model.Game exposing (DbGame, Game, encodeGame, fromDbGameToGame, gameDecoder, gameResultDecoder, gamesDecoder)
 import Model.GameState exposing (GameState(..))
 import Model.GlobalHighscore exposing (GlobalHighscore, globalHighscoresDecoder)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder, globalHighscoreItemsDecoder)
@@ -66,7 +66,7 @@ port endGameCommand : () -> Cmd msg
 port getGames : () -> Cmd msg
 
 
-port getValues : () -> Cmd msg
+port getUpdatedGame : () -> Cmd msg
 
 
 port getUsers : () -> Cmd msg
@@ -93,13 +93,13 @@ port deleteValue : E.Value -> Cmd msg
 port usersReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
-port gameReceived : (Json.Decode.Value -> msg) -> Sub msg
+port gameCreatedReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
+port gameUpdatedReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port gamesReceived : (Json.Decode.Value -> msg) -> Sub msg
-
-
-port valuesReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
 port highscoreReceived : (Json.Decode.Value -> msg) -> Sub msg
@@ -239,7 +239,6 @@ updatePreGame msg model =
                     { id = ""
                     , code = ""
                     , players = List.map (\p -> { p | score = getTotalSum model.game.values p }) model.game.players
-                    , values = []
                     , finished = False
                     , dateCreated = ""
                     }
@@ -253,11 +252,6 @@ updatePreGame msg model =
 getPlayerByUserId : String -> List Player -> Player
 getPlayerByUserId id players =
     Maybe.withDefault { user = { name = "", userName = "", id = "" }, order = 0, score = 0 } (find (\p -> p.user.id == id) players)
-
-
-getBoxById : String -> Box
-getBoxById id =
-    Maybe.withDefault { id = "ones", friendlyName = "Ettor", boxType = Regular 1, category = Upper, order = 0 } (find (\b -> b.id == id) getBoxes)
 
 
 fromDbValueToValue : DbValue -> Maybe DbValue -> List Player -> Value
@@ -318,7 +312,7 @@ updateGame msg model =
     case currentPlayerMaybe of
         Just currentPlayer ->
             case msg of
-                RemoteValuesReceived dbValues ->
+                UpdatedGameReceived dbGame ->
                     let
                         currentGame =
                             model.game
@@ -1396,17 +1390,34 @@ gameCreated : Json.Decode.Value -> Msg
 gameCreated gameJson =
     let
         gameMaybe =
-            Json.Decode.decodeValue gameResultDecoder gameJson
+            Json.Decode.decodeValue gameDecoder gameJson
 
-        -- _ =
-        --     Debug.log "gameCreated()" (Debug.toString gameMaybe)
+        _ =
+            Debug.log "gameCreated()" (Debug.toString gameMaybe)
     in
     case gameMaybe of
-        Ok gameResult ->
-            GameReceived (Just gameResult.game)
+        Ok game ->
+            GameCreatedReceived (Just (fromDbGameToGame game))
 
         Err err ->
-            GameReceived Nothing
+            GameCreatedReceived Nothing
+
+
+gameUpdated : Json.Decode.Value -> Msg
+gameUpdated gameJson =
+    let
+        gameMaybe =
+            Json.Decode.decodeValue gameDecoder gameJson
+
+        _ =
+            Debug.log "gameUpdated()" (Debug.toString gameMaybe)
+    in
+    case gameMaybe of
+        Ok game ->
+            GameUpdatedReceived (Just (fromDbGameToGame game))
+
+        Err err ->
+            GameUpdatedReceived Nothing
 
 
 gamesUpdated : Json.Decode.Value -> Msg
@@ -1423,24 +1434,6 @@ gamesUpdated gamesJson =
             -- let
             --     _ =
             --         Debug.log "gamesUpdated" (Debug.toString err)
-            -- in
-            NoOp
-
-
-remoteValuesUpdated : Json.Decode.Value -> Msg
-remoteValuesUpdated valuesJson =
-    let
-        valuesMaybe =
-            Json.Decode.decodeValue valuesDecoder valuesJson
-    in
-    case valuesMaybe of
-        Ok values ->
-            RemoteValuesReceived values
-
-        Err err ->
-            -- let
-            --     _ =
-            --         Debug.log "remoteValuesUpdated" (Debug.toString err)
             -- in
             NoOp
 
@@ -1499,7 +1492,7 @@ subscriptions model =
         allSubscriptions =
             [ usersReceived remoteUsersUpdated
             , gameReceived gameCreated
-            , valuesReceived remoteValuesUpdated
+            , gameReceived gameUpdated
             , gamesReceived gamesUpdated
             , highscoreReceived globalHighscoreUpdated
             , onBlurReceived windowBlurUpdated

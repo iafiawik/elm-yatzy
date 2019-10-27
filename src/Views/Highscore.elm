@@ -3,14 +3,14 @@ module Views.Highscore exposing (highscore)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Logic exposing (getRoundHighscore)
+import Model.Game exposing (getRoundHighscore)
 import Model.Player exposing (Player)
 import Model.Value exposing (Value)
 import Models exposing (Msg(..))
 
 
-highscore : List Player -> List Value -> Html Msg
-highscore players values =
+highscore : List Player -> Html Msg
+highscore players =
     let
         numberOfPlayers =
             List.length players
@@ -27,7 +27,7 @@ highscore players values =
                     in
                     tr [] [ td [] [ text (String.fromInt (index + 1) ++ ". " ++ name) ], td [] [ text (String.fromInt score) ] ]
                 )
-                (getRoundHighscore players values)
+                (getRoundHighscore players)
     in
     div [ class "highscore-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn" ] []

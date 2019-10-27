@@ -4,12 +4,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra exposing (getAt)
-import Logic exposing (getBonusValue, getBoxes, getShortNames, getTotalSum, getUpperSum, getValuesByPlayer, sum)
-import Model.Box exposing (Box)
+import Model.Box exposing (Box, getAcceptedValues, getBoxes)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
-import Model.Game exposing (Game)
-import Model.Player exposing (Player)
+import Model.Game exposing (Game, getBonusValue, getTotalSum, getUpperSum, sum)
+import Model.Player exposing (Player, getShortNames)
 import Model.Value exposing (Value)
 import Models exposing (Model, Msg(..), PlayerAndNumberOfValues)
 import Views.TopBar exposing (topBar)
@@ -243,17 +242,17 @@ renderBox box =
     span [] [ text <| "" ++ box.friendlyName ]
 
 
-getUpperSumText : List Box -> List Value -> Player -> Html Msg
-getUpperSumText boxes values player =
+getUpperSumText : List Box -> Player -> Html Msg
+getUpperSumText boxes player =
     let
         upperBoxes =
             List.filter (\b -> b.category == Upper) boxes
 
         upperValues =
-            List.filter (\v -> v.box.category == Upper) (getValuesByPlayer values player)
+            List.filter (\v -> v.box.category == Upper) player.values
 
         bonusValue =
-            getBonusValue values player
+            getBonusValue player.values
     in
     case List.length upperBoxes == List.length upperValues || List.length upperValues == 0 || bonusValue > 0 of
         True ->

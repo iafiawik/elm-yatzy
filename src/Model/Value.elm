@@ -1,80 +1,53 @@
-module Model.Value exposing (DbValue, Value, encodeValue, encodeValues, valueDecoder, valuesDecoder)
+module Model.Value exposing (DbValue, Value, encodeValue, fromDbValueToValue, valueDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
-import Model.Box exposing (Box)
-import Model.Player exposing (Player)
-import Model.User exposing (User)
-
-
-valuesDecoder : Decoder (List DbValue)
-valuesDecoder =
-    Decode.list valueDecoder
+import Model.Box exposing (Box, getBoxById)
 
 
 valueDecoder : Decoder DbValue
 valueDecoder =
-    Decode.map5 DbValue
-        (Decode.field "id" Decode.string)
-        (Decode.field "boxId" Decode.string)
-        (Decode.field "userId" Decode.string)
-        (Decode.field "value" Decode.int)
-        (Decode.field "dateCreated" Decode.int)
+    Decode.map2 DbValue
+        (Decode.field "c" Decode.int)
+        (Decode.field "v" Decode.int)
 
 
 encodeValue : Value -> E.Value
 encodeValue value =
     E.object
-        [ ( "id", E.string value.id )
-        , ( "boxId", E.string value.box.id )
-        , ( "userId", E.string value.player.user.id )
-        , ( "value", E.int value.value )
-        , ( "dateCreated", E.int value.dateCreated )
+        [ ( "c", E.int value.createdAt )
+        , ( "v", E.int value.value )
         ]
 
 
-encodeValues : List Value -> List E.Value
-encodeValues values =
-    -- let
-    -- _ =
-    --     Debug.log "encodeValues" "add value, value already exists"
-    -- in
-    List.map
-        (\value ->
-            E.object
-                [ ( "id", E.string value.id )
-                , ( "boxId", E.string value.box.id )
-                , ( "userId", E.string value.player.user.id )
-                , ( "value", E.int value.value )
-                ]
-        )
-        values
-
-
 type alias DbValue =
-    { id : String
-    , boxId : String
-    , userId : String
-    , value : Int
-    , dateCreated : Int
+    { v : Int
+    , c : Int
     }
 
 
 type alias Value =
-    { id : String
+    { value : Int
+    , createdAt : Int
     , box : Box
-    , player : Player
-    , value : Int
     , counted : Bool
-    , new : Bool
-    , dateCreated : Int
     }
 
 
+fromDbValueToValue : ( String, DbValue ) -> Value
+fromDbValueToValue dbValueTuple =
+    let
+        _ =
+            Debug.log "fromDbValueToValue()"
 
--- userEncoder : User -> E.value
--- userEncoder ({ id } as user) =
---     Encode.object
---         [ ( "id", encodeOfficeId id )
---         , ( "latLng", encodeLatLon office.address.geo )
---         ]
+        dbValue =
+            Tuple.second dbValueTuple
+
+        boxId =
+            Tuple.first dbValueTuple
+    in
+    { value = dbValue.v
+    , createdAt = dbValue.c
+    , box = getBoxById boxId
+    , counted = False
+    }

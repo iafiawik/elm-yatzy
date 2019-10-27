@@ -9,9 +9,9 @@ import Model.User exposing (User)
 import Models exposing (GameSetup, Model, Msg(..))
 
 
-playerButton : Player -> List (Html Msg) -> Html Msg
-playerButton player content =
-    button [ onClick (RemovePlayer player), class "add-players-dialog-player-button" ] [ span [] [ text (String.fromInt (player.order + 1) ++ ". ") ], span [] [ text player.user.name ], button [ class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
+playerButton : Player -> Int -> List (Html Msg) -> Html Msg
+playerButton player index content =
+    button [ onClick (RemovePlayer player), class "add-players-dialog-player-button" ] [ span [] [ text (String.fromInt (index + 1) ++ ". ") ], span [] [ text player.user.name ], button [ class "add-players-dialog-player-button-delete" ] [ text "X" ], div [] ([] ++ content) ]
 
 
 userButton : User -> List (Html Msg) -> Html Msg
@@ -23,9 +23,10 @@ addRemovePlayers : GameSetup -> Html Msg
 addRemovePlayers model =
     let
         playerButtons =
-            List.map
-                (\p ->
+            List.indexedMap
+                (\index p ->
                     playerButton p
+                        index
                         []
                 )
                 model.game.players

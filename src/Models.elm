@@ -9,7 +9,7 @@ import Model.GlobalHighscore exposing (GlobalHighscore)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
 import Model.Player exposing (Player)
 import Model.User exposing (User)
-import Model.Value exposing (DbValue, Value)
+import Model.Value exposing (Value)
 import Model.WindowState exposing (WindowState)
 import Time
 
@@ -25,7 +25,7 @@ type Msg
     | AddRemovePlayers
     | AddUser
     | RemoteUsers (List User)
-    | RemoteValuesReceived (List DbValue)
+    | RemoteValuesReceived (List Value)
     | GameReceived (Maybe DbGame)
     | GamesReceived (List DbGame)
     | GlobalHighscoreReceived (List GlobalHighscore)
@@ -84,7 +84,7 @@ type BlurredModel
 
 type IndividualModel
     = EnterGameCode String (List Game)
-    | WaitingForData ( Maybe Game, Maybe (List DbValue) )
+    | WaitingForData ( Maybe Game, Maybe (List Value) )
     | SelectPlayer SelectPlayerModel
     | IndividualPlaying IndividualPlayingModel
     | IndividualPostGame IndividualPostGameModel
