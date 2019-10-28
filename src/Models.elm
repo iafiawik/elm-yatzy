@@ -1,4 +1,4 @@
-module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model, Msg(..), PlayerAndNumberOfValues, PreGameState(..), SelectPlayerModel)
+module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model, Msg(..), PlayerAndNumberOfValues, PreGameState(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -26,10 +26,10 @@ type Msg
     | AddUser
     | RemoteUsers (List User)
     | RemoteValuesReceived (List Value)
-    | GameReceived (Maybe DbGame)
-    | GamesReceived (List DbGame)
+    | GameReceived Game
+    | GamesReceived (List Game)
     | GlobalHighscoreReceived (List GlobalHighscore)
-    | WindowFocusedReceived DbGame String
+    | WindowFocusedReceived Game String
     | WindowBlurredReceived
     | AddPlayer User
     | RemovePlayer Player
@@ -64,6 +64,8 @@ type Msg
 
 type alias Model =
     { mode : Mode
+    , game : Maybe Game
+    , users : List User
     , highscoreList : List GlobalHighscore
     , windowState : WindowState
     , isAdmin : Bool
@@ -71,21 +73,21 @@ type alias Model =
 
 
 type Mode
-    = SelectMode Int
+    = StartPage Int
     | Individual IndividualModel
     | Group GroupModel
     | BlurredGame BlurredModel
 
 
 type BlurredModel
-    = Reconnecting DbGame String
+    = Reconnecting Game String
     | Inactive
 
 
 type IndividualModel
     = EnterGameCode String (List Game)
-    | WaitingForData ( Maybe Game, Maybe (List Value) )
-    | SelectPlayer SelectPlayerModel
+    | WaitingForGame
+    | SelectPlayer MarkedPlayer
     | IndividualPlaying IndividualPlayingModel
     | IndividualPostGame IndividualPostGameModel
 
@@ -102,12 +104,6 @@ type MarkedPlayer
     | NoPlayer
 
 
-type alias SelectPlayerModel =
-    { game : Game
-    , markedPlayer : MarkedPlayer
-    }
-
-
 type alias IndividualPlayingModel =
     { gamePlaying : GamePlaying
     , selectedPlayer : Player
@@ -115,23 +111,20 @@ type alias IndividualPlayingModel =
 
 
 type alias IndividualPostGameModel =
-    { game : Game
-    , selectedPlayer : Player
+    { selectedPlayer : Player
     }
 
 
 type alias GameSetup =
-    { users : List User
+    { players : List Player
     , currentNewPlayerName : String
     , state : PreGameState
     , error : Maybe Error
-    , game : Game
     }
 
 
 type alias GamePlaying =
-    { game : Game
-    , boxes : List Box
+    { boxes : List Box
     , state : GameState
     , currentValue : Int
     , showGameInfo : Bool
@@ -140,8 +133,7 @@ type alias GamePlaying =
 
 
 type alias GameResult =
-    { game : Game
-    , boxes : List Box
+    { boxes : List Box
     , state : GameResultState
     , countedPlayers : List Player
     , countedValues : List Value

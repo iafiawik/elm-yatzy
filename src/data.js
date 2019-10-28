@@ -161,17 +161,6 @@ const getUsers = onUsersChange => {
   });
 };
 
-const getGames2 = onGameChange => {
-  db
-    .collection("games")
-    .where("finished", "==", false)
-    .onSnapshot(function(snapshot) {
-      var games = snapshot.docs.map(game => {
-        return { id: game.id, ...game.data() };
-      });
-      onGameChange(games)
-    })}
-
 const getGames = onGameChange => {
   db
     .collection("games")
@@ -252,7 +241,7 @@ const getGame = gameCode => {
         });
 
         if (games.length === 0) {
-          reject("Unable to find a game with this game code: " + gameCode);
+          reject("Unable to find a game by game code.");
         } else {
           var game = games[0];
 
@@ -260,24 +249,26 @@ const getGame = gameCode => {
             return user.userId;
           });
 
-          getUsersByIds(users).then(function(dbUsers) {
-            var realUsers = game.users.map(function(user) {
-              return {
-                user: dbUsers.find(function(dbUser) {
-                  return dbUser.id == user.userId;
-                }),
-                order: user.order,
-                score: user.score
-              };
-            });
+          // getUsersByIds(users).then(function(dbUsers) {
+          //   var realUsers = game.users.map(function(user) {
+          //     var populatedUser = {
+          //       user: dbUsers.find(function(dbUser) {
+          //         return dbUser.id == user.userId;
+          //       }),
+          //       ...user
+          //     };
+          //
+          //     delete populatedUser.userId;
+          //   return populatedUser;
+          //   });
 
             var dateCreated = new Date(game.dateCreated);
 
-            var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
+            var dbGame = { ...game, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
 
             console.log("DbGame: ", dbGame);
             resolve(dbGame);
-          });
+          // });
         }
       })
       .catch(function(error) {
@@ -292,6 +283,10 @@ const getGame = gameCode => {
       });
   });
 };
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("sv-SE");
+}
 
 const getGameByGameId = gameId => {
   return new Promise(function(resolve, reject) {
@@ -309,27 +304,26 @@ const getGameByGameId = gameId => {
             return user.userId;
           });
 
-          getUsersByIds(users).then(function(dbUsers) {
-            var realUsers = game.users.map(function(user) {
-              var populatedUser = {
-                user: dbUsers.find(function(dbUser) {
-                  return dbUser.id == user.userId;
-                }),
-                ...user
-              };
-
-            delete populatedUser.userId;
-
-            return populatedUser;
-            });
+          // getUsersByIds(users).then(function(dbUsers) {
+          //   var realUsers = game.users.map(function(user) {
+          //     var populatedUser = {
+          //       user: dbUsers.find(function(dbUser) {
+          //         return dbUser.id == user.userId;
+          //       }),
+          //       ...user
+          //     };
+          //
+          //     delete populatedUser.userId;
+          //   return populatedUser;
+          //   });
 
             var dateCreated = new Date(game.dateCreated);
 
-            var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
+            var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
 
             console.log("DbGame: ", dbGame);
             resolve(dbGame);
-          });
+          // });
         }
         else {
           throw new Error();
@@ -382,84 +376,12 @@ const getUsersByIds = userIds => {
   });
 };
 
-const createGame2 = users => {
-  function id() {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const createGame = userIds => {
+  console.log("createGame()", userIds);
 
-    for (var i = 0; i < 4; i++)
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text.toUpperCase();
-  }
-  var gameId = id();
-
-console.error(users)
-  return new Promise(function(resolve, reject) {
-    db
-      .collection("games")
-      .add({
-        users: users,
-        dateCreated: Date.now(),
-        finished: false,
-        code: gameId
-      })
-      .then(function(game) {
-        console.log("Game created written with ID: ", game);
-        // resolve({ id: game.id, ...game.data() });
-
-        var docRef = db.collection("games").doc(game.id);
-
-        docRef
-          .get()
-          .then(function(doc) {
-            if (doc.exists) {
-              var game = { id: doc.id, ...doc.data() };
-              var users = game.users.map(function(user) {
-                return user.userId;
-              });
-
-              getUsersByIds(users).then(function(dbUsers) {
-                var realUsers = game.users.map(function(user) {
-                  return {
-                    user: dbUsers.find(function(dbUser) {
-                      return dbUser.id == user.userId;
-                    }),
-                    order: user.order,
-                    score: user.score
-                  };
-                });
-                var dateCreated = new Date(game.dateCreated);
-
-                var dbGame = { ...game, users: realUsers, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
-
-                console.log("DbGame: ", dbGame);
-                resolve(dbGame);
-              });
-            } else {
-              // doc.data() will be undefined in this case
-              console.log("No such document!");
-              reject("No such document!");
-            }
-          })
-          .catch(function(error) {
-            console.log("Error getting document:", error);
-            reject(error);
-          });
-      })
-      .catch(function(error) {
-        console.error("Error adding document: ", error);
-        reject(error);
-      });
-  });
-};
-
-const createGame = users => {
-  console.log(users)
-
-  return fetch("firebase.com", {
+  return fetch("https://europe-west2-elm-yatzy-dev.cloudfunctions.net/createNewGame", {
     body: JSON.stringify({
-      users: users.map((user => user.userId))
+      users: userIds
     }),
     method: "POST",
     mode: "cors",
@@ -469,6 +391,40 @@ const createGame = users => {
   }).then((response) => {
 
            console.log("response", response);
+
+    if (!response.ok) {
+         // var error = new Error(response.statusText);
+         // error.status = response.status;
+         throw new Error(response.statusText);
+       }
+
+       var contentType = response.headers.get('content-type');
+       if (contentType && contentType.includes('application/json')) {
+         return response.json();
+       }
+  }).
+  catch((error) => {
+    console.log("error", error)
+  })
+};
+
+const createValue = (userId, gameId, value, boxId)  => {
+  console.log("createValue()", userId, gameId, value, boxId);
+
+  return fetch("https://europe-west2-elm-yatzy-dev.cloudfunctions.net/createValue", {
+    body: JSON.stringify({
+      userId: userId,
+      gameId: gameId,
+      value: value,
+      boxId: boxId
+    }),
+    method: "POST",
+    mode: "cors",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  }).then((response) => {
+    console.log("response", response);
 
     if (!response.ok) {
          // var error = new Error(response.statusText);
@@ -507,24 +463,6 @@ const editGame = (game, gameId) => {
         reject(error);
       });
   });
-};
-
-const createValue = (value, gameId) => {
-  db
-    .collection("values")
-    .add({
-      gameId: gameId,
-      boxId: value.boxId,
-      userId: value.userId,
-      value: value.value,
-      dateCreated: Date.now()
-    })
-    .then(function(docRef) {
-      console.log("createValue(): Document written with ID: ", docRef.id);
-    })
-    .catch(function(error) {
-      console.error("Error adding document: ", error);
-    });
 };
 
 const editValue = (value, gameId) => {
@@ -611,9 +549,9 @@ export default {
   createGame,
   editGame,
   getGames,
-  getGames2,
   createValue,
   editValue,
   deleteValue,
-  getValues
+  getValues,
+  formatDate
 };

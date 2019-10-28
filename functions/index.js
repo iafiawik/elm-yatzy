@@ -18,47 +18,63 @@ const cors = require("cors")({
 function createScoreBoard() {
   return {
     ones: {
-      v: null,
+      v: -1,
       c: 0
     },
     twos: {
-      v: null,
+      v: -1,
       c: 0
     },
     threes: {
-      v: null,
+      v: -1,
+      c: 0
+    },
+    fours: {
+      v: -1,
       c: 0
     },
     fives: {
-      v: null,
+      v: -1,
       c: 0
     },
     sixes: {
-      v: null,
+      v: -1,
       c: 0
     },
     one_pair: {
-      v: null,
+      v: -1,
       c: 0
     },
     two_pairs: {
-      v: null,
+      v: -1,
       c: 0
     },
     three_of_a_kind: {
-      v: null,
+      v: -1,
       c: 0
     },
     four_of_a_kind: {
-      v: null,
+      v: -1,
+      c: 0
+    },
+    small_straight: {
+      v: -1,
       c: 0
     },
     large_straight: {
-      v: null,
+      v: -1,
+      c: 0
+    },
+    full_house: {
+      v: -1,
+      c: 0
+    },
+    chance: {
+      v: -1,
       c: 0
     },
     yatzy: {
-      v: null,
+      v: -1,
       c: 0
     }
   };
@@ -92,6 +108,97 @@ exports.test = functions
     return false;
   });
 
+exports.createValue = functions
+  .region("europe-west2")
+  .https.onRequest((req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+
+    if (req.method === "OPTIONS") {
+      // Send response to OPTIONS requests
+      res.set("Access-Control-Allow-Methods", "GET");
+      res.set("Access-Control-Allow-Headers", "Content-Type");
+      res.set("Access-Control-Max-Age", "3600");
+      res.status(204).send("");
+    } else {
+
+      console.log(req.body.userId);
+
+      const userId = req.body.userId;
+      const gameId = req.body.gameId;
+      const value = req.body.value;
+      const boxId = req.body.boxId;
+
+      console.log("boxId", boxId);
+      console.log("value", value);
+
+      var docRef = admin
+        .firestore().collection("games").doc(gameId);
+
+      docRef
+      .get()
+        .then((doc) => {
+            var game = doc.data();
+
+            let user = game.users.find((user) => user.userId === userId );
+
+            if (!user) {
+              console.error("Unable to find user with id: ", userId);
+
+              res.end();
+            }
+            else {
+              // If this is a new value, it is the next player's turn
+              if (user.values[boxId].v === -1) {
+                game.activeUserIndex = game.activeUserIndex === game.users.length - 1 ? 0 : (game.activeUserIndex + 1);
+              }
+
+              user.values[boxId].v = value;
+
+              var anyValueIsUnassigned = game.users.some((user) => {
+                  return Object.keys(user.values).some((boxId) =>
+                  {
+
+                    return user.values[boxId].v === -1;
+                  });
+              });
+
+
+              console.log("user.values", user.values);
+              console.log("anyValueIsUnassigned", anyValueIsUnassigned);
+
+              if (!anyValueIsUnassigned) {
+                game.finished = true;
+              }
+
+
+            }
+
+
+            docRef.set(game).then(() => {
+              console.log("Document with ID: ", docRef.id, " updated");
+              game.id = docRef.id;
+
+              res.json(game);
+
+              return false;
+            })
+            .catch(error => {
+                console.error("Error adding document: ", error);
+
+              res.end();
+            });
+
+
+            return false;
+        })
+        .catch(error => {
+          console.error("Error adding document: ", error);
+
+          res.end();
+        });
+    }
+  });
+
 exports.createNewGame = functions
   .region("europe-west2")
   .https.onRequest((req, res) => {
@@ -105,24 +212,30 @@ exports.createNewGame = functions
       res.status(204).send("");
     } else {
       const users = req.body.users;
+
+      var game = {
+        code: generateGameCode(),
+        dateCreated: new Date().getTime(),
+        finished: false,
+        activeUserIndex: 0,
+        users: users.map(user => {
+          return {
+            userId: user,
+            values: createScoreBoard()
+          };
+        })
+      }
+
       admin
         .firestore()
         .collection("games")
-        .add({
-          code: generateGameCode(),
-          dateCreated: new Date().getTime(),
-          activeUserIndex: 0,
-          users: users.map(user => {
-            return {
-              userId: user,
-              values: createScoreBoard()
-            };
-          })
-        })
-        .then(docRef => {
-          console.log("Document written with ID: ", docRef.id);
+        .add(game)
+        .then(newGameRef => {
+          console.log("Document written with ID: ", newGameRef.id);
 
-          res.json({ id: docRef.id });
+          game.id = newGameRef.id;
+
+          res.json(game);
 
           return false;
         })

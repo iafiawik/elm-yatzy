@@ -10,7 +10,7 @@ import Model.WindowState exposing (WindowState)
 type Msg
     = RemoteUsers (List User)
     | RemoteValuesReceived (List DbValue)
-    | GameReceived (Maybe DbGame)
-    | GamesReceived (List DbGame)
+    | GameReceived Game
+    | GamesReceived (List Game)
     | GlobalHighscoreReceived (List Highscore)
     | WindowStateReceived WindowState

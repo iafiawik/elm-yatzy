@@ -1,13 +1,14 @@
-module Model.Game exposing (DbGame, Game, encodeGame, fromDbGameToGame, gameDecoder, gameResultDecoder, gamesDecoder, getBonusValue, getRoundHighscore, getTotalSum, getUpperSum, sum)
+module Model.Game exposing (DbGame, Game, fromDbGameToGame, gameDecoder, gamesDecoder, getActivePlayer, getBonusValue, getRoundHighscore, getTotalSum, getUpperSum, getValueByPlayerAndBox, sum)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
 import Json.Encode as E
+import List.Extra exposing (find, getAt, last)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory)
 import Model.Error exposing (Error(..))
 import Model.GameState exposing (GameState(..))
-import Model.Player exposing (DbPlayer, Player, encodePlayer, fromDbPlayerToPlayer, playerDecoder, playersDecoder)
+import Model.Player exposing (DbPlayer, Player, fromDbPlayerToPlayer, playerDecoder, playersDecoder)
 import Model.User exposing (User, userDecoder)
 import Model.Value exposing (Value, valueDecoder)
 import Model.Values exposing (Values, valuesDecoder)
@@ -29,39 +30,6 @@ gameDecoder =
         (Decode.field "activeUserIndex" Decode.int)
 
 
-gameResultDecoder : Decoder GameResult
-gameResultDecoder =
-    Field.require "result" Decode.string <|
-        \result ->
-            Field.require "game" gameDecoder <|
-                \game ->
-                    if result /= "ok" then
-                        Decode.fail "You must be an adult"
-
-                    else
-                        Decode.succeed
-                            { result = result
-                            , game = game
-                            }
-
-
-type alias GameResult =
-    { result : String
-    , game : DbGame
-    }
-
-
-encodeGame : Game -> E.Value
-encodeGame game =
-    E.object
-        [ ( "id", E.string game.id )
-        , ( "code", E.string game.code )
-        , ( "users", E.list encodePlayer game.players )
-        , ( "finished", E.bool game.finished )
-        , ( "dateCreated", E.bool game.finished )
-        ]
-
-
 type alias DbGame =
     { id : String
     , code : String
@@ -78,22 +46,25 @@ type alias Game =
     , players : List Player
     , finished : Bool
     , dateCreated : String
-    , activeUserIndex : Int
+    , activePlayer : Player
     }
 
 
-fromDbGameToGame : DbGame -> Game
-fromDbGameToGame dbGame =
+fromDbGameToGame : DbGame -> List User -> Game
+fromDbGameToGame dbGame users =
     let
         _ =
-            Debug.log "fromDbGameToGame()"
+            Debug.log "fromDbGameToGame()" (Debug.toString dbGame)
+
+        players =
+            List.map (\dbPlayer -> fromDbPlayerToPlayer dbPlayer users) dbGame.users
     in
     { id = dbGame.id
     , code = dbGame.code
     , finished = dbGame.finished
     , dateCreated = dbGame.dateCreated
-    , activeUserIndex = dbGame.activeUserIndex
-    , players = List.map (\dbPlayer -> fromDbPlayerToPlayer dbPlayer) dbGame.users
+    , activePlayer = getActivePlayer dbGame.activeUserIndex players
+    , players = players
     }
 
 
@@ -105,8 +76,11 @@ sum list =
 getUpperSum : Values -> Int
 getUpperSum values =
     let
+        _ =
+            Debug.log "getUpperSum" (Debug.toString values)
+
         upperValues =
-            List.filter (\v -> v.box.category == Model.BoxCategory.Upper) values
+            List.filter (\v -> v.box.category == Model.BoxCategory.Upper && v.value /= -1) values
     in
     sum (List.map (\v -> v.value) upperValues)
 
@@ -139,6 +113,17 @@ getBonusValue values =
         0
 
 
+getValueByPlayerAndBox : Values -> Box -> Maybe Value
+getValueByPlayerAndBox values box =
+    List.head
+        (List.filter
+            (\v ->
+                v.box == box && v.value /= -1
+            )
+            values
+        )
+
+
 getRoundHighscore : List Player -> List ( Player, Int )
 getRoundHighscore players =
     let
@@ -161,3 +146,8 @@ sortTupleBySecond =
         List.sortWith (\a b -> compare (f b) (f a)) lst
     )
         Tuple.second
+
+
+getActivePlayer : Int -> List Player -> Player
+getActivePlayer index players =
+    Maybe.withDefault { user = { id = "", name = "", userName = "" }, values = [] } (getAt index players)

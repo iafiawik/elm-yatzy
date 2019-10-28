@@ -1,8 +1,8 @@
-module Model.Player exposing (DbPlayer, Player, encodePlayer, fromDbPlayerToPlayer, getShortNames, playerDecoder, playersDecoder)
+module Model.Player exposing (DbPlayer, Player, fromDbPlayerToPlayer, getShortNames, playerDecoder, playersDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as E
-import List.Extra exposing (last, unique)
+import List.Extra exposing (find, last, unique)
 import Model.User exposing (User, userDecoder)
 import Model.Values exposing (DbValues, Values, fromDbValuesToValues, valuesDecoder)
 
@@ -15,14 +15,8 @@ playersDecoder =
 playerDecoder : Decoder DbPlayer
 playerDecoder =
     Decode.map2 DbPlayer
-        (Decode.field "user" userDecoder)
+        (Decode.field "userId" Decode.string)
         (Decode.field "values" valuesDecoder)
-
-
-encodePlayer : Player -> E.Value
-encodePlayer player =
-    E.object
-        [ ( "userId", E.string player.user.id ) ]
 
 
 type alias Player =
@@ -30,16 +24,19 @@ type alias Player =
 
 
 type alias DbPlayer =
-    { user : User, values : DbValues }
+    { userId : String, values : DbValues }
 
 
-fromDbPlayerToPlayer : DbPlayer -> Player
-fromDbPlayerToPlayer dbPlayer =
+fromDbPlayerToPlayer : DbPlayer -> List User -> Player
+fromDbPlayerToPlayer dbPlayer users =
     let
         _ =
             Debug.log "fromDbPlayerToPlayer()"
+
+        user =
+            Maybe.withDefault { id = "", name = "User not found", userName = "User not found" } (find (\dbUser -> dbUser.id == dbPlayer.userId) users)
     in
-    { user = dbPlayer.user
+    { user = user
     , values = fromDbValuesToValues dbPlayer.values
     }
 

@@ -19,8 +19,8 @@ userButton user content =
     button [ onClick (AddPlayer user), class "add-players-dialog-user-button" ] [ span [] [ text user.name ], button [ class "add-players-dialog-user-button-add" ] [ text "+" ], div [] ([] ++ content) ]
 
 
-addRemovePlayers : GameSetup -> Html Msg
-addRemovePlayers model =
+addRemovePlayers : GameSetup -> List User -> Html Msg
+addRemovePlayers model users =
     let
         playerButtons =
             List.indexedMap
@@ -29,18 +29,18 @@ addRemovePlayers model =
                         index
                         []
                 )
-                model.game.players
+                model.players
 
         availableUsers =
             List.filter
                 (\u ->
-                    if find (\p -> p.user.id == u.id) model.game.players == Nothing then
+                    if find (\p -> p.user.id == u.id) model.players == Nothing then
                         True
 
                     else
                         False
                 )
-                model.users
+                users
 
         userButtons =
             List.map
@@ -65,6 +65,6 @@ addRemovePlayers model =
                 ]
             , h3 [] [ text "Spelare i denna omgång" ]
             , div [ class "add-players-dialog-player-buttons" ] playerButtons
-            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.game.players > 0 ) ], disabled (List.length model.game.players == 0), onClick PlayersAdded ] [ text "Start" ]
+            , button [ classList [ ( "large-button add-players-dialog-start-button", True ), ( "enabled", List.length model.players > 0 ) ], disabled (List.length model.players == 0), onClick PlayersAdded ] [ text "Start" ]
             ]
         ]

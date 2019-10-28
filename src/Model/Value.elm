@@ -8,15 +8,15 @@ import Model.Box exposing (Box, getBoxById)
 valueDecoder : Decoder DbValue
 valueDecoder =
     Decode.map2 DbValue
-        (Decode.field "c" Decode.int)
         (Decode.field "v" Decode.int)
+        (Decode.field "c" Decode.int)
 
 
 encodeValue : Value -> E.Value
 encodeValue value =
     E.object
-        [ ( "c", E.int value.createdAt )
-        , ( "v", E.int value.value )
+        [ ( "v", E.int value.value )
+        , ( "c", E.int value.createdAt )
         ]
 
 
@@ -31,15 +31,13 @@ type alias Value =
     , createdAt : Int
     , box : Box
     , counted : Bool
+    , new : Bool
     }
 
 
 fromDbValueToValue : ( String, DbValue ) -> Value
 fromDbValueToValue dbValueTuple =
     let
-        _ =
-            Debug.log "fromDbValueToValue()"
-
         dbValue =
             Tuple.second dbValueTuple
 
@@ -50,4 +48,5 @@ fromDbValueToValue dbValueTuple =
     , createdAt = dbValue.c
     , box = getBoxById boxId
     , counted = False
+    , new = False
     }
