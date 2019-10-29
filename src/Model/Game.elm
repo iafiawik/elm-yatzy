@@ -88,11 +88,8 @@ getUpperSum values =
 getTotalSum : Values -> Int
 getTotalSum values =
     let
-        countedValues =
-            List.filter (\v -> v.counted == True) values
-
         totalSum =
-            sum (List.map (\v -> v.value) countedValues)
+            sum (List.map (\v -> v.value) values)
 
         bonusValue =
             getBonusValue values

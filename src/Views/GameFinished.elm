@@ -15,6 +15,6 @@ gameFinished =
                 ]
             ]
             [ div [ class "game-finished-content container" ]
-                [ h1 [] [ text "Spelet är slut!" ], button [ onClick CountValues, class "large-button animated pulse infinite" ] [ text "Visa resultat" ] ]
+                [ h1 [] [ text "Spelet är slut!" ], button [ onClick ShowGameHighscore, class "large-button animated pulse infinite" ] [ text "Visa resultat" ] ]
             ]
         ]

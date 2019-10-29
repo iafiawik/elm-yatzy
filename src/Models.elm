@@ -1,4 +1,4 @@
-module Models exposing (BlurredModel(..), GameAndUserId, GamePlaying, GameResult, GameResultState(..), GameSetup, GroupModel(..), IndividualModel(..), IndividualPlayingModel, IndividualPostGameModel, MarkedPlayer(..), Mode(..), Model, Msg(..), PlayerAndNumberOfValues, PreGameState(..))
+module Models exposing (BlurredModel(..), GameAndUserId, MarkedPlayer(..), Mode(..), Model, Msg(..))
 
 import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
@@ -17,13 +17,14 @@ import Time
 type Msg
     = ShowStartPage
     | ChangeActiveHighscoreTab Int
-    | SelectGroup
-    | SelectIndividual
+    | CreateGame
+    | JoinExistingGame
     | EnterGame
+    | ShowSelectPlayer
     | PlayerMarked Player
     | AllPlayersMarked
     | AddRemovePlayers
-    | AddUser
+    | CreateUser
     | RemoteUsers (List User)
     | RemoteValuesReceived (List Value)
     | GameReceived Game
@@ -32,7 +33,7 @@ type Msg
     | WindowFocusedReceived Game String
     | WindowBlurredReceived
     | AddPlayer User
-    | RemovePlayer Player
+    | RemovePlayer User
     | NewPlayerInputValueChange String
     | PlayersAdded
     | Start
@@ -44,6 +45,8 @@ type Msg
     | HideAddValue
     | InputValueChange String
     | GameCodeInputChange String
+    | ShowGameHighscore
+    | HideGameHighscore
     | CountValues
     | CountValuesTick Time.Posix
     | HideHighscore
@@ -64,8 +67,8 @@ type Msg
 
 type alias Model =
     { mode : Mode
-    , game : Maybe Game
     , users : List User
+    , games : List Game
     , highscoreList : List GlobalHighscore
     , windowState : WindowState
     , isAdmin : Bool
@@ -74,28 +77,16 @@ type alias Model =
 
 type Mode
     = StartPage Int
-    | Individual IndividualModel
-    | Group GroupModel
+    | ShowAddRemovePlayers (List User) String
+    | EnterGameCode String
+    | WaitForGame Bool
+    | ShowGameCode Game
+    | SelectPlayer Game MarkedPlayer
+    | Playing Game MarkedPlayer GameState Int Bool
+    | ShowGameFinished Game MarkedPlayer
+    | ShowGameResults Game MarkedPlayer
+    | ShowFinishedScoreCard Game MarkedPlayer Bool
     | BlurredGame BlurredModel
-
-
-type BlurredModel
-    = Reconnecting Game String
-    | Inactive
-
-
-type IndividualModel
-    = EnterGameCode String (List Game)
-    | WaitingForGame
-    | SelectPlayer MarkedPlayer
-    | IndividualPlaying IndividualPlayingModel
-    | IndividualPostGame IndividualPostGameModel
-
-
-type GroupModel
-    = PreGame GameSetup
-    | Playing GamePlaying
-    | PostGame GameResult
 
 
 type MarkedPlayer
@@ -104,54 +95,67 @@ type MarkedPlayer
     | NoPlayer
 
 
-type alias IndividualPlayingModel =
-    { gamePlaying : GamePlaying
-    , selectedPlayer : Player
-    }
+type BlurredModel
+    = Reconnecting Game String
+    | Inactive
 
 
-type alias IndividualPostGameModel =
-    { selectedPlayer : Player
-    }
 
-
-type alias GameSetup =
-    { players : List Player
-    , currentNewPlayerName : String
-    , state : PreGameState
-    , error : Maybe Error
-    }
-
-
-type alias GamePlaying =
-    { boxes : List Box
-    , state : GameState
-    , currentValue : Int
-    , showGameInfo : Bool
-    , error : Maybe Error
-    }
-
-
-type alias GameResult =
-    { boxes : List Box
-    , state : GameResultState
-    , countedPlayers : List Player
-    , countedValues : List Value
-    , showGameInfo : Bool
-    , error : Maybe Error
-    }
-
-
-type GameResultState
-    = GameFinished
-    | ShowCountedValues
-    | ShowResults
-    | HideResults
-
-
-type PreGameState
-    = ShowAddRemovePlayers
-    | ShowIndividualJoinInfo
+-- type Mode
+--     = StartPage Int
+--     | Individual IndividualModel
+--     | Group GroupModel
+--     | BlurredGame BlurredModel
+--
+-- type IndividualModel
+--     = EnterGameCode String (List Game)
+--     | WaitingForGame
+--     | SelectPlayer MarkedPlayer
+--     | IndividualPlaying IndividualPlayingModel
+--     | IndividualPostGame IndividualPostGameModel
+-- type GroupModel
+--     = PreGame GameSetup
+--     | Playing GamePlaying
+--     | PostGame GameResult
+--
+-- type alias IndividualPlayingModel =
+--     { gamePlaying : GamePlaying
+--     , selectedPlayer : Player
+--     }
+--
+--
+-- type alias IndividualPostGameModel =
+--     { selectedPlayer : Player
+--     }
+-- type alias ShowAddRemovePlayers =
+--     { players : List Player
+--     , currentNewPlayerName : String
+--     }
+--
+--
+-- type alias GamePlaying =
+--     { boxes : List Box
+--     , state : GameState
+--     , currentValue : Int
+--     , showGameInfo : Bool
+--     , error : Maybe Error
+--     }
+-- type alias GameResult =
+--     { boxes : List Box
+--     , state : GameResultState
+--     , countedPlayers : List Player
+--     , countedValues : List Value
+--     , showGameInfo : Bool
+--     , error : Maybe Error
+--     }
+-- type GameResultState
+--     = GameFinished
+--     | ShowCountedValues
+--     | ShowResults
+--     | HideResults
+-- type PreGameState
+--     = ShowAddRemovePlayers
+--     | ShowIndividualJoinInfo
 
 
 type alias PlayerAndNumberOfValues =

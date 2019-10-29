@@ -73,6 +73,13 @@ button {
   display: inline-block;
   transition: all 0.3s linear;
   @include box-shadow(black);
+
+  &:hover {
+    background: black;
+    color: white;
+    cursor: pointer;
+    @include box-shadow($primary-color);
+  }
 }
 
 .waiting-for-game {

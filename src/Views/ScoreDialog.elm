@@ -9,7 +9,7 @@ import Model.BoxType exposing (BoxType(..))
 import Model.Game exposing (Game)
 import Model.Player exposing (Player)
 import Model.Value exposing (Value)
-import Models exposing (GamePlaying, Model, Msg(..), PlayerAndNumberOfValues)
+import Models exposing (Msg(..))
 
 
 scoreDialogNumberButton : Bool -> Int -> String -> String -> Html Msg
@@ -25,8 +25,8 @@ scoreDialogNumberButton isMarked value buttonText class =
         [ span [] [ text buttonText ] ]
 
 
-scoreDialog : GamePlaying -> Box -> Player -> Bool -> Html Msg
-scoreDialog model box currentPlayer isEdit =
+scoreDialog : Int -> Box -> Player -> Bool -> Html Msg
+scoreDialog currentValue box currentPlayer isEdit =
     let
         acceptedValues =
             getAcceptedValues box
@@ -34,7 +34,7 @@ scoreDialog model box currentPlayer isEdit =
         acceptedValuesButtons =
             List.map
                 (\v ->
-                    scoreDialogNumberButton (model.currentValue == v) v (String.fromInt v) ""
+                    scoreDialogNumberButton (currentValue == v) v (String.fromInt v) ""
                 )
                 acceptedValues
     in
@@ -43,11 +43,11 @@ scoreDialog model box currentPlayer isEdit =
         , div [ class "score-dialog dialog-content animated jackInTheBox" ]
             [ div []
                 [ button [ class "dialog-content-cancel-button button", onClick HideAddValue ] [ text "X" ]
-                , h1 [] [ span [] [ text box.friendlyName ], button [ classList [ ( "score-dialog-delete-button button", True ), ( "enabled", model.currentValue >= 0 ), ( "visible", isEdit ) ], disabled (model.currentValue < 0), onClick RemoveValue ] [ text "(ta bort)" ] ]
+                , h1 [] [ span [] [ text box.friendlyName ], button [ classList [ ( "score-dialog-delete-button button", True ), ( "enabled", currentValue >= 0 ), ( "visible", isEdit ) ], disabled (currentValue < 0), onClick RemoveValue ] [ text "(ta bort)" ] ]
                 , h2 [] [ text currentPlayer.user.name ]
                 ]
             , div [ classList [ ( "score-dialog-number-buttons", True ), ( "" ++ box.id, True ) ] ]
-                (acceptedValuesButtons ++ [ scoreDialogNumberButton (model.currentValue == 0) 0 "" "skip-button" ])
-            , button [ classList [ ( "score-dialog-submit-button button", True ), ( "enabled animated pulse infinite", model.currentValue >= 0 ) ], disabled (model.currentValue < 0), onClick AddValue ] [ text "Spara" ]
+                (acceptedValuesButtons ++ [ scoreDialogNumberButton (currentValue == 0) 0 "" "skip-button" ])
+            , button [ classList [ ( "score-dialog-submit-button button", True ), ( "enabled animated pulse infinite", currentValue >= 0 ) ], disabled (currentValue < 0), onClick AddValue ] [ text "Spara" ]
             ]
         ]

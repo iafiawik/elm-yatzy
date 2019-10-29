@@ -12,7 +12,7 @@ topBar showCurrentPlayer isMyTurn currentPlayer =
     let
         currentPlayerInfo =
             if showCurrentPlayer == False then
-                div [] []
+                div [] [ text "Spelet är slut!" ]
 
             else if isMyTurn then
                 div [ class "top-bar-not-waiting", onClick (FillWithDummyValues currentPlayer) ] [ span [] [ text "Det är din tur!" ] ]

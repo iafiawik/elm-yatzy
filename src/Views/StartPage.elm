@@ -23,8 +23,8 @@ startPage highscores activeHighscoreTabIndex =
                 , p [] [ text "Enter your own values and watch how they turn up on a shared screen." ]
                 , div
                     [ class "start-page-select-mode-buttons" ]
-                    [ div [ class "large-button", onClick SelectGroup ] [ text "Create new game" ]
-                    , div [ class "large-button", onClick SelectIndividual ] [ text "Join existing game" ]
+                    [ div [ class "large-button", onClick CreateGame ] [ text "Create new game" ]
+                    , div [ class "large-button", onClick JoinExistingGame ] [ text "Join existing game" ]
                     ]
                 ]
             , div [ class "start-page-arrow-down" ] []

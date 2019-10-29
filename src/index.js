@@ -288,24 +288,7 @@ app.ports.getUsers.subscribe(function() {
     app.ports.usersReceived.send(users);
   });
 });
-//
-// const getValues = (gameId) => {
-//   Data.getValues(gameId, values => {
-//     console.log("index.js: Data.getValues", values);
-//     app.ports.valuesReceived.send(values);
-//   });
-// }
 
-// app.ports.getValues.subscribe(function(gameId) {
-//   getValues(gameId);
-// });
-
-// app.ports.getValues.subscribe(function() {
-//   Data.getValues(gameId, values => {
-//     console.log("index.js: Data.getValues", values);
-//     app.ports.valuesReceived.send(values);
-//   });
-// });
 
 app.ports.getGames.subscribe(function() {
   console.log("index.js: app.ports.getGames called");
@@ -315,51 +298,48 @@ app.ports.getGames.subscribe(function() {
     app.ports.gamesReceived.send(games);
   });
 });
-// Data.getGames(games => {
-//   console.log("app.ports", app.ports);
-//   app.ports.remoteUsers.send(users);
+
+//
+// app.ports.startIndividualGameCommand.subscribe(function(params) {
+//     const userId = params[0];
+//     const gameId = params[1];
+//     const gameCode = params[2];
+//
+//
+//     console.log("startIndividualGameCommand", params)
+//     setUserIdInLocalStorage(userId);
+//     setGameInLocalStorage(gameCode);
+//
+//     getGame(gameId);
 // });
-
-app.ports.startIndividualGameCommand.subscribe(function(params) {
-    const userId = params[0];
-    const gameId = params[1];
-    const gameCode = params[2];
-
-
-    console.log("startIndividualGameCommand", params)
-    setUserIdInLocalStorage(userId);
-    setGameInLocalStorage(gameCode);
-
-    getGame(gameId);
-});
-
-app.ports.startGroupGameCommand.subscribe(function(params) {
-    const gameId = params[0];
-    const gameCode = params[1];
-
-    setUserIdInLocalStorage("all");
-    setGameInLocalStorage(gameCode);
-
-    getGame(gameId);
-});
-
-app.ports.endGameCommand.subscribe(function(game) {
-  deleteGameInLocalStorage();
-  deleteUserIdInLocalStorage();
-
-  Data.getHighscore(highscore => {
-    console.log("index.js: Data.getHighscore", highscore);
-    app.ports.highscoreReceived.send(highscore);
-  });
-});
-
-const getGame = (gameId) => {
-  console.log("index.js: getGame " + gameId);
-  Data.getGameByGameId(gameId)
-    .then(function(game) {
-      app.ports.gameReceived.send(game);
-    });
-}
+//
+// app.ports.startGroupGameCommand.subscribe(function(params) {
+//     const gameId = params[0];
+//     const gameCode = params[1];
+//
+//     setUserIdInLocalStorage("all");
+//     setGameInLocalStorage(gameCode);
+//
+//     getGame(gameId);
+// });
+//
+// app.ports.endGameCommand.subscribe(function(game) {
+//   deleteGameInLocalStorage();
+//   deleteUserIdInLocalStorage();
+//
+//   Data.getHighscore(highscore => {
+//     console.log("index.js: Data.getHighscore", highscore);
+//     app.ports.highscoreReceived.send(highscore);
+//   });
+// });
+//
+// const getGame = (gameId) => {
+//   console.log("index.js: getGame " + gameId);
+//   Data.getGameByGameId(gameId)
+//     .then(function(game) {
+//       app.ports.gameReceived.send(game);
+//     });
+// }
 const getGameByCode = (gameCode) => {
   console.log("index.js: getGameByCode " + gameCode);
   Data.getGame(gameCode)
@@ -376,7 +356,7 @@ app.ports.createUser.subscribe(function(name) {
   console.log("index.js: Create user " + name);
   Data.createUser(name);
 });
-
+//
 app.ports.createGame.subscribe(function(users) {
 
   Data.createGame(users).then(function(dbGame) {
@@ -399,15 +379,6 @@ app.ports.createGame.subscribe(function(users) {
   });
 });
 
-// app.ports.editGame.subscribe(function(game) {
-//   console.log("index.js: Edit game " + JSON.stringify(game));
-//
-//   deleteGameInLocalStorage();
-//   deleteUserIdInLocalStorage();
-//
-//   Data.editGame(game, gameId);
-// });
-
 
 
 app.ports.createValue.subscribe(function(params) {
@@ -420,17 +391,16 @@ app.ports.createValue.subscribe(function(params) {
     game.dateCreated = Data.formatDate(game.dateCreated);
 
     app.ports.gameReceived.send(game)
+  }).
+  catch((error) => {
+    console.log("index.js:createValue(), an error occured: ", error);
   });
 });
 
-// app.ports.editValue.subscribe(function(value) {
-//   console.log("Edit value " + JSON.stringify(value));
-//   Data.editValue(value, window.gameId);
-// });
 
-app.ports.deleteValue.subscribe(function(value) {
-  console.log("index.js: Delete value " + JSON.stringify(value));
-  Data.deleteValue(value);
-});
+// app.ports.deleteValue.subscribe(function(value) {
+//   console.log("index.js: Delete value " + JSON.stringify(value));
+//   Data.deleteValue(value);
+// });
 
 unregister();

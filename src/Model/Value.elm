@@ -30,7 +30,6 @@ type alias Value =
     { value : Int
     , createdAt : Int
     , box : Box
-    , counted : Bool
     , new : Bool
     }
 
@@ -47,6 +46,5 @@ fromDbValueToValue dbValueTuple =
     { value = dbValue.v
     , createdAt = dbValue.c
     , box = getBoxById boxId
-    , counted = False
     , new = False
     }

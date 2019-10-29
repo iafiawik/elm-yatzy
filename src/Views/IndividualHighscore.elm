@@ -7,7 +7,7 @@ import List.Extra exposing (find, findIndex, removeAt)
 import Model.Game exposing (getRoundHighscore)
 import Model.Player exposing (Player)
 import Model.Value exposing (Value)
-import Models exposing (Msg(..))
+import Models exposing (MarkedPlayer(..), Msg(..))
 
 
 getPositionText : Int -> Html Msg
@@ -45,16 +45,10 @@ getPositionText position =
     div [] [ text positionText ]
 
 
-individualHighscore : Player -> List Player -> Html Msg
-individualHighscore currentPlayer players =
-    let
-        numberOfPlayers =
-            List.length players
-
-        highscore =
-            getRoundHighscore players
-
-        playerButtons =
+getRows : Maybe Player -> List ( Player, Int ) -> List (Html Msg)
+getRows player highscore =
+    case player of
+        Just currentPlayer ->
             List.indexedMap
                 (\index playerScore ->
                     let
@@ -78,18 +72,76 @@ individualHighscore currentPlayer players =
                 )
                 highscore
 
+        _ ->
+            List.indexedMap
+                (\index playerScore ->
+                    let
+                        name =
+                            (\p ->
+                                p.user.name
+                            )
+                                (Tuple.first playerScore)
+
+                        score =
+                            Tuple.second playerScore
+                    in
+                    tr [] [ td [] [ text (String.fromInt (index + 1) ++ ". " ++ name) ], td [] [ text (String.fromInt score) ] ]
+                )
+                highscore
+
+
+getPosition : Player -> List ( Player, Int ) -> Int
+getPosition currentPlayer highscore =
+    Maybe.withDefault 0 (findIndex (\highscoreValue -> Tuple.first highscoreValue == currentPlayer) highscore)
+
+
+getPositionContent : Int -> List ( Player, Int ) -> Html Msg
+getPositionContent position highscore =
+    if position > 0 then
+        if List.length highscore <= 1 then
+            div [] [ text "" ]
+
+        else if (List.length highscore - 1) == position && List.length highscore > 1 then
+            div [] [ text "Du kom sist :(" ]
+
+        else
+            getPositionText position
+
+    else
+        div [] []
+
+
+individualHighscore : MarkedPlayer -> List Player -> Html Msg
+individualHighscore markedPlayer players =
+    let
+        currentPlayer : Maybe Player
+        currentPlayer =
+            case markedPlayer of
+                Single player ->
+                    Just player
+
+                _ ->
+                    Nothing
+
+        numberOfPlayers =
+            List.length players
+
+        highscore =
+            getRoundHighscore players
+
+        highscoreRows =
+            getRows currentPlayer highscore
+
         position =
-            Maybe.withDefault 0 (findIndex (\highscoreValue -> Tuple.first highscoreValue == currentPlayer) highscore)
+            case currentPlayer of
+                Just player ->
+                    getPosition player highscore
+
+                _ ->
+                    0
 
         positionText =
-            if List.length highscore <= 1 then
-                div [] [ text "" ]
-
-            else if (List.length highscore - 1) == position && List.length highscore > 1 then
-                div [] [ text "Du kom sist :(" ]
-
-            else
-                getPositionText position
+            getPositionContent position highscore
     in
     div [ class "highscore-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn" ] []
@@ -109,8 +161,8 @@ individualHighscore currentPlayer players =
             [ div [ class "highscore-content container" ]
                 [ h1 [] [ text "Resultat" ]
                 , h2 [] [ positionText ]
-                , table [] ([] ++ playerButtons)
-                , button [ onClick Restart, class "large-button \n        " ] [ text "Avsluta" ]
+                , table [] ([] ++ highscoreRows)
+                , button [ onClick HideGameHighscore, class "large-button \n        " ] [ text "Avsluta" ]
                 ]
             ]
         ]
