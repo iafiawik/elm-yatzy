@@ -1,15 +1,12 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const functions = require("firebase-functions");
 
-
-
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require("firebase-admin");
 admin.initializeApp();
 
 const firestore = admin.firestore();
 firestore.settings({ timestampsInSnapshots: true });
-
 
 const cors = require("cors")({
   origin: true
@@ -90,23 +87,21 @@ function generateGameCode() {
   return text.toUpperCase();
 }
 
-exports.test = functions
-  .region("europe-west2")
-  .https.onRequest((req, res) => {
-    res.set("Access-Control-Allow-Origin", "*");
+exports.test = functions.region("europe-west2").https.onRequest((req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
 
-    if (req.method === "OPTIONS") {
-      // Send response to OPTIONS requests
-      res.set("Access-Control-Allow-Methods", "GET");
-      res.set("Access-Control-Allow-Headers", "Content-Type");
-      res.set("Access-Control-Max-Age", "3600");
-      res.status(204).send("");
-    } else {
-      res.status(200).send("Hello from test");
-    }
+  if (req.method === "OPTIONS") {
+    // Send response to OPTIONS requests
+    res.set("Access-Control-Allow-Methods", "GET");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    res.set("Access-Control-Max-Age", "3600");
+    res.status(204).send("");
+  } else {
+    res.status(200).send("Hello from test");
+  }
 
-    return false;
-  });
+  return false;
+});
 
 exports.createValue = functions
   .region("europe-west2")
@@ -120,7 +115,6 @@ exports.createValue = functions
       res.set("Access-Control-Max-Age", "3600");
       res.status(204).send("");
     } else {
-
       console.log(req.body.userId);
 
       const userId = req.body.userId;
@@ -132,49 +126,63 @@ exports.createValue = functions
       console.log("value", value);
 
       var docRef = admin
-        .firestore().collection("games").doc(gameId);
+        .firestore()
+        .collection("games")
+        .doc(gameId);
 
       docRef
-      .get()
-        .then((doc) => {
-            var game = doc.data();
+        .get()
+        .then(doc => {
+          var game = doc.data();
 
-            let user = game.users.find((user) => user.userId === userId );
+          let user = game.users.find(user => user.userId === userId);
 
-            if (!user) {
-              console.error("Unable to find user with id: ", userId);
+          if (!user) {
+            console.error("Unable to find user with id: ", userId);
 
-              res.end();
-            }
-            else {
-              // If this is a new value, it is the next player's turn
-              if (user.values[boxId].v === -1) {
-                game.activeUserIndex = game.activeUserIndex === game.users.length - 1 ? 0 : (game.activeUserIndex + 1);
+            res.end();
+          } else {
+            var previousUser =
+              game.users[Math.max(game.activeUserIndex - 1, 0)];
+
+            var previousUserUnassignedValues = Object.keys(
+              previousUser.values
+            ).filter(boxId => {
+              return previousUser.values[boxId].v === -1;
+            }).length;
+
+            user.values[boxId].v = value;
+
+            var activeUserUnassignedValues = Object.keys(user.values).filter(
+              boxId => {
+                return user.values[boxId].v === -1;
               }
+            ).length;
 
-              user.values[boxId].v = value;
+            if (
+              activeUserUnassignedValues < previousUserUnassignedValues
+              || (game.activeUserIndex === game.users.length - 1 && activeUserUnassignedValues === previousUserUnassignedValues)
+            ) {
+              game.activeUserIndex =
+                game.activeUserIndex === game.users.length - 1
+                  ? 0
+                  : game.activeUserIndex + 1;
+            }
 
-              var anyValueIsUnassigned = game.users.some((user) => {
-                  return Object.keys(user.values).some((boxId) =>
-                  {
-
-                    return user.values[boxId].v === -1;
-                  });
+            var anyValueIsUnassigned = game.users.some(user => {
+              return Object.keys(user.values).some(boxId => {
+                return user.values[boxId].v === -1;
               });
+            });
 
-
-              console.log("user.values", user.values);
-              console.log("anyValueIsUnassigned", anyValueIsUnassigned);
-
-              if (!anyValueIsUnassigned) {
-                game.finished = true;
-              }
-
-
+            if (!anyValueIsUnassigned) {
+              game.finished = true;
             }
+          }
 
-
-            docRef.set(game).then(() => {
+          docRef
+            .set(game)
+            .then(() => {
               console.log("Document with ID: ", docRef.id, " updated");
               game.id = docRef.id;
 
@@ -183,13 +191,12 @@ exports.createValue = functions
               return false;
             })
             .catch(error => {
-                console.error("Error adding document: ", error);
+              console.error("Error adding document: ", error);
 
               res.end();
             });
 
-
-            return false;
+          return false;
         })
         .catch(error => {
           console.error("Error adding document: ", error);
@@ -224,7 +231,7 @@ exports.createNewGame = functions
             values: createScoreBoard()
           };
         })
-      }
+      };
 
       admin
         .firestore()

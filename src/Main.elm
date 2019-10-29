@@ -504,6 +504,17 @@ update msg model =
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, getGlobalHighscore () )
 
+        ReloadGame ->
+            case model.mode of
+                Playing game markedPlayer gameState currentValue showGameInfo ->
+                    ( model, getGame (E.string game.code) )
+
+                ShowFinishedScoreCard game markedPlayer showGameInfo ->
+                    ( model, getGame (E.string game.code) )
+
+                _ ->
+                    ( model, Cmd.none )
+
         CreateGame ->
             ( { model | mode = ShowAddRemovePlayers [] "" }, Cmd.none )
 
@@ -725,7 +736,7 @@ update msg model =
                                 (E.object
                                     [ ( "userId", E.string game.activePlayer.user.id )
                                     , ( "gameId", E.string game.id )
-                                    , ( "value", E.int -2 )
+                                    , ( "value", E.int -1 )
                                     , ( "boxId", E.string box.id )
                                     ]
                                 )
