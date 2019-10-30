@@ -27,6 +27,13 @@
     }
   }
 
+  &.loading {
+    .loader-container {
+      transform: scale(0.4);
+      margin-top: 20px;
+    }
+  }
+
   .top-bar-refresh-button {
     position: absolute;
     background-image: url("reload.svg");

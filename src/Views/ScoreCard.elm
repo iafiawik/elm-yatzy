@@ -38,8 +38,8 @@ isPlayerMarked player markedPlayer =
             False
 
 
-scoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Bool -> Html Msg
-scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum =
+scoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Bool -> Bool -> Html Msg
+scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum loading =
     let
         _ =
             Debug.log "scoreCard" (Debug.toString game.players)
@@ -136,8 +136,8 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum =
                 players
     in
     div [ classList [ ( "score-card-wrapper", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
-        [ topBar (not game.finished) (hasSelectedPlayer == True && (selectedPlayer == Just activePlayer)) activePlayer
-        , table [ classList [ ( "score-card", True ), ( "allow-interaction", allowInteraction == True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ), ( "show-counted-values", showCountedValues ) ] ]
+        [ topBar (not game.finished) (hasSelectedPlayer == True && (selectedPlayer == Just activePlayer)) activePlayer loading
+        , table [ classList [ ( "score-card", True ), ( "loading", loading ), ( "allow-interaction", allowInteraction == True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ), ( "show-counted-values", showCountedValues ) ] ]
             ([ tr []
                 ([ th []
                     [ text "" ]
@@ -157,12 +157,12 @@ isInactiveBoxCategory box =
 
 staticScoreCard : Game -> Bool -> Bool -> Html Msg
 staticScoreCard game showCountedValues showTotalSum =
-    scoreCard All game showCountedValues False showTotalSum
+    scoreCard All game showCountedValues False showTotalSum False
 
 
-interactiveScoreCard : MarkedPlayer -> Game -> Bool -> Html Msg
-interactiveScoreCard markedPlayer game showCountedValues =
-    scoreCard markedPlayer game showCountedValues True False
+interactiveScoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Html Msg
+interactiveScoreCard markedPlayer game showCountedValues loading =
+    scoreCard markedPlayer game showCountedValues True False loading
 
 
 isActiveBoxForPlayer : Values -> Box -> Bool

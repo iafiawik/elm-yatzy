@@ -333,7 +333,11 @@ update msg model =
 
                 Playing game markedPlayer gameState currentValue showGameInfo ->
                     if updatedGame.finished /= True then
-                        ( { model | mode = Playing updatedGame markedPlayer gameState currentValue showGameInfo }, Cmd.none )
+                        if gameState == WaitingForValueToBeCreated then
+                            ( { model | mode = Playing updatedGame markedPlayer Idle currentValue showGameInfo }, Cmd.none )
+
+                        else
+                            ( { model | mode = Playing updatedGame markedPlayer gameState currentValue showGameInfo }, Cmd.none )
 
                     else
                         ( { model | mode = ShowGameFinished updatedGame markedPlayer }, endGameCommand () )
@@ -446,7 +450,7 @@ update msg model =
                 Playing game markedPlayer gameState currentValue showGameInfo ->
                     case gameState of
                         Input box isEdit ->
-                            ( { model | mode = Playing game markedPlayer Idle -1 showGameInfo }
+                            ( { model | mode = Playing game markedPlayer WaitingForValueToBeCreated -1 showGameInfo }
                             , createValue
                                 (E.object
                                     [ ( "userId", E.string game.activePlayer.user.id )
@@ -606,14 +610,21 @@ getContent model =
                 Idle ->
                     div []
                         [ gameInformation
-                        , div [] [ interactiveScoreCard markedPlayer game True ]
+                        , div [] [ interactiveScoreCard markedPlayer game True False ]
+                        , playerInfo
+                        , activePlayerInfo
+                        ]
+
+                WaitingForValueToBeCreated ->
+                    div []
+                        [ div [] [ interactiveScoreCard markedPlayer game True True ]
                         , playerInfo
                         , activePlayerInfo
                         ]
 
                 Input box isEdit ->
                     div []
-                        [ div [] [ interactiveScoreCard markedPlayer game True ]
+                        [ div [] [ interactiveScoreCard markedPlayer game True False ]
                         , div [] [ scoreDialog currentValue box game.activePlayer isEdit ]
                         ]
 

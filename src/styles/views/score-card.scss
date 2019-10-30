@@ -39,6 +39,10 @@
     @include background-opacity($primary-color, 0.1);
   }
 
+  &.loading {
+    opacity: 0.5;
+  }
+
   &.show-counted-values {
     td.counted {
       animation: bonus 1.5s linear forwards !important;
