@@ -150,47 +150,47 @@ if (window.isAdmin) {
   };
 }
 
-// window.onblur = function() {
-//   console.log('blur');
-//
-//   if (oldGameAndUserExist())
-//   {
-//     const gameCode = getGameInLocalStorage();
-//
-//     Data.getGame(gameCode)
-//       .then(function(game) {
-//         console.log("window.onblur(), gameId: ", game.id)
-//
-//         app.ports.onBlurReceived.send(1);
-//
-//       }).catch(function() {
-//         console.log("window.onblur(), could not find game with code ", gameCode);
-//       });
-//   }
-// }
-//
-// window.onfocus = function() { console.log('focus', gameId); checkLastPlayedGame(); }
-// window.onload = function() { console.log("load"); checkLastPlayedGame(); }
+window.onblur = function() {
+  console.log('window.onblur ');
 
-const gameIdKey = "last-played-game-code";
+  if (oldGameAndUserExist())
+  {
+    const gameId = getGameInLocalStorage();
+
+    console.log("window.onblur, Old game exists, so sending blur. Game id: ", gameId);
+
+    app.ports.onBlurReceived.send(1);
+  }
+  else {
+    console.log("window.onblur , No old game found, so no need to send blur");
+  }
+}
+//
+window.onfocus = function() { console.log('focus', gameId); checkLastPlayedGame(); }
+window.onload = function() { console.log("load"); checkLastPlayedGame(); }
+
+const gameIdKey = "last-played-game-id";
 const userIdKey = "last-played-user-id";
 
 const checkLastPlayedGame = () => {
 
   if (oldGameAndUserExist()) {
-    const gameCode = getGameInLocalStorage();
+    app.ports.onBlurReceived.send(1);
+
+    const gameId = getGameInLocalStorage();
     const userId = getUserIdInLocalStorage();
 
-    Data.getGame(gameCode)
+    Data.getGameByGameId(gameId)
       .then(function(game) {
         console.log("checkLastPlayedGame(), game: ", game)
 
-        window.gameId = game.id;
-
-        app.ports.onFocusReceived.send({game: game, userId: userId});
+        if (!game.finished) {
+          app.ports.onFocusReceived.send({game: game, userId: userId});
+        }
       }).catch(function() {
-        console.log("checkLastPlayedGame(), could not find game with code ", gameCode);
+        console.log("checkLastPlayedGame(), could not find game with id ", gameId);
       });
+
       console.log("checkLastPlayedGame(), last played game was gameId ", gameId, " and userId ", userId)
   }
   else {
@@ -203,7 +203,7 @@ const oldGameAndUserExist = () => {
   const lastUser = getUserIdInLocalStorage();
 
 
-  const exists = typeof lastGame !== "undefined" && typeof lastUser !== "undefined";;
+  const exists = lastGame && typeof lastGame !== "undefined" && lastUser && typeof lastUser !== "undefined";;
   console.log("oldGameAndUserExist", lastGame, lastUser, exists)
   return exists;
 }
@@ -299,40 +299,29 @@ app.ports.getGames.subscribe(function() {
   });
 });
 
-//
-// app.ports.startIndividualGameCommand.subscribe(function(params) {
-//     const userId = params[0];
-//     const gameId = params[1];
-//     const gameCode = params[2];
-//
-//
-//     console.log("startIndividualGameCommand", params)
-//     setUserIdInLocalStorage(userId);
-//     setGameInLocalStorage(gameCode);
-//
-//     getGame(gameId);
-// });
-//
-// app.ports.startGroupGameCommand.subscribe(function(params) {
-//     const gameId = params[0];
-//     const gameCode = params[1];
-//
-//     setUserIdInLocalStorage("all");
-//     setGameInLocalStorage(gameCode);
-//
-//     getGame(gameId);
-// });
-//
-// app.ports.endGameCommand.subscribe(function(game) {
-//   deleteGameInLocalStorage();
-//   deleteUserIdInLocalStorage();
-//
-//   Data.getHighscore(highscore => {
-//     console.log("index.js: Data.getHighscore", highscore);
-//     app.ports.highscoreReceived.send(highscore);
-//   });
-// });
-//
+
+app.ports.startGameWithMarkedPlayerCommand.subscribe(function(params) {
+    const gameId = params[0];
+    const userId = params[1];
+
+    console.log("startGameWithMarkedPlayerCommand", params)
+    setUserIdInLocalStorage(userId);
+    setGameInLocalStorage(gameId);
+});
+
+app.ports.startGameCommand.subscribe(function(gameId) {
+    console.log("startGameCommand", gameId)
+    setUserIdInLocalStorage("all");
+    setGameInLocalStorage(gameId);
+});
+
+
+app.ports.endGameCommand.subscribe(function(game) {
+  deleteGameInLocalStorage();
+  deleteUserIdInLocalStorage();
+});
+
+
 // const getGame = (gameId) => {
 //   console.log("index.js: getGame " + gameId);
 //   Data.getGameByGameId(gameId)
@@ -340,6 +329,7 @@ app.ports.getGames.subscribe(function() {
 //       app.ports.gameReceived.send(game);
 //     });
 // }
+
 const getGameByCode = (gameCode) => {
   console.log("index.js: getGameByCode " + gameCode);
   Data.getGame(gameCode)

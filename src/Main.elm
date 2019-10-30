@@ -54,10 +54,10 @@ port getGlobalHighscore : () -> Cmd msg
 port getGame : E.Value -> Cmd msg
 
 
-port startIndividualGameCommand : ( E.Value, E.Value, E.Value ) -> Cmd msg
+port startGameCommand : E.Value -> Cmd msg
 
 
-port startGroupGameCommand : ( E.Value, E.Value ) -> Cmd msg
+port startGameWithMarkedPlayerCommand : ( E.Value, E.Value ) -> Cmd msg
 
 
 port endGameCommand : () -> Cmd msg
@@ -502,7 +502,38 @@ update msg model =
     in
     case msg of
         ShowStartPage ->
-            ( { model | mode = StartPage 0 }, getGlobalHighscore () )
+            ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
+
+        WindowBlurredReceived ->
+            case model.mode of
+                Playing game markedPlayer gameState currentValue showGameInfo ->
+                    ( { model | windowState = Blurred }, Cmd.none )
+
+                StartPage activeHighscoreTabIndex ->
+                    ( { model | windowState = Blurred }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        WindowFocusedReceived upatedGame userId ->
+            let
+                previouslyMarkedPlayer =
+                    case find (\player -> player.user.id == userId) upatedGame.players of
+                        Just player ->
+                            Single player
+
+                        Nothing ->
+                            All
+            in
+            case model.mode of
+                Playing game markedPlayer gameState currentValue showGameInfo ->
+                    ( { model | windowState = Focused, mode = Playing upatedGame previouslyMarkedPlayer gameState currentValue showGameInfo }, Cmd.none )
+
+                StartPage activeHighscoreTabIndex ->
+                    ( { model | windowState = Focused, mode = Playing upatedGame previouslyMarkedPlayer Idle -1 False }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ReloadGame ->
             case model.mode of
@@ -599,13 +630,19 @@ update msg model =
                 WaitForGame isNewGame ->
                     if isNewGame == True then
                         if List.length updatedGame.players == 1 then
-                            ( { model | mode = Playing updatedGame All Idle -1 False }, Cmd.none )
+                            ( { model | mode = Playing updatedGame All Idle -1 False }
+                            , startGameCommand
+                                (E.string updatedGame.id)
+                            )
 
                         else
                             ( { model | mode = ShowGameCode updatedGame }, Cmd.none )
 
                     else if List.length updatedGame.players == 1 then
-                        ( { model | mode = Playing updatedGame All Idle -1 False }, Cmd.none )
+                        ( { model | mode = Playing updatedGame All Idle -1 False }
+                        , startGameCommand
+                            (E.string updatedGame.id)
+                        )
 
                     else
                         ( { model | mode = SelectPlayer updatedGame NoPlayer }, Cmd.none )
@@ -627,7 +664,10 @@ update msg model =
             case model.mode of
                 ShowGameCode game ->
                     if List.length game.players == 1 then
-                        ( { model | mode = Playing game All Idle -1 False }, Cmd.none )
+                        ( { model | mode = Playing game All Idle -1 False }
+                        , startGameCommand
+                            (E.string game.id)
+                        )
 
                     else
                         ( { model | mode = SelectPlayer game NoPlayer }, Cmd.none )
@@ -658,7 +698,20 @@ update msg model =
                         ( { model | mode = ShowFinishedScoreCard game (getMarkedPlayer markedPlayer) False }, Cmd.none )
 
                     else
-                        ( { model | mode = Playing game (getMarkedPlayer markedPlayer) Idle -1 False }, Cmd.none )
+                        let
+                            cmd =
+                                case markedPlayer of
+                                    Single player ->
+                                        startGameWithMarkedPlayerCommand
+                                            ( E.string game.id, E.string player.user.id )
+
+                                    _ ->
+                                        startGameCommand
+                                            (E.string game.id)
+                        in
+                        ( { model | mode = Playing game (getMarkedPlayer markedPlayer) Idle -1 False }
+                        , cmd
+                        )
 
                 _ ->
                     ( model, Cmd.none )
@@ -1185,6 +1238,22 @@ getMarkedPlayer markedPlayer =
 
 view : Model -> Html Msg
 view model =
+    let
+        content =
+            getContent model
+
+        windowStateInfo =
+            if model.windowState == Blurred then
+                windowBlurred
+
+            else
+                div [] []
+    in
+    div [] [ windowStateInfo, content ]
+
+
+getContent : Model -> Html Msg
+getContent model =
     -- let
     --     _ =
     --         Debug.log "view: " Debug.toString model.mode
