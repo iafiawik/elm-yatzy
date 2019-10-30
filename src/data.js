@@ -157,7 +157,6 @@ const getUsers = onUsersChange => {
     onUsersChange && onUsersChange(users);
 
     console.log("users", users);
-    // return users;
   });
 };
 

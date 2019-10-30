@@ -132,10 +132,6 @@ getRoundHighscore players =
 
         sortedPlayers =
             sortTupleBySecond playerValues
-
-        --
-        -- _ =
-        --     Debug.log "sortedPlayers" sortedPlayers
     in
     sortedPlayers
 

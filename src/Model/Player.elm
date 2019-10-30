@@ -30,9 +30,6 @@ type alias DbPlayer =
 fromDbPlayerToPlayer : DbPlayer -> List User -> Bool -> Player
 fromDbPlayerToPlayer dbPlayer users wasPreviousActivePlayer =
     let
-        _ =
-            Debug.log "fromDbPlayerToPlayer()"
-
         user =
             Maybe.withDefault { id = "", name = "User not found", userName = "User not found" } (find (\dbUser -> dbUser.id == dbPlayer.userId) users)
     in
