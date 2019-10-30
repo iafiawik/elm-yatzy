@@ -16,7 +16,7 @@ encodeValue : Value -> E.Value
 encodeValue value =
     E.object
         [ ( "v", E.int value.value )
-        , ( "c", E.int value.createdAt )
+        , ( "c", E.int value.dateCreated )
         ]
 
 
@@ -28,7 +28,7 @@ type alias DbValue =
 
 type alias Value =
     { value : Int
-    , createdAt : Int
+    , dateCreated : Int
     , box : Box
     , new : Bool
     }
@@ -44,7 +44,7 @@ fromDbValueToValue dbValueTuple =
             Tuple.first dbValueTuple
     in
     { value = dbValue.v
-    , createdAt = dbValue.c
+    , dateCreated = dbValue.c
     , box = getBoxById boxId
     , new = False
     }

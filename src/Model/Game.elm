@@ -52,11 +52,15 @@ type alias Game =
 fromDbGameToGame : DbGame -> List User -> Game
 fromDbGameToGame dbGame users =
     let
-        _ =
-            Debug.log "fromDbGameToGame()" (Debug.toString dbGame)
+        previousActiveUserIndex =
+            if dbGame.activeUserIndex == (-1 + List.length dbGame.users) then
+                0
+
+            else
+                dbGame.activeUserIndex + 1
 
         players =
-            List.map (\dbPlayer -> fromDbPlayerToPlayer dbPlayer users) dbGame.users
+            List.indexedMap (\index dbPlayer -> fromDbPlayerToPlayer dbPlayer users (previousActiveUserIndex == index)) dbGame.users
     in
     { id = dbGame.id
     , code = dbGame.code

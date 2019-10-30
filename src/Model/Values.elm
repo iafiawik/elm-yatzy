@@ -21,10 +21,48 @@ type alias Values =
     List Value
 
 
-fromDbValuesToValues : DbValues -> Values
-fromDbValuesToValues dbValues =
+fromDbValuesToValues : DbValues -> Bool -> Values
+fromDbValuesToValues dbValues wasPreviousActivePlayer =
+    updateValues (Dict.toList dbValues) wasPreviousActivePlayer
+
+
+flippedComparison : ( String, DbValue ) -> ( String, DbValue ) -> Order
+flippedComparison a b =
     let
-        _ =
-            Debug.log "fromDbValuesToValues()"
+        valueA =
+            Tuple.second a
+
+        valueB =
+            Tuple.second b
     in
-    List.map (\dbValue -> fromDbValueToValue dbValue) (Dict.toList dbValues)
+    case compare valueA.c valueB.c of
+        LT ->
+            GT
+
+        EQ ->
+            EQ
+
+        GT ->
+            LT
+
+
+updateValues : List ( String, DbValue ) -> Bool -> List Value
+updateValues dbValues wasPreviousActivePlayer =
+    let
+        sortedByNewest =
+            if wasPreviousActivePlayer then
+                List.sortWith flippedComparison dbValues
+
+            else
+                dbValues
+    in
+    List.indexedMap
+        (\index v ->
+            let
+                value : Value
+                value =
+                    fromDbValueToValue v
+            in
+            { value | new = index == 0 }
+        )
+        sortedByNewest

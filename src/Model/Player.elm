@@ -27,8 +27,8 @@ type alias DbPlayer =
     { userId : String, values : DbValues }
 
 
-fromDbPlayerToPlayer : DbPlayer -> List User -> Player
-fromDbPlayerToPlayer dbPlayer users =
+fromDbPlayerToPlayer : DbPlayer -> List User -> Bool -> Player
+fromDbPlayerToPlayer dbPlayer users wasPreviousActivePlayer =
     let
         _ =
             Debug.log "fromDbPlayerToPlayer()"
@@ -37,7 +37,7 @@ fromDbPlayerToPlayer dbPlayer users =
             Maybe.withDefault { id = "", name = "User not found", userName = "User not found" } (find (\dbUser -> dbUser.id == dbPlayer.userId) users)
     in
     { user = user
-    , values = fromDbValuesToValues dbPlayer.values
+    , values = fromDbValuesToValues dbPlayer.values wasPreviousActivePlayer
     }
 
 
