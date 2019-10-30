@@ -6,6 +6,7 @@ import Html.Events exposing (onClick)
 import Html.Keyed as Keyed
 import Model.Game exposing (Game)
 import Models exposing (Msg(..))
+import Views.Loader exposing (loader)
 
 
 windowBlurred : Html Msg
@@ -13,8 +14,15 @@ windowBlurred =
     let
         content =
             div [ class "game-info dialog-content animated fadeIn game-info-finished" ]
-                [ h1 [] [ text "Tappade kontakten." ]
-                , h3 [] [ text "Försöker återansluta ..." ]
+                [ h1 []
+                    [ text "Tappade kontakten." ]
+                , br
+                    []
+                    []
+                , br
+                    []
+                    []
+                , loader "Ansluter till det senast spelade spelet" False
                 ]
     in
     div [ class "game-info-dialog-wrapper dialog-wrapper" ]
