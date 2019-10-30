@@ -6,7 +6,6 @@ import Json.Encode as E
 import List.Extra exposing (find, getAt, last)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory)
-import Model.Error exposing (Error(..))
 import Model.GameState exposing (GameState(..))
 import Model.Player exposing (DbPlayer, Player, fromDbPlayerToPlayer, playerDecoder, playersDecoder)
 import Model.User exposing (User, userDecoder)

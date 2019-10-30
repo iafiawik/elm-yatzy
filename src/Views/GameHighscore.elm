@@ -1,4 +1,4 @@
-module Views.IndividualHighscore exposing (individualHighscore)
+module Views.GameHighscore exposing (gameHighscore)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,41 +10,6 @@ import Model.Value exposing (Value)
 import Models exposing (MarkedPlayer(..), Msg(..))
 
 
-getPositionText : Int -> Html Msg
-getPositionText position =
-    let
-        positionText =
-            case position of
-                0 ->
-                    "Grattis, du vann! :)"
-
-                1 ->
-                    "Du kom på andra plats"
-
-                2 ->
-                    "Du kom på tredje plats"
-
-                3 ->
-                    "Du kom på fjärde plats"
-
-                4 ->
-                    "Du kom på femte plats"
-
-                5 ->
-                    "Du kom på sjätte plats"
-
-                6 ->
-                    "Du kom på sjunde plats"
-
-                7 ->
-                    "Du kom på åttonde plats"
-
-                _ ->
-                    ""
-    in
-    div [] [ text positionText ]
-
-
 getRows : Maybe Player -> List ( Player, Int ) -> List (Html Msg)
 getRows player highscore =
     case player of
@@ -52,8 +17,11 @@ getRows player highscore =
             List.indexedMap
                 (\index playerScore ->
                     let
+                        playerUser =
+                            Tuple.first playerScore
+
                         isCurrentPlayer =
-                            Tuple.first playerScore == currentPlayer
+                            playerUser.user.id == currentPlayer.user.id
 
                         name =
                             (\p ->
@@ -95,24 +63,8 @@ getPosition currentPlayer highscore =
     Maybe.withDefault 0 (findIndex (\highscoreValue -> Tuple.first highscoreValue == currentPlayer) highscore)
 
 
-getPositionContent : Int -> List ( Player, Int ) -> Html Msg
-getPositionContent position highscore =
-    if position > 0 then
-        if List.length highscore <= 1 then
-            div [] [ text "" ]
-
-        else if (List.length highscore - 1) == position && List.length highscore > 1 then
-            div [] [ text "Du kom sist :(" ]
-
-        else
-            getPositionText position
-
-    else
-        div [] []
-
-
-individualHighscore : MarkedPlayer -> List Player -> Html Msg
-individualHighscore markedPlayer players =
+gameHighscore : MarkedPlayer -> List Player -> Html Msg
+gameHighscore markedPlayer players =
     let
         currentPlayer : Maybe Player
         currentPlayer =
@@ -131,17 +83,6 @@ individualHighscore markedPlayer players =
 
         highscoreRows =
             getRows currentPlayer highscore
-
-        position =
-            case currentPlayer of
-                Just player ->
-                    getPosition player highscore
-
-                _ ->
-                    0
-
-        positionText =
-            getPositionContent position highscore
     in
     div [ class "highscore-dialog-wrapper dialog-wrapper" ]
         [ div [ class "dialog-background  animated fadeIn" ] []
@@ -160,7 +101,6 @@ individualHighscore markedPlayer players =
             ]
             [ div [ class "highscore-content container" ]
                 [ h1 [] [ text "Resultat" ]
-                , h2 [] [ positionText ]
                 , table [] ([] ++ highscoreRows)
                 , button [ onClick HideGameHighscore, class "large-button \n        " ] [ text "Avsluta" ]
                 ]
