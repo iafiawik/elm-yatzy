@@ -48,7 +48,7 @@ port fillWithDummyValues : ( E.Value, E.Value, List E.Value ) -> Cmd msg
 port getGlobalHighscore : () -> Cmd msg
 
 
-port getGame : E.Value -> Cmd msg
+port getGameByGameCode : E.Value -> Cmd msg
 
 
 port getGameByGameId : E.Value -> Cmd msg
@@ -205,10 +205,10 @@ update msg model =
         ReloadGame ->
             case model.mode of
                 Playing game markedPlayer gameState currentValue showGameInfo ->
-                    ( model, getGame (E.string game.code) )
+                    ( model, getGameByGameCode (E.string game.code) )
 
                 ShowFinishedScoreCard game markedPlayer showGameInfo ->
-                    ( model, getGame (E.string game.code) )
+                    ( model, getGameByGameCode (E.string game.code) )
 
                 _ ->
                     ( model, Cmd.none )
@@ -238,7 +238,7 @@ update msg model =
             case model.mode of
                 EnterGameCode gameCode ->
                     ( { model | mode = WaitForGame False }
-                    , getGame (E.string gameCode)
+                    , getGameByGameCode (E.string gameCode)
                     )
 
                 _ ->

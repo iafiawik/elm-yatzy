@@ -14,62 +14,22 @@ db.settings({
   timestampsInSnapshots: true
 });
 
-// const getUsers = () => {
-//   return new Promise(function(resolve, reject) {
-//     db
-//       .collection("users")
-//       .get()
-//       .then(snapshot => {
-//         snapshot.docs.forEach(user => {
-//           console.log(`${user.id} => ${JSON.stringify(user.data())}`);
-//         });
-//
-//         resolve(
-//           snapshot.docs.map(user => {
-//             return { id: user.id, ...user.data() };
-//           })
-//         );
-//       })
-//       .catch(err => {
-//         reject(err);
-//       });
-//   });
-
-const getHighscore2 = onHighscoreChange => {
-  db.collection("global").doc("highscore")
-    .get()
-    .then(function(snapshot) {
-      const highscoreList = snapshot.data().list;
-
-      const formattedHighscoreList = highscoreList.map((highscoreItem) => {
-
-        var formattedHighscoreItem = highscoreItem;
-        var creationDate = new Date(highscoreItem.date);
-
-        formattedHighscoreItem.date = creationDate.toLocaleDateString("sv-SE");
-
-        return formattedHighscoreItem;
-      });
-
-      onHighscoreChange && onHighscoreChange(highscoreList);
-    });
-};
-
-const getResults = (options = {
-  sortOrder: "desc",
-  year: 2019
-}) => {
+const getResults = (
+  options = {
+    sortOrder: "desc",
+    year: 2019
+  }
+) => {
   var minCreationDate = new Date(options.year, 0, 1).getTime();
   var maxCreationDate = new Date(options.year, 11, 31, 23, 59, 59).getTime();
 
   return new Promise(function(resolve, reject) {
-     db
-      .collection("results")
+    db.collection("results")
       .where("year", "==", options.year)
       .orderBy("score", options.sortOrder)
       .limit(20)
       .get()
-      .then((snapshot) => {
+      .then(snapshot => {
         var results = snapshot.docs.map(result => {
           return { id: result.id, ...result.data() };
         });
@@ -78,12 +38,15 @@ const getResults = (options = {
 
         resolve(results);
       });
-    });
-}
+  });
+};
 
 const prepareResults = (results, users) => {
   return results.map((result, index) => {
-    var combinedResult = {...result, user: users.find((user) => user.id === result.userId)};
+    var combinedResult = {
+      ...result,
+      user: users.find(user => user.id === result.userId)
+    };
 
     var creationDate = new Date(combinedResult.dateCreated);
 
@@ -95,8 +58,7 @@ const prepareResults = (results, users) => {
 
     return combinedResult;
   });
-}
-
+};
 
 const getHighscore = () => {
   var startYear = 2018;
@@ -105,25 +67,27 @@ const getHighscore = () => {
   const yearPromises = [];
 
   var usersPromise = new Promise(function(resolve, reject) {
-    getUsers((users) => resolve(users));
+    getUsers(users => resolve(users));
   });
 
-  while(currentYear <= new Date().getFullYear()) {
-    console.log("currentYear", currentYear)
+  while (currentYear <= new Date().getFullYear()) {
+    console.log("currentYear", currentYear);
     var year = currentYear;
     var resultsPromise = getResults({ sortOrder: "desc", year: year });
     var resultsInvertedPromise = getResults({ sortOrder: "asc", year: year });
 
     var yearPromise = new Promise((resolve, reject) => {
-      Promise
-        .all([resultsPromise, resultsInvertedPromise, usersPromise])
-        .then((values) => {
+      Promise.all([resultsPromise, resultsInvertedPromise, usersPromise]).then(
+        values => {
           const results = values[0];
           const resultsInverted = values[1];
           const users = values[2];
 
           const resultsWithUsers = prepareResults(results, users);
-          const resultsInvertedWithUsers = prepareResults(resultsInverted, users);
+          const resultsInvertedWithUsers = prepareResults(
+            resultsInverted,
+            users
+          );
 
           var result = {
             year: results[0] ? results[0].year : startYear,
@@ -131,22 +95,25 @@ const getHighscore = () => {
             inverted: resultsInvertedWithUsers
           };
 
-          console.log("result", result)
+          console.log("result", result);
 
-          resolve(result)
-        });
-      });
+          resolve(result);
+        }
+      );
+    });
 
-      yearPromises.push(yearPromise);
-      currentYear++;
-    }
+    yearPromises.push(yearPromise);
+    currentYear++;
+  }
 
   var totalPromise = new Promise((resolve, reject) => {
-    Promise.all(yearPromises).then(values => resolve(values.sort((a, b) => b.year - a.year)));
+    Promise.all(yearPromises).then(values =>
+      resolve(values.sort((a, b) => b.year - a.year))
+    );
   });
 
   return totalPromise;
-}
+};
 
 const getUsers = onUsersChange => {
   db.collection("users").onSnapshot(function(snapshot) {
@@ -161,15 +128,16 @@ const getUsers = onUsersChange => {
 };
 
 const getGames = onGameChange => {
-  db
-    .collection("games")
+  db.collection("games")
     .where("finished", "==", false)
     .onSnapshot(function(snapshot) {
-      var games = snapshot.docs.map(game => {
-        return { id: game.id, ...game.data() };
-      }).filter(game => {
-        return game.dateCreated > (new Date().getTime() - 604800000);
-      });
+      var games = snapshot.docs
+        .map(game => {
+          return { id: game.id, ...game.data() };
+        })
+        .filter(game => {
+          return game.dateCreated > new Date().getTime() - 604800000;
+        });
 
       var users = games.map(function(game) {
         return game.users.map(function(user) {
@@ -191,7 +159,6 @@ const getGames = onGameChange => {
           });
           return { ...game, users: realUsers };
         });
-        console.log("DbGames: ", dbGames);
 
         dbGames.sort(function(a, b) {
           return new Date(b.dateCreated) - new Date(a.dateCreated);
@@ -214,8 +181,7 @@ const getGames = onGameChange => {
 };
 
 const createUser = name => {
-  db
-    .collection("users")
+  db.collection("users")
     .add({
       name: name,
       userName: name
@@ -230,8 +196,7 @@ const createUser = name => {
 
 const getGame = gameCode => {
   return new Promise(function(resolve, reject) {
-    db
-      .collection("games")
+    db.collection("games")
       .where("code", "==", gameCode)
       .get()
       .then(function(snapshot) {
@@ -244,30 +209,14 @@ const getGame = gameCode => {
         } else {
           var game = games[0];
 
-          var users = game.users.map(function(user) {
-            return user.userId;
-          });
+          var dateCreated = new Date(game.dateCreated);
 
-          // getUsersByIds(users).then(function(dbUsers) {
-          //   var realUsers = game.users.map(function(user) {
-          //     var populatedUser = {
-          //       user: dbUsers.find(function(dbUser) {
-          //         return dbUser.id == user.userId;
-          //       }),
-          //       ...user
-          //     };
-          //
-          //     delete populatedUser.userId;
-          //   return populatedUser;
-          //   });
+          var dbGame = {
+            ...game,
+            dateCreated: dateCreated.toLocaleDateString("sv-SE")
+          };
 
-            var dateCreated = new Date(game.dateCreated);
-
-            var dbGame = { ...game, dateCreated: dateCreated.toLocaleDateString("sv-SE") };
-
-            console.log("DbGame: ", dbGame);
-            resolve(dbGame);
-          // });
+          resolve(dbGame);
         }
       })
       .catch(function(error) {
@@ -283,54 +232,37 @@ const getGame = gameCode => {
   });
 };
 
-const formatDate = (date) => {
+const formatDate = date => {
   return new Date(date).toLocaleDateString("sv-SE");
-}
+};
 
 const getGameByGameId = gameId => {
   return new Promise(function(resolve, reject) {
-    db
-      .collection("games")
+    db.collection("games")
       .doc(gameId)
       .get()
       .then(function(doc) {
         if (doc.exists) {
           var game = { id: doc.id, ...doc.data() };
 
-          console.log("Game", game)
+          console.log("Game", game);
 
           var users = game.users.map(function(user) {
             return user.userId;
           });
 
-          // getUsersByIds(users).then(function(dbUsers) {
-          //   var realUsers = game.users.map(function(user) {
-          //     var populatedUser = {
-          //       user: dbUsers.find(function(dbUser) {
-          //         return dbUser.id == user.userId;
-          //       }),
-          //       ...user
-          //     };
-          //
-          //     delete populatedUser.userId;
-          //   return populatedUser;
-          //   });
+          var dateCreated = new Date(game.dateCreated);
 
-            var dateCreated = new Date(game.dateCreated);
+          var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
 
-            var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
-
-            console.log("DbGame: ", dbGame);
-            resolve(dbGame);
-          // });
-        }
-        else {
+          resolve(dbGame);
+        } else {
           throw new Error();
         }
       })
       .catch(function(error) {
         console.error(
-          "Late return Unable to find a game with this game ID: ",
+          "Unable to find a game with this game ID: ",
           gameId,
           ". Error: ",
           error
@@ -343,10 +275,7 @@ const getGameByGameId = gameId => {
 
 const getUsersByIds = userIds => {
   return new Promise(function(resolve, reject) {
-    // var docRef = db.collection("cities").doc(userIds);
-
-    db
-      .collection("users")
+    db.collection("users")
       .get()
       .then(function(snapshot) {
         var users = snapshot.docs.map(user => {
@@ -378,67 +307,70 @@ const getUsersByIds = userIds => {
 const createGame = userIds => {
   console.log("createGame()", userIds);
 
-  return fetch("https://europe-west2-elm-yatzy-dev.cloudfunctions.net/createNewGame", {
-    body: JSON.stringify({
-      users: userIds
-    }),
-    method: "POST",
-    mode: "cors",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  }).then((response) => {
+  return fetch(config["routes"]["createNewGame"]
+    ,
+    {
+      body: JSON.stringify({
+        users: userIds
+      }),
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  )
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
 
-           console.log("response", response);
-
-    if (!response.ok) {
-         // var error = new Error(response.statusText);
-         // error.status = response.status;
-         throw new Error(response.statusText);
-       }
-
-       var contentType = response.headers.get('content-type');
-       if (contentType && contentType.includes('application/json')) {
-         return response.json();
-       }
-  }).
-  catch((error) => {
-    console.log("error", error)
-  })
+      var contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+    })
+    .catch(error => {
+      console.log("error", error);
+    });
 };
 
-const createValue = (userId, gameId, value, boxId)  => {
+const createValue = (userId, gameId, value, boxId) => {
   console.log("createValue()", userId, gameId, value, boxId);
 
-  return fetch("https://europe-west2-elm-yatzy-dev.cloudfunctions.net/createValue", {
-    body: JSON.stringify({
-      userId: userId,
-      gameId: gameId,
-      value: value,
-      boxId: boxId
-    }),
-    method: "POST",
-    mode: "cors",
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  }).then((response) => {
-    console.log("response", response);
+  return fetch(
+    config["routes"]["createValue"],
+    {
+      body: JSON.stringify({
+        userId: userId,
+        gameId: gameId,
+        value: value,
+        boxId: boxId
+      }),
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  )
+    .then(response => {
+      console.log("response", response);
 
-    if (!response.ok) {
-         // var error = new Error(response.statusText);
-         // error.status = response.status;
-         throw new Error(response.statusText);
-       }
+      if (!response.ok) {
+        // var error = new Error(response.statusText);
+        // error.status = response.status;
+        throw new Error(response.statusText);
+      }
 
-       var contentType = response.headers.get('content-type');
-       if (contentType && contentType.includes('application/json')) {
-         return response.json();
-       }
-  }).
-  catch((error) => {
-    console.log("error", error)
-  })
+      var contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+    })
+    .catch(error => {
+      console.log("error", error);
+    });
 };
 
 const editGame = (game, gameId) => {
@@ -450,7 +382,10 @@ const editGame = (game, gameId) => {
         finished: game.finished
       })
       .then(function(updatedDoc) {
-        console.log("editGame(): Game with ID " + gameId + " has been updated. Updates: ", game);
+        console.log(
+          "editGame(): Game with ID " + gameId + " has been updated. Updates: ",
+          game
+        );
 
         resolve();
       })
@@ -464,81 +399,6 @@ const editGame = (game, gameId) => {
   });
 };
 
-const editValue = (value, gameId) => {
-  var docRef = db.collection("values").doc(value.id);
-
-  docRef
-    .set({
-      gameId: gameId,
-      boxId: value.boxId,
-      userId: value.userId,
-      value: value.value,
-      dateCreated: value.dateCreated
-    })
-    .then(function() {
-      console.log(
-        "editValue(): Value with ID " +
-          value.id +
-          " has been updated with value " +
-          value.value
-      );
-    })
-    .catch(function(error) {
-      console.error(
-        "Unable to update value with ID " + value.id + ". Error : ",
-        error
-      );
-    });
-};
-
-const deleteValue = value => {
-  var docRef = db.collection("values").doc(value.id);
-
-  docRef
-    .delete()
-    .then(function(docRef) {
-      console.log(
-        "deleteValue(): Value with ID " + value.id + " has been deleted."
-      );
-    })
-    .catch(function(error) {
-      console.error(
-        "Unable to delete value with ID " + value.id + ". Error : ",
-        error
-      );
-    });
-};
-
-const getValues = (gameId, onValuesChange) => {
-  db
-    .collection("values")
-    .where("gameId", "==", gameId)
-    .onSnapshot(function(snapshot) {
-      // var addedValueIds = [];
-      // snapshot.docChanges().forEach(function(change) {
-      //   if (change.type === "added") {
-      //     addedValueIds.push(change.doc.id);
-      //     console.log("New city: ", change.doc.data());
-      //   }
-      //   if (change.type === "modified") {
-      //     console.log("Modified city: ", change.doc.data());
-      //   }
-      //   if (change.type === "removed") {
-      //     console.log("Removed city: ", change.doc.data());
-      //   }
-      // });
-
-      var values = snapshot.docs.map(value => {
-        return { id: value.id, ...value.data() };
-      });
-
-      onValuesChange && onValuesChange(values);
-
-      console.log("data: , getValues(), values:", values);
-      // return users;
-    });
-};
-
 export default {
   getHighscore,
   createUser,
@@ -549,8 +409,5 @@ export default {
   editGame,
   getGames,
   createValue,
-  editValue,
-  deleteValue,
-  getValues,
   formatDate
 };
