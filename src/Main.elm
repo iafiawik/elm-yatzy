@@ -610,36 +610,16 @@ getContent model =
 
                     else
                         div [] []
-
-                selectedPlayerName =
-                    case markedPlayer of
-                        Single player ->
-                            "Selected player: " ++ player.user.name
-
-                        _ ->
-                            "No selected player"
-
-                playerInfo =
-                    div [] [ text selectedPlayerName ]
-
-                activePlayerInfo =
-                    div [] [ text ("active player: " ++ game.activePlayer.user.name) ]
             in
             case gameState of
                 Idle ->
                     div []
                         [ gameInformation
                         , div [] [ interactiveScoreCard markedPlayer game True False ]
-                        , playerInfo
-                        , activePlayerInfo
                         ]
 
                 WaitingForValueToBeCreated ->
-                    div []
-                        [ div [] [ interactiveScoreCard markedPlayer game True True ]
-                        , playerInfo
-                        , activePlayerInfo
-                        ]
+                    div [] [ interactiveScoreCard markedPlayer game True True ]
 
                 Input box isEdit ->
                     div []
