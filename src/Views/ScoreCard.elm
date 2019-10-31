@@ -1,8 +1,10 @@
-module Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
+module Views.ScoreCard exposing (interactiveScoreCard, nakedScoreCard, staticScoreCard)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (lazy)
 import List.Extra exposing (find, getAt)
 import Model.Box exposing (Box, getAcceptedValues, getBoxes)
 import Model.BoxCategory exposing (BoxCategory(..))
@@ -103,12 +105,13 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum load
 
                         isActiveBoxForHighlightedPlayer =
                             isActiveBoxForPlayer highlightedPlayer.values box
+
+                        cells =
+                            [ td [ classList [ ( "box", True ), ( "party-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
+                            ]
+                                ++ playerBoxes
                     in
-                    tr []
-                        ([ td [ classList [ ( "box", True ), ( "party-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
-                         ]
-                            ++ playerBoxes
-                        )
+                    tr [] cells
                 )
                 boxes
 
@@ -137,17 +140,127 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum load
     in
     div [ classList [ ( "score-card-wrapper", True ), ( "has-selected-player", hasSelectedPlayer ) ] ]
         [ topBar (not game.finished) (hasSelectedPlayer == True && (selectedPlayer == Just activePlayer)) activePlayer loading
-        , table [ classList [ ( "score-card", True ), ( "loading", loading ), ( "allow-interaction", allowInteraction == True ), ( "has-selected-player", hasSelectedPlayer ), ( "show-total-sum", showTotalSum ), ( "show-counted-values", showCountedValues ) ] ]
-            ([ tr []
-                ([ th []
-                    [ text "" ]
-                 ]
-                    ++ headers
-                )
-             ]
-                ++ boxItems
-            )
+        , nakedScoreCard markedPlayer game showCountedValues allowInteraction showTotalSum loading
         ]
+
+
+nakedScoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Bool -> Bool -> Html Msg
+nakedScoreCard markedPlayer game showCountedValues allowInteraction showTotalSum loading =
+    let
+        _ =
+            Debug.log "scoreCard" (Debug.toString game.players)
+
+        selectedPlayer =
+            case markedPlayer of
+                Single player ->
+                    Just player
+
+                _ ->
+                    Nothing
+
+        boxes =
+            getBoxes
+
+        players =
+            game.players
+
+        activePlayer =
+            game.activePlayer
+
+        numberOfPlayers =
+            List.length players
+
+        minLengthOfPlayerNames =
+            if numberOfPlayers > 2 then
+                2
+
+            else if numberOfPlayers > 4 then
+                1
+
+            else
+                10
+
+        playerNames =
+            getShortNames (List.map (\player -> player.user.name) game.players) minLengthOfPlayerNames
+
+        hasSelectedPlayer =
+            selectedPlayer /= Nothing
+
+        highlightedPlayer : Player
+        highlightedPlayer =
+            case markedPlayer of
+                Single singleMarkedPlayer ->
+                    Maybe.withDefault activePlayer
+                        (find (\player -> player.user.id == singleMarkedPlayer.user.id) game.players)
+
+                _ ->
+                    activePlayer
+
+        boxItems =
+            List.map
+                (\box ->
+                    let
+                        playerBoxes =
+                            List.map
+                                (\p ->
+                                    renderCell box boxes p activePlayer markedPlayer allowInteraction showTotalSum
+                                )
+                                players
+
+                        isActiveBoxForHighlightedPlayer =
+                            isActiveBoxForPlayer highlightedPlayer.values box
+
+                        cells =
+                            [ td [ classList [ ( "box", True ), ( "party-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
+                            ]
+                                ++ playerBoxes
+                    in
+                    tr [] cells
+                )
+                boxes
+
+        headers =
+            List.indexedMap
+                (\index player ->
+                    let
+                        isSelectedPlayer =
+                            isPlayerMarked player markedPlayer
+
+                        _ =
+                            Debug.log "isSelectedPlayer" (Debug.toString isSelectedPlayer)
+
+                        isactivePlayer =
+                            player == activePlayer
+
+                        name =
+                            Maybe.withDefault "" (getAt index playerNames)
+
+                        classNames =
+                            [ ( "active", isactivePlayer ), ( "selected", isSelectedPlayer ) ]
+                    in
+                    th [ classList classNames ] [ span [] [ text name ] ]
+                )
+                players
+    in
+    table
+        [ classList
+            [ ( "score-card", True )
+            , ( "loading", loading )
+            , ( "allow-interaction", allowInteraction == True )
+            , ( "has-selected-player", hasSelectedPlayer )
+            , ( "show-total-sum", showTotalSum )
+            , ( "show-counted-values", showCountedValues )
+            ]
+        ]
+        ([ tr []
+            ([ th []
+                [ text "" ]
+             ]
+                ++ headers
+            )
+         ]
+            ++ boxItems
+        )
 
 
 isInactiveBoxCategory : Box -> Bool

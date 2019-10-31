@@ -122,9 +122,6 @@ exports.createValue = functions
       const value = req.body.value;
       const boxId = req.body.boxId;
 
-      console.log("boxId", boxId);
-      console.log("value", value);
-
       var docRef = admin
         .firestore()
         .collection("games")
@@ -142,6 +139,9 @@ exports.createValue = functions
 
             res.end();
           } else {
+            var oldValue = user.values[boxId].v;
+            var isNewValue = oldValue === -1;
+
             var previousUser =
               game.users[Math.max(game.activeUserIndex - 1, 0)];
 
@@ -153,6 +153,10 @@ exports.createValue = functions
 
             user.values[boxId].v = value;
 
+            if (isNewValue) {
+              user.values[boxId].c = new Date().getTime();
+            }
+
             var activeUserUnassignedValues = Object.keys(user.values).filter(
               boxId => {
                 return user.values[boxId].v === -1;
@@ -160,8 +164,9 @@ exports.createValue = functions
             ).length;
 
             if (
-              activeUserUnassignedValues < previousUserUnassignedValues
-              || (game.activeUserIndex === game.users.length - 1 && activeUserUnassignedValues === previousUserUnassignedValues)
+              activeUserUnassignedValues < previousUserUnassignedValues ||
+              (game.activeUserIndex === game.users.length - 1 &&
+                activeUserUnassignedValues === previousUserUnassignedValues)
             ) {
               game.activeUserIndex =
                 game.activeUserIndex === game.users.length - 1
@@ -183,8 +188,21 @@ exports.createValue = functions
           docRef
             .set(game)
             .then(() => {
-              console.log("Document with ID: ", docRef.id, " updated");
               game.id = docRef.id;
+
+              if (game.finished) {
+                onGameFinished(game)
+                  .then(() => {
+                    res.end();
+
+                    return false;
+                  })
+                  .catch(error => {
+                    console.error("Error adding document: ", error);
+
+                    res.end();
+                  });
+              }
 
               res.json(game);
 
@@ -254,44 +272,208 @@ exports.createNewGame = functions
     }
   });
 
-// exports.createNewGame = functions.firestore
+function onGameFinished(game) {
+  if (!game.finished) {
+    console.log("onGameFinished(), game is not finished.");
+    return false;
+  }
+
+  console.log(
+    "onGameFinished(), Game " +
+      game.id +
+      " is finished, trying to calculate results."
+  );
+
+  var resultsPromise = new Promise((resolve, reject) => {
+    var users = game.users;
+
+    game.users.forEach(user => {
+      user.score = calculateTotalScore(user.values);
+    });
+
+    users = users.sort((a, b) => b.score - a.score);
+
+    let lastRank = 0;
+    let lastValue = users[0].score;
+
+    let rankedUsers = users.map((user, index) => {
+      if (user.score < lastValue) {
+        user.rank = lastRank + 1;
+
+        lastValue = user.score;
+        lastRank++;
+      } else {
+        user.rank = lastRank;
+      }
+
+      return user;
+    });
+
+    var gameRef = admin
+      .firestore()
+      .collection("games")
+      .doc(game.id);
+
+    gameRef
+      .set(game)
+      .then(() => {
+        console.log(
+          "onGameFinished(), game updated. Trying to write to results ..."
+        );
+
+        return calculateResults(gameRef.id).then(() => resolve());
+      })
+      .catch(e => {
+        console.error("onGameFinished(), unable to write user scores. ", e);
+
+        reject(e);
+      });
+
+    return false;
+  });
+
+  return resultsPromise;
+}
+
+function calculateTotalScore(valueObject) {
+  console.log("calculateTotalScore, valueObject: ", valueObject);
+  var values = Object.keys(valueObject).map(boxId => {
+    return {
+      boxId: boxId,
+      value: valueObject[boxId].v
+    };
+  });
+
+  console.log("calculateTotalScore, values: ", values);
+
+  const reducer = (accumulator, currentValue) =>
+    accumulator + currentValue.value;
+
+  var upperSum = values
+    .filter(value => {
+      if (
+        value.boxId === "ones" ||
+        value.boxId === "twos" ||
+        value.boxId === "threes" ||
+        value.boxId === "fours" ||
+        value.boxId === "fives" ||
+        value.boxId === "sixes"
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+    .reduce(reducer, 0);
+
+  var bonusSum = 0;
+
+  if (upperSum >= 63) {
+    bonusSum = 50;
+  }
+
+  return values.reduce(reducer, 0) + bonusSum;
+}
+
+function calculateResults(gameId) {
+  const resultsRef = admin.firestore().collection("results");
+
+  console.log("calculateResults(), gameId: ", gameId);
+
+  var gamesRef = admin.firestore().collection("games");
+
+  if (gameId) {
+    gamesRef = gamesRef.doc(gameId);
+  } else {
+    gamesRef = gamesRef.where("finished", "==", true);
+  }
+
+  return new Promise((resolve, reject) => {
+    gamesRef
+      .get()
+      .then(snapshot => {
+        var rawGames = [];
+        var games;
+
+        if (!Array.isArray(snapshot.docs)) {
+          rawGames.push(snapshot);
+        } else {
+          rawGames = snapshot.docs;
+        }
+
+        console.log("calculateResults(), fetched games. ", rawGames.length);
+
+        try {
+          games = rawGames.map(game => {
+            var g = game.data();
+            g.id = game.id;
+            return g;
+          });
+        } catch (e) {
+          console.error("calculateResults(), unable to extract game data, ", e);
+        }
+
+        var results = [];
+
+        games.forEach(game => {
+          game.users.forEach((user, index) => {
+            // Do not include test users in the highscore
+            // if (
+            //   user.userId === "1mSEbTIQiiDCFRIsYCNy" ||
+            //   user.userId === "vWAokowhN0XUTHTbyr2n"
+            // ) {
+            //   return false;
+            // }
+
+            if (user.score > 0 && !user.invalid) {
+              results.push({
+                userId: user.userId,
+                score: user.score,
+                dateCreated: game.dateCreated,
+                gameId: game.id,
+                year: new Date(game.dateCreated).getFullYear(),
+                rank: user.rank,
+                order: index,
+                numberOfPlayers: game.users.length
+              });
+            }
+
+            return false;
+          });
+        });
+
+        console.log("calculateResults(), found results: ", results);
+
+        var promises = [];
+        results.forEach((result, index) => {
+          const resultId = `${result.gameId}-${result.userId}`;
+
+          var promise = resultsRef.doc(resultId).set(result);
+
+          promises.push(promise);
+        });
+
+        Promise.all(promises)
+          .then(() => {
+            resolve();
+            return false;
+          })
+          .catch(e => {
+            reject(e);
+          });
+
+        return false;
+      })
+      .catch(error => {
+        console.error("calculateResults(), an error occured: ", error);
+        reject(error);
+        return false;
+      });
+
+    return false;
+  });
+}
+
+// exports.onGameFinished = functions.firestore
 //   .document("/games/{gameId}")
-//   .onCreate((snapshot, context) => {
-//     var gameId = context.params.gameId;
-//     const game = snapshot.data();
-//
-//     console.log("createNewGame(), A new game has been created.");
-//
-//     const users = game.users.map((user, index) => {
-//       let userModel = user;
-//       userModel.values = createScoreBoard();
-//       userModel.active = user.order === 0;
-//
-//       return userModel;
-//     });
-//
-//     console.log("createNewGame(), A new game has been created. Users: ", users.length);
-//
-//     snapshot.ref
-//       .set(
-//         {
-//           users: users
-//         },
-//         {
-//           merge: true
-//         }
-//       )
-//       .then(() => {
-//         console.log(
-//           "createNewGame(), game updated."
-//         );
-//
-//         return false;
-//       })
-//       .catch(e => {
-//         console.error(
-//           "createNewGame(), unable to create a new game.",
-//           e
-//         );
-//       });
-//   });
+//   .onUpdate((change, context) => {});

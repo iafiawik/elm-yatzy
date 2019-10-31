@@ -25,6 +25,11 @@
   margin-bottom: 100px;
 }
 
+.global-highscore .link-column {
+  text-decoration: underline;
+  font-weight: bold;
+  color: black;
+}
 
 .global-highscores-tabs {
   border-bottom: 4px solid $primary-color;
@@ -77,12 +82,14 @@
   border: 1px solid $primary-color;
 }
 
-.global-highscore-content td,.global-highscore-content th {
+.global-highscore-content td,
+.global-highscore-content th {
   border-bottom: 1px solid $primary-color;
   padding: 10px 20px;
 }
 
-.global-highscore-content td,.global-highscore-content th {
+.global-highscore-content td,
+.global-highscore-content th {
   text-align: center;
   border-right: 1px solid $primary-color;
 }
@@ -94,12 +101,25 @@
   border-color: white;
 }
 
-.global-highscore-content td:last-of-type,.global-highscore-content th:last-of-type{
+.global-highscore-content td:last-of-type,
+.global-highscore-content th:last-of-type {
   border-right: 0px;
 }
 
 .global-highscore-content tr:first-of-type {
   font-weight: bold;
+}
+
+.global-highscore-content tr{
+  &:hover {
+    background: black;
+    color: white;
+    cursor: pointer;
+
+    .link-column {
+      color: white;
+    }
+  }
 }
 
 .global-highscore-content .large-button {

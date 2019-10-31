@@ -17,7 +17,16 @@ globalHighscore items heading =
 
             else
                 table []
-                    ([ tr [] [ th [] [ text "#" ], th [] [ text "Player" ], th [] [ text "Date" ], th [] [ text "Score" ], th [ class "hidden" ] [ text "User ID" ], th [ class "hidden" ] [ text "Game ID" ] ] ]
+                    ([ tr []
+                        [ th [] [ text "#" ]
+                        , th [] [ text "Player" ]
+                        , th [] [ text "Date" ]
+                        , th [] [ text "Score" ]
+                        , th [] [ text "" ]
+                        , th [ class "hidden" ] [ text "User ID" ]
+                        , th [ class "hidden" ] [ text "Game ID" ]
+                        ]
+                     ]
                         ++ List.indexedMap
                             (\index highscoreItem ->
                                 let
@@ -30,7 +39,16 @@ globalHighscore items heading =
                                     gameId =
                                         highscoreItem.gameId
                                 in
-                                tr [] [ td [] [ text (String.fromInt highscoreItem.order ++ ". ") ], td [] [ text name ], td [] [ text highscoreItem.date ], td [] [ text (String.fromInt score) ], td [ class "hidden" ] [ text highscoreItem.user.id ], td [ class "hidden" ] [ text gameId ] ]
+                                tr
+                                    [ onClick (ShowScoreCardForGameAndUser highscoreItem.user.id highscoreItem.gameId) ]
+                                    [ td [] [ text (String.fromInt highscoreItem.order ++ ". ") ]
+                                    , td [] [ text name ]
+                                    , td [] [ text highscoreItem.date ]
+                                    , td [] [ text (String.fromInt score) ]
+                                    , td [ class "link-column" ] [ text "Visa" ]
+                                    , td [ class "hidden" ] [ text highscoreItem.user.id ]
+                                    , td [ class "hidden" ] [ text gameId ]
+                                    ]
                             )
                             (List.take
                                 20

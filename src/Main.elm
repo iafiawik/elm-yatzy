@@ -33,6 +33,7 @@ import Views.IndividualJoinInfo exposing (individualJoinInfo)
 import Views.Loader exposing (loader)
 import Views.Notification exposing (notification)
 import Views.ScoreCard exposing (interactiveScoreCard, staticScoreCard)
+import Views.ScoreCardDialog exposing (scoreCardDialog)
 import Views.ScoreDialog exposing (scoreDialog)
 import Views.SelectPlayer exposing (selectPlayer)
 import Views.StartPage exposing (startPage)
@@ -48,6 +49,9 @@ port getGlobalHighscore : () -> Cmd msg
 
 
 port getGame : E.Value -> Cmd msg
+
+
+port getGameByGameId : E.Value -> Cmd msg
 
 
 port startGameCommand : E.Value -> Cmd msg
@@ -155,6 +159,12 @@ update msg model =
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
 
+        ShowScoreCardForGameAndUser userId gameId ->
+            ( { model | mode = ScoreCardForGameAndUser userId Nothing }, getGameByGameId (E.string gameId) )
+
+        HideScoreCardForGameAndUser ->
+            ( { model | mode = StartPage 0 }, Cmd.none )
+
         GlobalHighscoreReceived highscore ->
             ( { model | highscoreList = highscore }, Cmd.none )
 
@@ -169,7 +179,10 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        WindowFocusedReceived upatedGame userId ->
+        WindowFocusedReceived ->
+            ( { model | windowState = Focused }, Cmd.none )
+
+        WindowFocusedAndGameReceived upatedGame userId ->
             let
                 previouslyMarkedPlayer =
                     case find (\player -> player.user.id == userId) upatedGame.players of
@@ -341,6 +354,9 @@ update msg model =
 
                     else
                         ( { model | mode = ShowGameFinished updatedGame markedPlayer }, endGameCommand () )
+
+                ScoreCardForGameAndUser userId game ->
+                    ( { model | mode = ScoreCardForGameAndUser userId (Just updatedGame) }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -568,6 +584,9 @@ getContent model =
         StartPage activeHighscoreTabIndex ->
             startPage model.highscoreList activeHighscoreTabIndex
 
+        ScoreCardForGameAndUser userId gameMaybe ->
+            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList 0 ]
+
         EnterGameCode gameCode ->
             enterGameCode gameCode model.games
 
@@ -738,7 +757,7 @@ windowStateFocused model valuesJson =
     in
     case focusedGameAndUserMaybe of
         Ok focusedGameAndUser ->
-            WindowFocusedReceived
+            WindowFocusedAndGameReceived
                 (fromDbGameToGame focusedGameAndUser.game model.users)
                 focusedGameAndUser.userId
 
@@ -747,7 +766,7 @@ windowStateFocused model valuesJson =
                 _ =
                     Debug.log "windowStateFocused" (Debug.toString err)
             in
-            NoOp
+            WindowFocusedReceived
 
 
 subscriptions : Model -> Sub Msg

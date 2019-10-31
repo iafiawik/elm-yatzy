@@ -16,6 +16,8 @@ import Time
 type Msg
     = ShowStartPage
     | ChangeActiveHighscoreTab Int
+    | ShowScoreCardForGameAndUser String String
+    | HideScoreCardForGameAndUser
     | CreateGame
     | JoinExistingGame
     | EnterGame
@@ -28,7 +30,8 @@ type Msg
     | GameReceived Game
     | GamesReceived (List Game)
     | GlobalHighscoreReceived (List GlobalHighscore)
-    | WindowFocusedReceived Game String
+    | WindowFocusedAndGameReceived Game String
+    | WindowFocusedReceived
     | WindowBlurredReceived
     | AddPlayer User
     | RemovePlayer User
@@ -67,6 +70,7 @@ type alias Model =
 
 type Mode
     = StartPage Int
+    | ScoreCardForGameAndUser String (Maybe Game)
     | ShowAddRemovePlayers (List User) String
     | EnterGameCode String
     | WaitForGame Bool

@@ -126,7 +126,7 @@ const getHighscore = () => {
           const resultsInvertedWithUsers = prepareResults(resultsInverted, users);
 
           var result = {
-            year: results[0].year,
+            year: results[0] ? results[0].year : startYear,
             normal: resultsWithUsers,
             inverted: resultsInvertedWithUsers
           };
