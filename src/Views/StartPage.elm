@@ -32,5 +32,5 @@ startPage highscores activeHighscoreTabIndex statisticItems =
             , div [ class "start-page-arrow-down" ] []
             ]
         , div [ class "global-highscore start-page-global-highscore" ] [ globalHighscores highscores activeHighscoreTabIndex ]
-        , div [ class "start-page-statistics" ] [ div [ class " container" ] [ h1 [] [ text "Statistics" ], statistics statisticItems ] ]
+        , div [ class "start-page-statistics" ] [ div [ class " container" ] [ h1 [] [ text "All-time statistics" ], statistics statisticItems ] ]
         ]
