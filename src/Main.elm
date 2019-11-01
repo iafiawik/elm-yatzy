@@ -18,6 +18,7 @@ import Model.GameState exposing (GameState(..))
 import Model.GlobalHighscore exposing (GlobalHighscore, globalHighscoresDecoder)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder, globalHighscoreItemsDecoder)
 import Model.Player exposing (Player)
+import Model.StatisticItem exposing (StatisticItem, statisticItemsDecoder)
 import Model.User exposing (User, userDecoder, usersDecoder)
 import Model.Value exposing (DbValue, Value, encodeValue, valueDecoder)
 import Model.WindowState exposing (WindowState(..))
@@ -46,6 +47,9 @@ port fillWithDummyValues : ( E.Value, E.Value, List E.Value ) -> Cmd msg
 
 
 port getGlobalHighscore : () -> Cmd msg
+
+
+port getStatistics : () -> Cmd msg
 
 
 port getGameByGameCode : E.Value -> Cmd msg
@@ -99,6 +103,9 @@ port gamesReceived : (Json.Decode.Value -> msg) -> Sub msg
 port highscoreReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
+port statisticsReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
 port onBlurReceived : (Int -> msg) -> Sub msg
 
 
@@ -112,7 +119,7 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model (StartPage 0) [] [] [] Focused flags.isAdmin, Cmd.batch [ getUsers (), getGames (), getGlobalHighscore () ] )
+    ( Model (StartPage 0) [] [] [] [] Focused flags.isAdmin, Cmd.batch [ getUsers (), getGames (), getGlobalHighscore (), getStatistics () ] )
 
 
 createDummyValues : Player -> List E.Value
@@ -167,6 +174,9 @@ update msg model =
 
         GlobalHighscoreReceived highscore ->
             ( { model | highscoreList = highscore }, Cmd.none )
+
+        StatisticsReceived statistics ->
+            ( { model | statisticList = statistics }, Cmd.none )
 
         WindowBlurredReceived ->
             case model.mode of
@@ -582,10 +592,10 @@ getContent model =
     -- in
     case model.mode of
         StartPage activeHighscoreTabIndex ->
-            startPage model.highscoreList activeHighscoreTabIndex
+            startPage model.highscoreList activeHighscoreTabIndex model.statisticList
 
         ScoreCardForGameAndUser userId gameMaybe ->
-            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList 0 ]
+            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList 0 model.statisticList ]
 
         EnterGameCode gameCode ->
             enterGameCode gameCode model.games
@@ -719,6 +729,24 @@ globalHighscoreUpdated valuesJson =
             NoOp
 
 
+statisticsUpdated : Json.Decode.Value -> Msg
+statisticsUpdated valuesJson =
+    let
+        itemsMaybe =
+            Json.Decode.decodeValue statisticItemsDecoder valuesJson
+    in
+    case itemsMaybe of
+        Ok items ->
+            StatisticsReceived items
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "statisticsUpdated" (Debug.toString err)
+            in
+            NoOp
+
+
 windowBlurUpdated : Int -> Msg
 windowBlurUpdated windowState =
     WindowBlurredReceived
@@ -757,6 +785,7 @@ subscriptions model =
             , gameReceived (gameUpdated model)
             , gamesReceived (gamesUpdated model)
             , highscoreReceived globalHighscoreUpdated
+            , statisticsReceived statisticsUpdated
             , onBlurReceived windowBlurUpdated
             , onFocusReceived (windowStateFocused model)
             ]

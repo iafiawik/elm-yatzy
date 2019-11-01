@@ -317,6 +317,14 @@ app.ports.getGlobalHighscore.subscribe(function() {
   });
 });
 
+app.ports.getStatistics.subscribe(function() {
+  console.log("index.js: Data.getStatistics");
+  Data.getStatistics().then(statistics => {
+    console.log("index.js: Data.getStatistics", statistics);
+    app.ports.statisticsReceived.send(statistics);
+  });
+});
+
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
     console.log("index.js: Data.getUsers", users);

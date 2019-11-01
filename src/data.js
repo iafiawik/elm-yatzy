@@ -41,6 +41,24 @@ const getResults = (
   });
 };
 
+const fetchStatistics = () => {
+  return new Promise(function(resolve, reject) {
+    db.collection("statistics")
+      .orderBy("numberOfGames", "desc")
+      .get()
+      .then(snapshot => {
+        var statistics = snapshot.docs.map(result => {
+          return { id: result.id, ...result.data() };
+        });
+
+        console.log("fetchStatistics()", statistics);
+
+        resolve(statistics);
+      });
+  });
+};
+
+
 const prepareResults = (results, users) => {
   return results.map((result, index) => {
     var combinedResult = {
@@ -55,6 +73,20 @@ const prepareResults = (results, users) => {
 
     delete combinedResult.userId;
     delete combinedResult.dateCreated;
+
+    return combinedResult;
+  });
+};
+
+const prepareStatistics = (statistics, users) => {
+  return statistics.map((result, index) => {
+    var combinedResult = {
+      ...result,
+      user: users.find(user => user.id === result.userId)
+    };
+
+    delete combinedResult.userId;
+    delete combinedResult.id;
 
     return combinedResult;
   });
@@ -113,6 +145,23 @@ const getHighscore = () => {
   });
 
   return totalPromise;
+};
+
+const getStatistics = () => {
+  var usersPromise = new Promise(function(resolve, reject) {
+    getUsers(users => resolve(users));
+  });
+
+  return new Promise(function(resolve, reject) {
+     Promise.all([fetchStatistics(), usersPromise]).then(values => {
+      const statistics = values[0];
+      const users = values[1];
+
+      const populatedStatistics = prepareStatistics(statistics, users);
+      console.log("populatedStatistics", populatedStatistics)
+      resolve(populatedStatistics);
+    });
+  });
 };
 
 const getUsers = onUsersChange => {
@@ -307,19 +356,16 @@ const getUsersByIds = userIds => {
 const createGame = userIds => {
   console.log("createGame()", userIds);
 
-  return fetch(config["routes"]["createNewGame"]
-    ,
-    {
-      body: JSON.stringify({
-        users: userIds
-      }),
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json"
-      }
+  return fetch(config["routes"]["createNewGame"], {
+    body: JSON.stringify({
+      users: userIds
+    }),
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
     }
-  )
+  })
     .then(response => {
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -338,22 +384,19 @@ const createGame = userIds => {
 const createValue = (userId, gameId, value, boxId) => {
   console.log("createValue()", userId, gameId, value, boxId);
 
-  return fetch(
-    config["routes"]["createValue"],
-    {
-      body: JSON.stringify({
-        userId: userId,
-        gameId: gameId,
-        value: value,
-        boxId: boxId
-      }),
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json"
-      }
+  return fetch(config["routes"]["createValue"], {
+    body: JSON.stringify({
+      userId: userId,
+      gameId: gameId,
+      value: value,
+      boxId: boxId
+    }),
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
     }
-  )
+  })
     .then(response => {
       console.log("response", response);
 
@@ -401,6 +444,7 @@ const editGame = (game, gameId) => {
 
 export default {
   getHighscore,
+  getStatistics,
   createUser,
   getUsers,
   getGame,

@@ -7,6 +7,7 @@ import Model.GameState exposing (GameState)
 import Model.GlobalHighscore exposing (GlobalHighscore)
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem)
 import Model.Player exposing (Player)
+import Model.StatisticItem exposing (StatisticItem)
 import Model.User exposing (User)
 import Model.Value exposing (Value)
 import Model.WindowState exposing (WindowState)
@@ -30,6 +31,7 @@ type Msg
     | GameReceived Game
     | GamesReceived (List Game)
     | GlobalHighscoreReceived (List GlobalHighscore)
+    | StatisticsReceived (List StatisticItem)
     | WindowFocusedAndGameReceived Game String
     | WindowFocusedReceived
     | WindowBlurredReceived
@@ -63,6 +65,7 @@ type alias Model =
     , users : List User
     , games : List Game
     , highscoreList : List GlobalHighscore
+    , statisticList : List StatisticItem
     , windowState : WindowState
     , isAdmin : Bool
     }

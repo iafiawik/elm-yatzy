@@ -4,12 +4,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Model.GlobalHighscore exposing (GlobalHighscore)
+import Model.StatisticItem exposing (StatisticItem)
 import Models exposing (Msg(..))
 import Views.GlobalHighscores exposing (globalHighscores)
+import Views.Statistics exposing (statistics)
 
 
-startPage : List GlobalHighscore -> Int -> Html Msg
-startPage highscores activeHighscoreTabIndex =
+startPage : List GlobalHighscore -> Int -> List StatisticItem -> Html Msg
+startPage highscores activeHighscoreTabIndex statisticItems =
     div [ class "start-page" ]
         [ div
             [ class "start-page-select-mode" ]
@@ -30,4 +32,5 @@ startPage highscores activeHighscoreTabIndex =
             , div [ class "start-page-arrow-down" ] []
             ]
         , div [ class "global-highscore start-page-global-highscore" ] [ globalHighscores highscores activeHighscoreTabIndex ]
+        , div [ class "start-page-statistics" ] [ div [ class " container" ] [ h1 [] [ text "Statistics" ], statistics statisticItems ] ]
         ]
