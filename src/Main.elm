@@ -681,12 +681,6 @@ gameUpdated model gameJson =
     let
         gameMaybe =
             Json.Decode.decodeValue gameDecoder gameJson
-
-        _ =
-            Debug.log "gameUpdated()" (Debug.toString gameMaybe)
-
-        _ =
-            Debug.log "gameUpdated()" (Debug.toString gameJson)
     in
     case gameMaybe of
         Ok game ->
@@ -743,10 +737,10 @@ statisticsUpdated valuesJson =
             StatisticsReceived items
 
         Err err ->
-            let
-                _ =
-                    Debug.log "statisticsUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "statisticsUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
@@ -773,10 +767,6 @@ windowStateFocused model valuesJson =
                 focusedGameAndUser.userId
 
         Err err ->
-            let
-                _ =
-                    Debug.log "windowStateFocused" (Debug.toString err)
-            in
             WindowFocusedReceived
 
 

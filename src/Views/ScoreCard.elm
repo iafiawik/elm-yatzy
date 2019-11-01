@@ -217,9 +217,6 @@ nakedScoreCard markedPlayer game showCountedValues allowInteraction showTotalSum
                         isSelectedPlayer =
                             isPlayerMarked player markedPlayer
 
-                        _ =
-                            Debug.log "isSelectedPlayer" (Debug.toString isSelectedPlayer)
-
                         isactivePlayer =
                             player == activePlayer
 
