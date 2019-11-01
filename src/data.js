@@ -160,7 +160,7 @@ const getUsers = onUsersChange => {
 };
 
 const getGames = onGameChange => {
-  db.collection("games")
+  db.collection("games-v2")
     .where("finished", "==", false)
     .onSnapshot(function(snapshot) {
       var games = snapshot.docs
@@ -226,7 +226,7 @@ const createUser = name => {
 
 const getGame = gameCode => {
   return new Promise(function(resolve, reject) {
-    db.collection("games")
+    db.collection("games-v2")
       .where("code", "==", gameCode)
       .get()
       .then(function(snapshot) {
@@ -268,7 +268,7 @@ const formatDate = date => {
 
 const getGameByGameId = gameId => {
   return new Promise(function(resolve, reject) {
-    db.collection("games")
+    db.collection("games-v2")
       .doc(gameId)
       .get()
       .then(function(doc) {
@@ -400,7 +400,7 @@ const createValue = (userId, gameId, value, boxId) => {
 const editGame = (game, gameId) => {
   return new Promise(function(resolve, reject) {
     var docRef = db
-      .collection("games")
+      .collection("games-v2")
       .doc(gameId)
       .update({
         finished: game.finished

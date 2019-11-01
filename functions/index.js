@@ -42,7 +42,7 @@ const cors = require("cors")({
 // });
 //
 // exports.importGames = functions.https.onRequest((req, res) => {
-//   var gamesRef = admin.firestore().collection("games");
+//   var gamesRef = admin.firestore().collection("games-v2");
 //
 //   var promises = [];
 //
@@ -228,7 +228,7 @@ exports.createValue = functions.https.onRequest((req, res) => {
 
     var docRef = admin
       .firestore()
-      .collection("games")
+      .collection("games-v2")
       .doc(gameId);
 
     docRef
@@ -356,7 +356,7 @@ exports.createNewGame = functions.https.onRequest((req, res) => {
 
     admin
       .firestore()
-      .collection("games")
+      .collection("games-v2")
       .add(game)
       .then(newGameRef => {
         console.log("Document written with ID: ", newGameRef.id);
@@ -450,7 +450,7 @@ function onGameFinished(game) {
 
     var gameRef = admin
       .firestore()
-      .collection("games")
+      .collection("games-v2")
       .doc(game.id);
 
     delete game.id;
@@ -536,7 +536,7 @@ function calculateResults(gameId) {
 
   console.log("calculateResults(), gameId: ", gameId);
 
-  var gamesRef = admin.firestore().collection("games");
+  var gamesRef = admin.firestore().collection("games-v2");
 
   if (gameId) {
     gamesRef = gamesRef.doc(gameId);
