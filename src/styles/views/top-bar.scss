@@ -44,10 +44,9 @@
     width: 60px;
     left: 0px;
     background-color: $primary-color;
-    opacity: 0;
 
     &:active {
-      opacity: 1;
+      opacity: 0;
     }
   }
 
