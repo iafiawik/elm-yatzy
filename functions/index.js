@@ -573,13 +573,13 @@ function calculateResults(gameId) {
 
         games.forEach(game => {
           game.users.forEach((user, index) => {
-            // Do not include test users in the highscore
-            // if (
-            //   user.userId === "1mSEbTIQiiDCFRIsYCNy" ||
-            //   user.userId === "vWAokowhN0XUTHTbyr2n"
-            // ) {
-            //   return false;
-            // }
+            //Do not include test users in the highscore
+            if (
+              user.userId === "1mSEbTIQiiDCFRIsYCNy" ||
+              user.userId === "vWAokowhN0XUTHTbyr2n"
+            ) {
+              return false;
+            }
 
             if (user.score > 0 && !user.invalid) {
               results.push({
@@ -685,6 +685,14 @@ function calculateStatistics() {
         var promises = [];
 
         users.forEach(user => {
+          //Do not include test users in statistics
+          if (
+            user.id === "1mSEbTIQiiDCFRIsYCNy" ||
+            user.id === "vWAokowhN0XUTHTbyr2n"
+          ) {
+            return false;
+          }
+
           const id = `user-${user.id}`;
 
           var userValues = [];
