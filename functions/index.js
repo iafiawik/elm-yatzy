@@ -87,7 +87,7 @@ function generateGameCode() {
   return text.toUpperCase();
 }
 
-exports.test = functions.region("europe-west2").https.onRequest((req, res) => {
+exports.createValue = functions.https.onRequest((req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
 
   if (req.method === "OPTIONS") {
@@ -97,180 +97,159 @@ exports.test = functions.region("europe-west2").https.onRequest((req, res) => {
     res.set("Access-Control-Max-Age", "3600");
     res.status(204).send("");
   } else {
-    res.status(200).send("Hello from test");
-  }
+    console.log(req.body.userId);
 
-  return false;
-});
+    const userId = req.body.userId;
+    const gameId = req.body.gameId;
+    const value = req.body.value;
+    const boxId = req.body.boxId;
 
-exports.createValue = functions
-  .region("europe-west2")
-  .https.onRequest((req, res) => {
-    res.set("Access-Control-Allow-Origin", "*");
+    var docRef = admin
+      .firestore()
+      .collection("games")
+      .doc(gameId);
 
-    if (req.method === "OPTIONS") {
-      // Send response to OPTIONS requests
-      res.set("Access-Control-Allow-Methods", "GET");
-      res.set("Access-Control-Allow-Headers", "Content-Type");
-      res.set("Access-Control-Max-Age", "3600");
-      res.status(204).send("");
-    } else {
-      console.log(req.body.userId);
+    docRef
+      .get()
+      .then(doc => {
+        var game = doc.data();
 
-      const userId = req.body.userId;
-      const gameId = req.body.gameId;
-      const value = req.body.value;
-      const boxId = req.body.boxId;
+        let user = game.users.find(user => user.userId === userId);
 
-      var docRef = admin
-        .firestore()
-        .collection("games")
-        .doc(gameId);
+        if (!user) {
+          console.error("Unable to find user with id: ", userId);
 
-      docRef
-        .get()
-        .then(doc => {
-          var game = doc.data();
+          res.end();
+        } else {
+          var oldValue = user.values[boxId].v;
+          var isNewValue = oldValue === -1;
 
-          let user = game.users.find(user => user.userId === userId);
+          var previousUser = game.users[Math.max(game.activeUserIndex - 1, 0)];
 
-          if (!user) {
-            console.error("Unable to find user with id: ", userId);
+          var previousUserUnassignedValues = Object.keys(
+            previousUser.values
+          ).filter(boxId => {
+            return previousUser.values[boxId].v === -1;
+          }).length;
 
-            res.end();
-          } else {
-            var oldValue = user.values[boxId].v;
-            var isNewValue = oldValue === -1;
+          user.values[boxId].v = value;
 
-            var previousUser =
-              game.users[Math.max(game.activeUserIndex - 1, 0)];
-
-            var previousUserUnassignedValues = Object.keys(
-              previousUser.values
-            ).filter(boxId => {
-              return previousUser.values[boxId].v === -1;
-            }).length;
-
-            user.values[boxId].v = value;
-
-            if (isNewValue) {
-              user.values[boxId].c = new Date().getTime();
-            }
-
-            var activeUserUnassignedValues = Object.keys(user.values).filter(
-              boxId => {
-                return user.values[boxId].v === -1;
-              }
-            ).length;
-
-            if (
-              activeUserUnassignedValues < previousUserUnassignedValues ||
-              (game.activeUserIndex === game.users.length - 1 &&
-                activeUserUnassignedValues === previousUserUnassignedValues)
-            ) {
-              game.activeUserIndex =
-                game.activeUserIndex === game.users.length - 1
-                  ? 0
-                  : game.activeUserIndex + 1;
-            }
-
-            var anyValueIsUnassigned = game.users.some(user => {
-              return Object.keys(user.values).some(boxId => {
-                return user.values[boxId].v === -1;
-              });
-            });
-
-            if (!anyValueIsUnassigned) {
-              game.finished = true;
-            }
+          if (isNewValue) {
+            user.values[boxId].c = new Date().getTime();
           }
 
-          docRef
-            .set(game)
-            .then(() => {
-              game.id = docRef.id;
+          var activeUserUnassignedValues = Object.keys(user.values).filter(
+            boxId => {
+              return user.values[boxId].v === -1;
+            }
+          ).length;
 
-              if (game.finished) {
-                onGameFinished(game)
-                  .then(() => {
-                    res.end();
+          if (
+            activeUserUnassignedValues < previousUserUnassignedValues ||
+            (game.activeUserIndex === game.users.length - 1 &&
+              activeUserUnassignedValues === previousUserUnassignedValues)
+          ) {
+            game.activeUserIndex =
+              game.activeUserIndex === game.users.length - 1
+                ? 0
+                : game.activeUserIndex + 1;
+          }
 
-                    return false;
-                  })
-                  .catch(error => {
-                    console.error("Error adding document: ", error);
-
-                    res.end();
-                  });
-              }
-
-              res.json(game);
-
-              return false;
-            })
-            .catch(error => {
-              console.error("Error adding document: ", error);
-
-              res.end();
+          var anyValueIsUnassigned = game.users.some(user => {
+            return Object.keys(user.values).some(boxId => {
+              return user.values[boxId].v === -1;
             });
+          });
 
-          return false;
-        })
-        .catch(error => {
-          console.error("Error adding document: ", error);
+          if (!anyValueIsUnassigned) {
+            game.finished = true;
+          }
+        }
 
-          res.end();
-        });
-    }
-  });
+        docRef
+          .set(game)
+          .then(() => {
+            game.id = docRef.id;
 
-exports.createNewGame = functions
-  .region("europe-west2")
-  .https.onRequest((req, res) => {
-    res.set("Access-Control-Allow-Origin", "*");
+            if (game.finished) {
+              onGameFinished(game)
+                .then(() => {
+                  res.end();
 
-    if (req.method === "OPTIONS") {
-      // Send response to OPTIONS requests
-      res.set("Access-Control-Allow-Methods", "GET");
-      res.set("Access-Control-Allow-Headers", "Content-Type");
-      res.set("Access-Control-Max-Age", "3600");
-      res.status(204).send("");
-    } else {
-      const users = req.body.users;
+                  return false;
+                })
+                .catch(error => {
+                  console.error("Error adding document: ", error);
 
-      var game = {
-        code: generateGameCode(),
-        dateCreated: new Date().getTime(),
-        finished: false,
-        activeUserIndex: 0,
-        users: users.map(user => {
-          return {
-            userId: user,
-            values: createScoreBoard()
-          };
-        })
-      };
+                  res.end();
+                });
+            }
 
-      admin
-        .firestore()
-        .collection("games")
-        .add(game)
-        .then(newGameRef => {
-          console.log("Document written with ID: ", newGameRef.id);
+            res.json(game);
 
-          game.id = newGameRef.id;
+            return false;
+          })
+          .catch(error => {
+            console.error("Error adding document: ", error);
 
-          res.json(game);
+            res.end();
+          });
 
-          return false;
-        })
-        .catch(error => {
-          console.error("Error adding document: ", error);
+        return false;
+      })
+      .catch(error => {
+        console.error("Error adding document: ", error);
 
-          res.end();
-        });
-    }
-  });
+        res.end();
+      });
+  }
+});
+
+exports.createNewGame = functions.https.onRequest((req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+
+  if (req.method === "OPTIONS") {
+    // Send response to OPTIONS requests
+    res.set("Access-Control-Allow-Methods", "GET");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    res.set("Access-Control-Max-Age", "3600");
+    res.status(204).send("");
+  } else {
+    const users = req.body.users;
+
+    var game = {
+      code: generateGameCode(),
+      dateCreated: new Date().getTime(),
+      finished: false,
+      activeUserIndex: 0,
+      users: users.map(user => {
+        return {
+          userId: user,
+          values: createScoreBoard()
+        };
+      })
+    };
+
+    admin
+      .firestore()
+      .collection("games")
+      .add(game)
+      .then(newGameRef => {
+        console.log("Document written with ID: ", newGameRef.id);
+
+        game.id = newGameRef.id;
+
+        res.json(game);
+
+        return false;
+      })
+      .catch(error => {
+        console.error("Error adding document: ", error);
+
+        res.end();
+      });
+  }
+});
 
 exports.calculateResultsOnRequest = functions.https.onRequest((req, res) => {
   console.log("calculateResultsOnRequest() called.");
@@ -357,7 +336,25 @@ function onGameFinished(game) {
           "onGameFinished(), game updated. Trying to write to results ..."
         );
 
-        return calculateResults(gameRef.id).then(() => resolve());
+        return calculateResults(gameRef.id).then(() => {
+          console.log("Wrote results, time to calculate statistics");
+
+          calculateStatistics()
+            .then(() => {
+              resolve();
+              return false;
+            })
+            .catch(e => {
+              console.error(
+                "onGameFinished(), unable to write statistics. ",
+                e
+              );
+
+              reject(e);
+            });
+
+            return false;
+        });
       })
       .catch(e => {
         console.error("onGameFinished(), unable to write user scores. ", e);
@@ -514,7 +511,7 @@ function calculateStatisticsByUser(userValues) {
   var numberOfGames = userValues.length;
 
   var numberOfYatzy = userValues.filter(
-    values =>  values.values["yatzy"].v === 50
+    values => values.values["yatzy"].v === 50
   ).length;
 
   var totalScores = userValues
@@ -532,16 +529,26 @@ function calculateStatisticsByUser(userValues) {
 
   var avg = sum / totalScores.length;
 
+  var gamesWithMoreThanOnePlayer = userValues.filter(
+    userValue => userValue.numberOfPlayers > 1
+  );
+  var wonGames = gamesWithMoreThanOnePlayer.filter(
+    userValue => userValue.rank === 0
+  ).length;
+
   return {
     average: avg,
     numberOfGames: numberOfGames,
     yatzyChance: numberOfYatzy / numberOfGames,
+    winChance: wonGames / gamesWithMoreThanOnePlayer.length,
     highestScore: highestScore,
     lowestScore: lowestScore
   };
 }
 
 function calculateStatistics() {
+  console.log("calculateStatistics(), called");
+
   return new Promise(function(resolve, reject) {
     Promise.all([getGames(), getUsers()])
       .then(allValues => {
@@ -562,12 +569,14 @@ function calculateStatistics() {
           games.forEach(game => {
             game.users.forEach(gameUser => {
               if (gameUser.userId === user.id) {
+                gameUser.numberOfPlayers = game.users.length;
+
                 userValues.push(gameUser);
               }
             });
           });
 
-          if (userValues.length > 0) {
+          if (userValues.length > 5) {
             var statistics = calculateStatisticsByUser(userValues);
             statistics.userId = user.id;
 
