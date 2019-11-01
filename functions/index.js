@@ -11,6 +11,128 @@ firestore.settings({ timestampsInSnapshots: true });
 const cors = require("cors")({
   origin: true
 });
+//
+// const users = require("./users.json");
+// const games = require("./migratedGames.json");
+//
+// exports.importUsers = functions.https.onRequest((req, res) => {
+//   var usersRef = admin.firestore().collection("users");
+//
+//   var promises = [];
+//
+//   users.forEach(user => {
+//     const userId = `${user.id}`;
+//
+//     delete user.id;
+//
+//     var promise = usersRef.doc(userId).set(user);
+//     promises.push(promise);
+//   });
+//
+//   Promise.all(promises)
+//     .then(() => {
+//       res.end();
+//     })
+//     .catch(e => {
+//       console.log("importUsers(), error: ",e)
+//       res.end();
+//     });
+//
+//   return false;
+// });
+//
+// exports.importGames = functions.https.onRequest((req, res) => {
+//   var gamesRef = admin.firestore().collection("games");
+//
+//   var promises = [];
+//
+//   games.forEach(game => {
+//     const gameId = `${game.id}`;
+//
+//     delete game.id;
+//
+//     var promise = gamesRef.doc(gameId).set(game);
+//     promises.push(promise);
+//   });
+//
+//   Promise.all(promises)
+//     .then(() => {
+//       res.end();
+//     })
+//     .catch(e => {
+//       console.log("importGames(), error: ",e)
+//       res.end();
+//     });
+//
+//   return false;
+// });
+
+// const fs = require('fs');
+
+// function getValues() {
+//   return new Promise((resolve, reject) => {
+//     admin
+//       .firestore()
+//       .collection("values")
+//       .get()
+//       .then(snapshot => {
+//         var values = snapshot.docs.map(value => {
+//           return value.data();
+//         });
+//
+//         console.log("getValues(), values found: ", values.length);
+//         console.log("getValues(), values[0]: ", values[0]);
+//
+//         return resolve(values);
+//       })
+//       .catch(e => {
+//         console.error("getValues(), Unable to calculate scores for users.", e);
+//         return reject(new Error(e));
+//       });
+//   });
+// }
+
+// exports.backup = functions.https.onRequest((req, res) => {
+
+// getGames().then((games) => {
+//   fs.writeFile("/tmp/games.json", JSON.stringify(games), function(err) {
+//
+//       if(err) {
+//           return console.log(err);
+//       }
+//
+//       console.log("The file was saved!");
+//
+//       res.end();
+//   });
+// })
+// getUsers().then((users) => {
+//   fs.writeFile("/tmp/users.json", JSON.stringify(users), function(err) {
+//
+//       if(err) {
+//           return console.log(err);
+//       }
+//
+//       console.log("The file was saved!");
+//
+//       res.end();
+//   });
+// })
+
+//   getValues().then((values) => {
+//     fs.writeFile("/tmp/values.json", JSON.stringify(values), function(err) {
+//
+//         if(err) {
+//             return console.log(err);
+//         }
+//
+//         console.log("The file was saved!");
+//
+//         res.end();
+//     });
+//   })
+//
+// });
 
 function createScoreBoard() {
   return {
@@ -171,6 +293,10 @@ exports.createValue = functions.https.onRequest((req, res) => {
           .then(() => {
             game.id = docRef.id;
 
+            res.json(game);
+
+            console.log("createValue(), returning ", game);
+
             if (game.finished) {
               onGameFinished(game)
                 .then(() => {
@@ -184,8 +310,6 @@ exports.createValue = functions.https.onRequest((req, res) => {
                   res.end();
                 });
             }
-
-            res.json(game);
 
             return false;
           })
@@ -329,6 +453,8 @@ function onGameFinished(game) {
       .collection("games")
       .doc(game.id);
 
+    delete game.id;
+
     gameRef
       .set(game)
       .then(() => {
@@ -353,7 +479,7 @@ function onGameFinished(game) {
               reject(e);
             });
 
-            return false;
+          return false;
         });
       })
       .catch(e => {
@@ -369,15 +495,12 @@ function onGameFinished(game) {
 }
 
 function calculateTotalScore(valueObject) {
-  console.log("calculateTotalScore, valueObject: ", valueObject);
   var values = Object.keys(valueObject).map(boxId => {
     return {
       boxId: boxId,
       value: valueObject[boxId].v
     };
   });
-
-  console.log("calculateTotalScore, values: ", values);
 
   const reducer = (accumulator, currentValue) =>
     accumulator + currentValue.value;
