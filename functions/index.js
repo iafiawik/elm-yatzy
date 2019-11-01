@@ -742,7 +742,7 @@ function getGames() {
   return new Promise((resolve, reject) => {
     admin
       .firestore()
-      .collection("games")
+      .collection("games-v2")
       .get()
       .then(snapshot => {
         var games = snapshot.docs.map(dbGame => {
