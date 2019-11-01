@@ -20,7 +20,7 @@
   min-height: 100vh;
 
   position: relative;
-  background: $primary-color;
+  background: linear-gradient(to bottom, #3c1053, $primary-color, $primary-color);
 }
 
 .start-page-select-mode-content {
@@ -58,7 +58,6 @@ z-index: 3;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: $primary-color;
   flex-direction: column;
   margin-bottom: 60px;
 
@@ -95,6 +94,8 @@ z-index: 3;
   background: $primary-color;
   position: relative;
   color: white;
+
+  background: linear-gradient(to right, $primary-color, #3c1053);
 
   table, th, td {
     border-color: white !important;
