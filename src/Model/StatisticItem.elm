@@ -13,13 +13,14 @@ statisticItemsDecoder =
 
 statisticItemDecoder : Decoder StatisticItem
 statisticItemDecoder =
-    Decode.map6 StatisticItem
+    Decode.map7 StatisticItem
         (Decode.field "user" userDecoder)
         (Decode.field "average" Decode.float)
         (Decode.field "lowestScore" Decode.int)
         (Decode.field "highestScore" Decode.int)
         (Decode.field "numberOfGames" Decode.int)
         (Decode.field "yatzyChance" Decode.float)
+        (Decode.field "winChance" Decode.float)
 
 
 type alias StatisticItem =
@@ -29,4 +30,5 @@ type alias StatisticItem =
     , lowestScore : Int
     , numberOfGames : Int
     , yatzyChance : Float
+    , winChance : Float
     }

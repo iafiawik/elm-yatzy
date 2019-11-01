@@ -24,6 +24,7 @@ statistics items =
                         , th [] [ text "Lowest" ]
                         , th [] [ text "Highest" ]
                         , th [] [ text "Yatzy %" ]
+                        , th [] [ text "Win %" ]
                         ]
                      ]
                         ++ List.indexedMap
@@ -36,6 +37,7 @@ statistics items =
                                     , td [] [ text (String.fromInt statisticItem.highestScore) ]
                                     , td [] [ text (String.fromInt statisticItem.lowestScore) ]
                                     , td [] [ text (String.fromInt (round (statisticItem.yatzyChance * 100)) ++ "%") ]
+                                    , td [] [ text (String.fromInt (round (statisticItem.winChance * 100)) ++ "%") ]
                                     ]
                             )
                             items
