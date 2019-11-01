@@ -12,3 +12,9 @@ node_modules
 
 # Desktop Services Store on macOS
 .DS_Store
+functions/migratedGames.json
+functions/users.json
+src/Migration/migrateData.js
+src/Migration/backup/games.json
+src/Migration/backup/users.json
+src/Migration/backup/values.json
