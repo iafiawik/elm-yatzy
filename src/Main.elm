@@ -166,6 +166,9 @@ update msg model =
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
 
+        ChangeActiveHighscoreTab tabIndex ->
+            ( { model | mode = StartPage tabIndex }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
+
         ShowScoreCardForGameAndUser userId gameId ->
             ( { model | mode = ScoreCardForGameAndUser userId Nothing }, getGameByGameId (E.string gameId) )
 
