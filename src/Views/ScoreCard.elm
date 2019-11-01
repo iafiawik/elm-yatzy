@@ -43,9 +43,6 @@ isPlayerMarked player markedPlayer =
 scoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Bool -> Bool -> Html Msg
 scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum loading =
     let
-        _ =
-            Debug.log "scoreCard" (Debug.toString game.players)
-
         selectedPlayer =
             case markedPlayer of
                 Single player ->
@@ -122,9 +119,6 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum load
                         isSelectedPlayer =
                             isPlayerMarked player markedPlayer
 
-                        _ =
-                            Debug.log "isSelectedPlayer" (Debug.toString isSelectedPlayer)
-
                         isactivePlayer =
                             player == activePlayer
 
@@ -147,9 +141,6 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum load
 nakedScoreCard : MarkedPlayer -> Game -> Bool -> Bool -> Bool -> Bool -> Html Msg
 nakedScoreCard markedPlayer game showCountedValues allowInteraction showTotalSum loading =
     let
-        _ =
-            Debug.log "scoreCard" (Debug.toString game.players)
-
         selectedPlayer =
             case markedPlayer of
                 Single player ->

@@ -312,7 +312,7 @@ app.ports.fillWithDummyValues.subscribe(function(params) {
 
 app.ports.getGlobalHighscore.subscribe(function() {
   Data.getHighscore(highscore => {
-    console.log("index.js: Data.getHighscore", highscore);
+    console.log("index.js: Data.getHighscore");
     app.ports.highscoreReceived.send(highscore);
   });
 });
@@ -320,14 +320,14 @@ app.ports.getGlobalHighscore.subscribe(function() {
 app.ports.getStatistics.subscribe(function() {
   console.log("index.js: Data.getStatistics");
   Data.getStatistics().then(statistics => {
-    console.log("index.js: Data.getStatistics", statistics);
+    console.log("index.js: Data.getStatistics");
     app.ports.statisticsReceived.send(statistics);
   });
 });
 
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
-    console.log("index.js: Data.getUsers", users);
+    console.log("index.js: Data.getUsers");
     app.ports.usersReceived.send(users);
   });
 });
@@ -336,7 +336,7 @@ app.ports.getGames.subscribe(function() {
   console.log("index.js: app.ports.getGames called");
 
   Data.getGames(games => {
-    console.log("index.js: Data.getGames", games);
+    console.log("index.js: Data.getGames");
     app.ports.gamesReceived.send(games);
   });
 });

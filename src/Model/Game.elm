@@ -79,9 +79,6 @@ sum list =
 getUpperSum : Values -> Int
 getUpperSum values =
     let
-        _ =
-            Debug.log "getUpperSum" (Debug.toString values)
-
         upperValues =
             List.filter (\v -> v.box.category == Model.BoxCategory.Upper && v.value /= -1) values
     in

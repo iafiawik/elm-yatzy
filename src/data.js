@@ -26,8 +26,6 @@ const getResults = (
           return { id: result.id, ...result.data() };
         });
 
-        console.log("results", results);
-
         resolve(results);
       });
   });
@@ -42,8 +40,6 @@ const fetchStatistics = () => {
         var statistics = snapshot.docs.map(result => {
           return { id: result.id, ...result.data() };
         });
-
-        console.log("fetchStatistics()", statistics);
 
         resolve(statistics);
       });
@@ -95,7 +91,6 @@ const getHighscore = () => {
   });
 
   while (currentYear <= new Date().getFullYear()) {
-    console.log("currentYear", currentYear);
     var year = currentYear;
     var resultsPromise = getResults({ sortOrder: "desc", year: year });
     var resultsInvertedPromise = getResults({ sortOrder: "asc", year: year });
@@ -119,7 +114,6 @@ const getHighscore = () => {
             inverted: resultsInvertedWithUsers
           };
 
-          console.log("result", result);
 
           resolve(result);
         }
@@ -150,7 +144,6 @@ const getStatistics = () => {
       const users = values[1];
 
       const populatedStatistics = prepareStatistics(statistics, users);
-      console.log("populatedStatistics", populatedStatistics)
       resolve(populatedStatistics);
     });
   });
@@ -163,8 +156,6 @@ const getUsers = onUsersChange => {
     });
 
     onUsersChange && onUsersChange(users);
-
-    console.log("users", users);
   });
 };
 
@@ -213,8 +204,6 @@ const getGames = onGameChange => {
 
           return formattedGame;
         });
-
-        console.log("getGames, formattedDbGames: ", formattedDbGames);
 
         onGameChange && onGameChange(formattedDbGames);
       });

@@ -158,10 +158,10 @@ createDummyValues player =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            Debug.log "update(): " (Debug.toString msg)
-    in
+    -- let
+    --     _ =
+    --         Debug.log "update(): " (Debug.toString msg)
+    -- in
     case msg of
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
