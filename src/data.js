@@ -1,18 +1,10 @@
-import firebase from "firebase";
-
-require("firebase/firestore");
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 import config from "./config";
 
 firebase.initializeApp(config);
-
-// Initialize Cloud Firestore through Firebase
 var db = firebase.firestore();
-
-// Disable deprecated features
-db.settings({
-  timestampsInSnapshots: true
-});
 
 const getResults = (
   options = {
