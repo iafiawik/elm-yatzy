@@ -272,6 +272,42 @@ exports.createNewGame = functions
     }
   });
 
+exports.calculateResultsOnRequest = functions.https.onRequest((req, res) => {
+  console.log("calculateResultsOnRequest() called.");
+
+  calculateResults()
+    .then(() => {
+      res.end();
+
+      console.log("calculateResultsOnRequest(), results are calculated.");
+
+      return false;
+    })
+    .catch(error => {
+      res.send();
+
+      return false;
+    });
+});
+
+exports.calculateStatisticsOnRequest = functions.https.onRequest((req, res) => {
+  console.log("calculateStatisticsOnRequest() called.");
+
+  calculateStatistics()
+    .then(() => {
+      res.end();
+
+      console.log("calculateStatisticsOnRequest(), statistics are calculated.");
+
+      return false;
+    })
+    .catch(error => {
+      res.send();
+
+      return false;
+    });
+});
+
 function onGameFinished(game) {
   if (!game.finished) {
     console.log("onGameFinished(), game is not finished.");
@@ -471,6 +507,142 @@ function calculateResults(gameId) {
       });
 
     return false;
+  });
+}
+
+function calculateStatisticsByUser(userValues) {
+  var numberOfGames = userValues.length;
+
+  var numberOfYatzy = userValues.filter(
+    values =>  values.values["yatzy"].v === 50
+  ).length;
+
+  var totalScores = userValues
+    .map(values => {
+      return calculateTotalScore(values.values);
+    })
+    .sort((a, b) => b - a);
+
+  var highestScore = totalScores[0];
+  var lowestScore = totalScores[totalScores.length - 1];
+
+  var sum = totalScores.reduce(function(a, b) {
+    return a + b;
+  });
+
+  var avg = sum / totalScores.length;
+
+  return {
+    average: avg,
+    numberOfGames: numberOfGames,
+    yatzyChance: numberOfYatzy / numberOfGames,
+    highestScore: highestScore,
+    lowestScore: lowestScore
+  };
+}
+
+function calculateStatistics() {
+  return new Promise(function(resolve, reject) {
+    Promise.all([getGames(), getUsers()])
+      .then(allValues => {
+        console.log("calculateStatistics(), fetched games and users");
+
+        const statisticsRef = admin.firestore().collection("statistics");
+
+        var games = allValues[0];
+        var users = allValues[1];
+
+        var promises = [];
+
+        users.forEach(user => {
+          const id = `user-${user.id}`;
+
+          var userValues = [];
+
+          games.forEach(game => {
+            game.users.forEach(gameUser => {
+              if (gameUser.userId === user.id) {
+                userValues.push(gameUser);
+              }
+            });
+          });
+
+          if (userValues.length > 0) {
+            var statistics = calculateStatisticsByUser(userValues);
+            statistics.userId = user.id;
+
+            promises.push(statisticsRef.doc(id).set(statistics));
+          }
+        });
+
+        console.log("calculateStatistics(),  calculated user statistics");
+
+        Promise.all(promises)
+          .then(() => {
+            resolve();
+            return false;
+          })
+          .catch(e => {
+            reject(e);
+          });
+
+        return false;
+      })
+      .catch(error => {
+        console.error(
+          "calculateStatistics(), Unable to write statistics. ",
+          error
+        );
+        return false;
+      });
+  });
+}
+
+function getGames() {
+  return new Promise((resolve, reject) => {
+    admin
+      .firestore()
+      .collection("games")
+      .get()
+      .then(snapshot => {
+        var games = snapshot.docs.map(dbGame => {
+          var game = dbGame.data();
+          game.id = dbGame.id;
+          return game;
+        });
+
+        console.log("getGames(), games found: ", games.length);
+
+        return resolve(games);
+      })
+      .catch(e => {
+        console.error("getGames(), Unable to get games.", e);
+        return reject(new Error(e));
+      });
+  });
+}
+
+function getUsers() {
+  return new Promise((resolve, reject) => {
+    admin
+      .firestore()
+      .collection("users")
+      .get()
+      .then(snapshot => {
+        var users = snapshot.docs.map(dbUser => {
+          var user = dbUser.data();
+          user.id = dbUser.id;
+          return user;
+        });
+
+        console.log("getUsers(), users found: ", users.length);
+
+        return resolve(users);
+      })
+      .catch(e => {
+        console.error("getUsers(), Unable to calculate scores for users.", e);
+        return reject(new Error(e));
+      });
   });
 }
 
