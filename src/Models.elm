@@ -56,6 +56,7 @@ type Msg
     | ShowGameInfo
     | ReloadGame
     | HideGameInfo
+    | StopLookingForLastGame
     | FillWithDummyValues Player
     | NoOp
 

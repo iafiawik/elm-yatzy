@@ -23,6 +23,10 @@ windowBlurred =
                     []
                     []
                 , loader "Ansluter till det senast spelade spelet" False
+                , br
+                    []
+                    []
+                , div [ onClick StopLookingForLastGame, class "stop-looking-for-game" ] [ text "Detta verkar ta tid. Sluta leta?" ]
                 ]
     in
     div [ class "game-info-dialog-wrapper dialog-wrapper" ]

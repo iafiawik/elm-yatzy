@@ -359,6 +359,8 @@ app.ports.startGameCommand.subscribe(function(gameId) {
 app.ports.endGameCommand.subscribe(function(game) {
   deleteGameInLocalStorage();
   deleteUserIdInLocalStorage();
+
+  app.ports.onFocusReceived.send();
 });
 
 

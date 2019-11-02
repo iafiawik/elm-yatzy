@@ -93,3 +93,12 @@ button {
   position: fixed;
   width: 100%;
 }
+
+.stop-looking-for-game {
+  cursor: pointer;
+  opacity: 0;
+  font-weight: bold;
+
+  animation: show 0.3s linear forwards;
+  animation-delay: 5s;
+}

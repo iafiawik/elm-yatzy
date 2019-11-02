@@ -159,6 +159,9 @@ createDummyValues player =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        StopLookingForLastGame ->
+            ( model, endGameCommand () )
+
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
 
