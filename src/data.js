@@ -266,41 +266,20 @@ const formatDate = date => {
   return new Date(date).toLocaleDateString("sv-SE");
 };
 
-const getGameByGameId = gameId => {
-  return new Promise(function(resolve, reject) {
-    db.collection("games-v2")
-      .doc(gameId)
-      .get()
-      .then(function(doc) {
-        if (doc.exists) {
-          var game = { id: doc.id, ...doc.data() };
+const getGameByGameId = (gameId, onGameChange) => {
+  return db.collection("games-v2")
+    .doc(gameId)
+    .onSnapshot(function(doc) {
+      var game = { id: doc.id, ...doc.data() };
 
-          console.log("Game", game);
+      console.log("Game", game);
 
-          var users = game.users.map(function(user) {
-            return user.userId;
-          });
+      var dateCreated = new Date(game.dateCreated);
 
-          var dateCreated = new Date(game.dateCreated);
+      var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
 
-          var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
-
-          resolve(dbGame);
-        } else {
-          throw new Error();
-        }
-      })
-      .catch(function(error) {
-        console.error(
-          "Unable to find a game with this game ID: ",
-          gameId,
-          ". Error: ",
-          error
-        );
-
-        reject("Unable to find a game with that ID.");
-      });
-  });
+      onGameChange && onGameChange(dbGame)
+    });
 };
 
 const getUsersByIds = userIds => {

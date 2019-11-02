@@ -180,6 +180,8 @@ window.onload = function() {
 const gameIdKey = "last-played-game-id";
 const userIdKey = "last-played-user-id";
 
+window.currentGameSubscription;
+
 const checkLastPlayedGame = () => {
   if (oldGameAndUserExist()) {
     app.ports.onBlurReceived.send(1);
@@ -187,8 +189,7 @@ const checkLastPlayedGame = () => {
     const gameId = getGameInLocalStorage();
     const userId = getUserIdInLocalStorage();
 
-    Data.getGameByGameId(gameId)
-      .then(function(game) {
+    window.currentGameSubscription = Data.getGameByGameId(gameId, (game) => {
         console.log("checkLastPlayedGame(), game: ", game);
 
         if (!game.finished) {
@@ -198,12 +199,6 @@ const checkLastPlayedGame = () => {
 
           app.ports.onFocusReceived.send({ game: game, userId: userId });
         }
-      })
-      .catch(function() {
-        console.log(
-          "checkLastPlayedGame(), could not find game with id ",
-          gameId
-        );
       });
 
     console.log(
@@ -348,38 +343,53 @@ app.ports.startGameWithMarkedPlayerCommand.subscribe(function(params) {
   console.log("startGameWithMarkedPlayerCommand", params);
   setUserIdInLocalStorage(userId);
   setGameInLocalStorage(gameId);
+
+  window.currentGameSubscription =
+    Data.getGameByGameId(gameId, (game) => {
+      console.log("index.js: Data.getGameByGameId");
+      app.ports.gameReceived.send(game);
+    });
 });
 
 app.ports.startGameCommand.subscribe(function(gameId) {
   console.log("startGameCommand", gameId);
   setUserIdInLocalStorage("all");
   setGameInLocalStorage(gameId);
+
+  window.currentGameSubscription =
+    Data.getGameByGameId(gameId, (game) => {
+      console.log("index.js: Data.getGameByGameId");
+      app.ports.gameReceived.send(game);
+    });
 });
+
+const unsubscribeFromGame = () => {
+  window.currentGameSubscription && window.currentGameSubscription();
+}
 
 app.ports.endGameCommand.subscribe(function(game) {
   deleteGameInLocalStorage();
   deleteUserIdInLocalStorage();
 
   app.ports.onFocusReceived.send();
+
+  unsubscribeFromGame();
 });
 
-
-const getGameByCode = gameCode => {
-  console.log("index.js: getGameByCode " + gameCode);
-  Data.getGame(gameCode).then(function(game) {
-    app.ports.gameReceived.send(game);
-  });
-};
-
 app.ports.getGameByGameCode.subscribe(function(gameCode) {
-  getGameByCode(gameCode);
+  console.log("index.js: getGameByGameCode " + gameCode);
+
+    Data.getGame(gameCode).then(function(game) {
+      app.ports.gameReceived.send(game);
+    });
 });
 
 app.ports.getGameByGameId.subscribe(function(gameId) {
-  console.log("index.js: getGameByGameId " + gameId);
-  Data.getGameByGameId(gameId).then(function(game) {
-    app.ports.gameReceived.send(game);
-  });
+
+    Data.getGameByGameId(gameId, (game) => {
+      console.log("index.js: Data.getGameByGameId");
+      app.ports.gameReceived.send(game);
+    });
 });
 
 app.ports.createUser.subscribe(function(name) {
