@@ -45,5 +45,5 @@ statistics items =
     in
     div
         []
-        [ div [ class "global-highscore-content" ] [ content ]
+        [ div [ class "global-highscore-content" ] [ div [ class "scrollable-table" ] [ content ] ]
         ]

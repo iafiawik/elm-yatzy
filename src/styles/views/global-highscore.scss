@@ -16,6 +16,26 @@
 }
 
 .global-highscore-content {
+
+}
+
+.start-page .scrollable-table {
+  max-width: 100vw;
+  overflow-x: auto;
+
+  @include md {
+    max-width: 100%;
+    width: $screen-md-min;
+    box-sizing: border-box;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    height: 100%;
+  }
+}
+
+.global-highscore-content {
   .loader-container {
     margin-left: auto;
     margin-right: auto;

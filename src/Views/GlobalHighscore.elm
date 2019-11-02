@@ -58,5 +58,5 @@ globalHighscore items heading =
     in
     div
         []
-        [ div [ class "global-highscore-content" ] [ h1 [] [ text heading ], content ]
+        [ div [ class "global-highscore-content" ] [ h1 [] [ text heading ], div [ class "scrollable-table" ] [ content ] ]
         ]

@@ -38,5 +38,5 @@ globalHighscores lists activeIndex =
         in
         div []
             [ div [ class "global-highscores-tabs" ] [ div [ class "container" ] tabs ]
-            , div [ class "global-highscores container" ] content
+            , div [ class "global-highscores" ] content
             ]
