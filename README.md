@@ -18,7 +18,7 @@ Run `npm run build` in a terminal.
 
 ## Stack
 
-* Elm (`0.19`)
+* Elm (`0.19.1`)
 * SASS
 * [animate.css](https://daneden.github.io/animate.css/)
 * Cloud Firestore
