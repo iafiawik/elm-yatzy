@@ -773,10 +773,10 @@ lastFinishedGamesUpdated model gamesJson =
             LastFinishedGamesReceived (List.map (\game -> fromDbGameToGame game model.users) games)
 
         Err err ->
-            let
-                _ =
-                    Debug.log "lastFinishedGamesUpdated" (Debug.toString err)
-            in
+            -- let
+            --     _ =
+            --         Debug.log "lastFinishedGamesUpdated" (Debug.toString err)
+            -- in
             NoOp
 
 
