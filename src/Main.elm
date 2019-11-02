@@ -158,10 +158,6 @@ createDummyValues player =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    -- let
-    --     _ =
-    --         Debug.log "update(): " (Debug.toString msg)
-    -- in
     case msg of
         ShowStartPage ->
             ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
@@ -170,10 +166,20 @@ update msg model =
             ( { model | mode = StartPage tabIndex }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
 
         ShowScoreCardForGameAndUser userId gameId ->
-            ( { model | mode = ScoreCardForGameAndUser userId Nothing }, getGameByGameId (E.string gameId) )
+            case model.mode of
+                StartPage activeHighscoreTabIndex ->
+                    ( { model | mode = ScoreCardForGameAndUser userId Nothing activeHighscoreTabIndex }, getGameByGameId (E.string gameId) )
+
+                _ ->
+                    ( model, Cmd.none )
 
         HideScoreCardForGameAndUser ->
-            ( { model | mode = StartPage 0 }, Cmd.none )
+            case model.mode of
+                ScoreCardForGameAndUser userId game activeHighscoreTabIndex ->
+                    ( { model | mode = StartPage activeHighscoreTabIndex }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         GlobalHighscoreReceived highscore ->
             ( { model | highscoreList = highscore }, Cmd.none )
@@ -368,8 +374,8 @@ update msg model =
                     else
                         ( { model | mode = ShowGameFinished updatedGame markedPlayer }, endGameCommand () )
 
-                ScoreCardForGameAndUser userId game ->
-                    ( { model | mode = ScoreCardForGameAndUser userId (Just updatedGame) }, Cmd.none )
+                ScoreCardForGameAndUser userId game activeHighscoreTabIndex ->
+                    ( { model | mode = ScoreCardForGameAndUser userId (Just updatedGame) activeHighscoreTabIndex }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -597,8 +603,8 @@ getContent model =
         StartPage activeHighscoreTabIndex ->
             startPage model.highscoreList activeHighscoreTabIndex model.statisticList
 
-        ScoreCardForGameAndUser userId gameMaybe ->
-            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList 0 model.statisticList ]
+        ScoreCardForGameAndUser userId gameMaybe activeHighscoreTabIndex ->
+            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList activeHighscoreTabIndex model.statisticList ]
 
         EnterGameCode gameCode ->
             enterGameCode gameCode model.games

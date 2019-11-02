@@ -73,7 +73,7 @@ type alias Model =
 
 type Mode
     = StartPage Int
-    | ScoreCardForGameAndUser String (Maybe Game)
+    | ScoreCardForGameAndUser String (Maybe Game) Int
     | ShowAddRemovePlayers (List User) String
     | EnterGameCode String
     | WaitForGame Bool
