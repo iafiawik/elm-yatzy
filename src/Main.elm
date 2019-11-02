@@ -49,6 +49,9 @@ port fillWithDummyValues : ( E.Value, E.Value, List E.Value ) -> Cmd msg
 port getGlobalHighscore : () -> Cmd msg
 
 
+port getLastFinishedGames : () -> Cmd msg
+
+
 port getStatistics : () -> Cmd msg
 
 
@@ -106,6 +109,9 @@ port highscoreReceived : (Json.Decode.Value -> msg) -> Sub msg
 port statisticsReceived : (Json.Decode.Value -> msg) -> Sub msg
 
 
+port lastFinishedGamesReceived : (Json.Decode.Value -> msg) -> Sub msg
+
+
 port onBlurReceived : (Int -> msg) -> Sub msg
 
 
@@ -119,7 +125,7 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model (StartPage 0) [] [] [] [] Focused flags.isAdmin, Cmd.batch [ getUsers (), getGames (), getGlobalHighscore (), getStatistics () ] )
+    ( Model (StartPage 0) [] [] [] [] [] Focused flags.isAdmin, Cmd.batch [ getUsers (), getGames (), getGlobalHighscore (), getStatistics (), getLastFinishedGames () ] )
 
 
 createDummyValues : Player -> List E.Value
@@ -168,17 +174,17 @@ update msg model =
         ChangeActiveHighscoreTab tabIndex ->
             ( { model | mode = StartPage tabIndex }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
 
-        ShowScoreCardForGameAndUser userId gameId ->
+        ShowScoreCardForGameAndUser gameId ->
             case model.mode of
                 StartPage activeHighscoreTabIndex ->
-                    ( { model | mode = ScoreCardForGameAndUser userId Nothing activeHighscoreTabIndex }, getGameByGameId (E.string gameId) )
+                    ( { model | mode = ScoreCardForGameAndUser Nothing activeHighscoreTabIndex }, getGameByGameId (E.string gameId) )
 
                 _ ->
                     ( model, Cmd.none )
 
         HideScoreCardForGameAndUser ->
             case model.mode of
-                ScoreCardForGameAndUser userId game activeHighscoreTabIndex ->
+                ScoreCardForGameAndUser game activeHighscoreTabIndex ->
                     ( { model | mode = StartPage activeHighscoreTabIndex }, Cmd.none )
 
                 _ ->
@@ -189,6 +195,12 @@ update msg model =
 
         StatisticsReceived statistics ->
             ( { model | statisticList = statistics }, Cmd.none )
+
+        GamesReceived allGames ->
+            ( { model | games = allGames }, Cmd.none )
+
+        LastFinishedGamesReceived games ->
+            ( { model | lastFinishedGames = games }, Cmd.none )
 
         WindowBlurredReceived ->
             case model.mode of
@@ -377,14 +389,11 @@ update msg model =
                     else
                         ( { model | mode = ShowGameFinished updatedGame markedPlayer }, endGameCommand () )
 
-                ScoreCardForGameAndUser userId game activeHighscoreTabIndex ->
-                    ( { model | mode = ScoreCardForGameAndUser userId (Just updatedGame) activeHighscoreTabIndex }, Cmd.none )
+                ScoreCardForGameAndUser game activeHighscoreTabIndex ->
+                    ( { model | mode = ScoreCardForGameAndUser (Just updatedGame) activeHighscoreTabIndex }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
-
-        GamesReceived allGames ->
-            ( { model | games = allGames }, Cmd.none )
 
         ShowSelectPlayer ->
             case model.mode of
@@ -604,10 +613,10 @@ getContent model =
     -- in
     case model.mode of
         StartPage activeHighscoreTabIndex ->
-            startPage model.highscoreList activeHighscoreTabIndex model.statisticList
+            startPage model.highscoreList activeHighscoreTabIndex model.statisticList model.lastFinishedGames
 
-        ScoreCardForGameAndUser userId gameMaybe activeHighscoreTabIndex ->
-            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList activeHighscoreTabIndex model.statisticList ]
+        ScoreCardForGameAndUser gameMaybe activeHighscoreTabIndex ->
+            div [] [ scoreCardDialog gameMaybe, startPage model.highscoreList activeHighscoreTabIndex model.statisticList model.lastFinishedGames ]
 
         EnterGameCode gameCode ->
             enterGameCode gameCode model.games
@@ -753,6 +762,24 @@ statisticsUpdated valuesJson =
             NoOp
 
 
+lastFinishedGamesUpdated : Model -> Json.Decode.Value -> Msg
+lastFinishedGamesUpdated model gamesJson =
+    let
+        gamesMaybe =
+            Json.Decode.decodeValue gamesDecoder gamesJson
+    in
+    case gamesMaybe of
+        Ok games ->
+            LastFinishedGamesReceived (List.map (\game -> fromDbGameToGame game model.users) games)
+
+        Err err ->
+            let
+                _ =
+                    Debug.log "lastFinishedGamesUpdated" (Debug.toString err)
+            in
+            NoOp
+
+
 windowBlurUpdated : Int -> Msg
 windowBlurUpdated windowState =
     WindowBlurredReceived
@@ -786,6 +813,7 @@ subscriptions model =
             [ usersReceived remoteUsersUpdated
             , gameReceived (gameUpdated model)
             , gamesReceived (gamesUpdated model)
+            , lastFinishedGamesReceived (lastFinishedGamesUpdated model)
             , highscoreReceived globalHighscoreUpdated
             , statisticsReceived statisticsUpdated
             , onBlurReceived windowBlurUpdated

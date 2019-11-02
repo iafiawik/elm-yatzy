@@ -40,12 +40,12 @@ globalHighscore items heading =
                                         highscoreItem.gameId
                                 in
                                 tr
-                                    [ onClick (ShowScoreCardForGameAndUser highscoreItem.user.id highscoreItem.gameId) ]
+                                    [ onClick (ShowScoreCardForGameAndUser highscoreItem.gameId) ]
                                     [ td [] [ text (String.fromInt highscoreItem.order ++ ". ") ]
                                     , td [] [ text name ]
                                     , td [] [ text highscoreItem.date ]
                                     , td [] [ text (String.fromInt score) ]
-                                    , td [ class "link-column" ] [ text "Visa" ]
+                                    , td [ class "link-column" ] [ text "Show" ]
                                     , td [ class "hidden" ] [ text highscoreItem.user.id ]
                                     , td [ class "hidden" ] [ text gameId ]
                                     ]

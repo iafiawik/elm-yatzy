@@ -320,6 +320,14 @@ app.ports.getStatistics.subscribe(function() {
   });
 });
 
+app.ports.getLastFinishedGames.subscribe(function() {
+  console.log("index.js: Data.getLastFinishedGames");
+  Data.getLastFinishedGames().then(games => {
+    console.log("index.js: Data.getLastFinishedGames", games);
+    app.ports.lastFinishedGamesReceived.send(games);
+  });
+});
+
 app.ports.getUsers.subscribe(function() {
   Data.getUsers(users => {
     console.log("index.js: Data.getUsers");

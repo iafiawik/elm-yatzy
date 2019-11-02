@@ -46,6 +46,23 @@ const fetchStatistics = () => {
   });
 };
 
+const fetchLastGames = () => {
+  return new Promise(function(resolve, reject) {
+    db.collection("games-v2")
+      .where("finished", "==", true)
+      .orderBy("dateCreated", "desc")
+      .limit(5)
+      .get()
+      .then(snapshot => {
+        var games = snapshot.docs.map(game => {
+          return { id: game.id, ...game.data() };
+        });
+
+        resolve(games);
+      });
+  });
+};
+
 
 const prepareResults = (results, users) => {
   return results.map((result, index) => {
@@ -262,6 +279,25 @@ const getGame = gameCode => {
   });
 };
 
+const getLastFinishedGames = () => {
+  var usersPromise = new Promise(function(resolve, reject) {
+    getUsers(users => resolve(users));
+  });
+
+  return new Promise(function(resolve, reject) {
+     Promise.all([fetchLastGames(), usersPromise]).then(values => {
+
+      const games = values[0];
+
+      var dbGames = games.map((dbGame) => {
+        return { ...dbGame, dateCreated: formatDate(dbGame.dateCreated) };
+      });
+
+      resolve(dbGames);
+    });
+  });
+};
+
 const formatDate = date => {
   return new Date(date).toLocaleDateString("sv-SE");
 };
@@ -412,6 +448,7 @@ export default {
   createGame,
   editGame,
   getGames,
+  getLastFinishedGames,
   createValue,
   formatDate
 };
