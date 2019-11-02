@@ -20,7 +20,7 @@
   min-height: 100vh;
 
   position: relative;
-  background: $primary-color;
+  background: linear-gradient(to bottom, #3c1053, $primary-color, $primary-color);
 }
 
 .start-page-select-mode-content {
