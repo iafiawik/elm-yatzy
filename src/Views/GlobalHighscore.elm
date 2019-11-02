@@ -18,8 +18,7 @@ globalHighscore items heading =
             else
                 table []
                     ([ tr []
-                        [ th [] [ text "#" ]
-                        , th [] [ text "Player" ]
+                        [ th [] [ text "Player" ]
                         , th [] [ text "Date" ]
                         , th [] [ text "Score" ]
                         , th [] [ text "" ]
@@ -41,8 +40,7 @@ globalHighscore items heading =
                                 in
                                 tr
                                     [ onClick (ShowScoreCardForGameAndUser highscoreItem.gameId) ]
-                                    [ td [] [ text (String.fromInt highscoreItem.order ++ ". ") ]
-                                    , td [] [ text name ]
+                                    [ td [] [ text name ]
                                     , td [] [ text highscoreItem.date ]
                                     , td [] [ text (String.fromInt score) ]
                                     , td [ class "link-column" ] [ text "Show" ]
