@@ -3,10 +3,8 @@ module Views.ScoreCard exposing (interactiveScoreCard, nakedScoreCard, staticSco
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Html.Keyed as Keyed
-import Html.Lazy exposing (lazy)
 import List.Extra exposing (find, getAt)
-import Model.Box exposing (Box, getAcceptedValues, getBoxes)
+import Model.Box exposing (Box, getBoxes)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 import Model.Game exposing (Game, getBonusValue, getTotalSum, getUpperSum, getValueByPlayerAndBox, sum)

@@ -4,7 +4,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Model.Game exposing (Game)
-import Model.StatisticItem exposing (StatisticItem)
 import Models exposing (Msg(..))
 import Views.Loader exposing (loader)
 

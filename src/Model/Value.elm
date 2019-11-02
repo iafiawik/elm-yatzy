@@ -1,7 +1,6 @@
-module Model.Value exposing (DbValue, Value, encodeValue, fromDbValueToValue, valueDecoder)
+module Model.Value exposing (DbValue, Value, fromDbValueToValue, valueDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as E
 import Model.Box exposing (Box, getBoxById)
 
 
@@ -10,14 +9,6 @@ valueDecoder =
     Decode.map2 DbValue
         (Decode.field "v" Decode.int)
         (Decode.field "c" Decode.int)
-
-
-encodeValue : Value -> E.Value
-encodeValue value =
-    E.object
-        [ ( "v", E.int value.value )
-        , ( "c", E.int value.dateCreated )
-        ]
 
 
 type alias DbValue =

@@ -1,6 +1,5 @@
 module Models exposing (GameAndUserId, MarkedPlayer(..), Mode(..), Model, Msg(..))
 
-import Json.Decode exposing (Decoder, field, int, map3, string)
 import Model.Box exposing (Box)
 import Model.Game exposing (DbGame, Game)
 import Model.GameState exposing (GameState)
@@ -11,7 +10,6 @@ import Model.StatisticItem exposing (StatisticItem)
 import Model.User exposing (User)
 import Model.Value exposing (Value)
 import Model.WindowState exposing (WindowState)
-import Time
 
 
 type Msg

@@ -3,19 +3,17 @@ module Views.SelectPlayer exposing (selectPlayer)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Html.Keyed as Keyed
 import Model.Game exposing (Game)
-import Model.Player as Player
-import Model.User as User
+import Model.Player exposing (Player)
 import Models exposing (MarkedPlayer(..), Msg(..))
 
 
-playerButton : Player.Player -> Bool -> Html Msg
+playerButton : Player -> Bool -> Html Msg
 playerButton player isMarked =
     button [ classList [ ( "select-player-button", True ), ( "selected", isMarked ) ], onClick (PlayerMarked player) ] [ text player.user.name ]
 
 
-isPlayerMarked : Player.Player -> MarkedPlayer -> Bool
+isPlayerMarked : Player -> MarkedPlayer -> Bool
 isPlayerMarked player markedPlayer =
     case markedPlayer of
         Single currentMarkedPlayer ->
@@ -28,7 +26,7 @@ isPlayerMarked player markedPlayer =
             False
 
 
-playerButtons : List Player.Player -> MarkedPlayer -> Html Msg
+playerButtons : List Player -> MarkedPlayer -> Html Msg
 playerButtons players markedPlayer =
     let
         buttons =

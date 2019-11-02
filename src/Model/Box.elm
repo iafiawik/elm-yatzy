@@ -1,6 +1,6 @@
 module Model.Box exposing (Box, getAcceptedValues, getBoxById, getBoxes, getDefaultMarkedValue, getInteractiveBoxes)
 
-import List.Extra exposing (find, last)
+import List.Extra exposing (find)
 import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
 

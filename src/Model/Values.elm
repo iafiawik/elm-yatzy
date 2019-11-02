@@ -2,9 +2,7 @@ module Model.Values exposing (DbValues, Values, fromDbValuesToValues, valuesDeco
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as E
 import Model.Box exposing (Box)
-import Model.User exposing (User)
 import Model.Value exposing (DbValue, Value, fromDbValueToValue, valueDecoder)
 
 

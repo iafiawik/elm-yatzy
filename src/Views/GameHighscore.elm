@@ -3,10 +3,9 @@ module Views.GameHighscore exposing (gameHighscore)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import List.Extra exposing (find, findIndex, removeAt)
+import List.Extra exposing (findIndex)
 import Model.Game exposing (getRoundHighscore)
 import Model.Player exposing (Player)
-import Model.Value exposing (Value)
 import Models exposing (MarkedPlayer(..), Msg(..))
 
 

@@ -2,7 +2,6 @@ module Model.GlobalHighscore exposing (GlobalHighscore, globalHighscoresDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
-import Json.Encode as E
 import Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreItemDecoder)
 
 

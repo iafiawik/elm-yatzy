@@ -2,16 +2,11 @@ module Views.ScoreCardDialog exposing (scoreCardDialog)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import Model.Box exposing (Box, getAcceptedValues)
-import Model.BoxCategory exposing (BoxCategory(..))
-import Model.BoxType exposing (BoxType(..))
+import Html.Events exposing (onClick)
 import Model.Game exposing (Game)
-import Model.Player exposing (Player)
-import Model.Value exposing (Value)
 import Models exposing (MarkedPlayer(..), Msg(..))
 import Views.Loader exposing (loader)
-import Views.ScoreCard exposing (interactiveScoreCard, nakedScoreCard, staticScoreCard)
+import Views.ScoreCard exposing (nakedScoreCard)
 
 
 scoreCardDialog : Maybe Game -> Html Msg

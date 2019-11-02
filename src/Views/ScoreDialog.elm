@@ -2,13 +2,10 @@ module Views.ScoreDialog exposing (scoreDialog)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick)
 import Model.Box exposing (Box, getAcceptedValues)
-import Model.BoxCategory exposing (BoxCategory(..))
 import Model.BoxType exposing (BoxType(..))
-import Model.Game exposing (Game)
 import Model.Player exposing (Player)
-import Model.Value exposing (Value)
 import Models exposing (Msg(..))
 
 

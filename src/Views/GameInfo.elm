@@ -3,7 +3,6 @@ module Views.GameInfo exposing (gameInfo)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Html.Keyed as Keyed
 import Model.Game exposing (Game)
 import Models exposing (Msg(..))
 

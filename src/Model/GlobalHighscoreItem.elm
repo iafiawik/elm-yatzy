@@ -2,9 +2,7 @@ module Model.GlobalHighscoreItem exposing (GlobalHighscoreItem, globalHighscoreI
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
-import Json.Encode as E
 import Model.Game exposing (DbGame, Game, gameDecoder)
-import Model.Player exposing (Player, playerDecoder)
 import Model.User exposing (User, userDecoder)
 
 

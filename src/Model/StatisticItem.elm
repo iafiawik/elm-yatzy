@@ -2,7 +2,6 @@ module Model.StatisticItem exposing (StatisticItem, statisticItemDecoder, statis
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
-import Json.Encode as E
 import Model.User exposing (User, userDecoder)
 
 

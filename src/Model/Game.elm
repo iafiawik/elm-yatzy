@@ -2,8 +2,7 @@ module Model.Game exposing (DbGame, Game, fromDbGameToGame, gameDecoder, gamesDe
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
-import Json.Encode as E
-import List.Extra exposing (find, getAt, last)
+import List.Extra exposing (getAt)
 import Model.Box exposing (Box)
 import Model.BoxCategory exposing (BoxCategory)
 import Model.GameState exposing (GameState(..))

@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Model.Game exposing (getRoundHighscore)
 import Model.Player exposing (Player)
-import Model.Value exposing (Value)
 import Models exposing (Msg(..))
 
 

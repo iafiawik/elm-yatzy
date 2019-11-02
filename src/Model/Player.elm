@@ -1,7 +1,6 @@
 module Model.Player exposing (DbPlayer, Player, fromDbPlayerToPlayer, getShortNames, playerDecoder, playersDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as E
 import List.Extra exposing (find, last, unique)
 import Model.User exposing (User, userDecoder)
 import Model.Values exposing (DbValues, Values, fromDbValuesToValues, valuesDecoder)
