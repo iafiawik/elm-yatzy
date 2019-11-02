@@ -169,10 +169,10 @@ update msg model =
             ( model, endGameCommand () )
 
         ShowStartPage ->
-            ( { model | mode = StartPage 0 }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
+            ( { model | mode = StartPage 0 }, Cmd.batch [ endGameCommand (), getGlobalHighscore (), getLastFinishedGames () ] )
 
         ChangeActiveHighscoreTab tabIndex ->
-            ( { model | mode = StartPage tabIndex }, Cmd.batch [ getGlobalHighscore (), endGameCommand () ] )
+            ( { model | mode = StartPage tabIndex }, Cmd.none )
 
         ShowScoreCardForGameAndUser gameId ->
             case model.mode of
