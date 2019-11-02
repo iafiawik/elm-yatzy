@@ -49,10 +49,16 @@
 
 }
 
-.start-page-show-score-card .animated {
+.start-page-show-score-card > .animated {
   z-index: 3;
-  position: relative;
+
+position: relative;
+  @include md {
+    position: fixed;
+  }
 }
+
+
 
 .start-page-select-mode-buttons {
   margin-top: 80px;
