@@ -310,8 +310,6 @@ const getGameByGameId = (gameId, onGameChange) => {
 
       console.log("Game", game);
 
-      var dateCreated = new Date(game.dateCreated);
-
       var dbGame = { ...game, dateCreated: formatDate(game.dateCreated) };
 
       onGameChange && onGameChange(dbGame)
