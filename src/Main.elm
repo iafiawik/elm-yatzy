@@ -283,7 +283,7 @@ update msg model =
         AddPlayer user ->
             case model.mode of
                 ShowAddRemovePlayers users currentNewPlayerName ->
-                    ( { model | mode = ShowAddRemovePlayers (user :: users) "" }, Cmd.none )
+                    ( { model | mode = ShowAddRemovePlayers (List.concat [ users, [ user ] ]) "" }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
