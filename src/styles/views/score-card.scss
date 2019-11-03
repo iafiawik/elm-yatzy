@@ -36,7 +36,7 @@
   }
 
   .partly-active {
-    @include background-opacity($primary-color, 0.1);
+    @include background-opacity($primary-color, 0.2);
   }
 
   &.loading {
@@ -125,8 +125,8 @@
     background: white;
   }
 
-  td.box.party-active {
-    @include background-opacity($primary-color, 0.1);
+  td.box.partly-active {
+    @include background-opacity($primary-color, 0.2);
   }
 
   td:first-of-type {

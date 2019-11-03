@@ -102,7 +102,7 @@ scoreCard markedPlayer game showCountedValues allowInteraction showTotalSum load
                             isActiveBoxForPlayer highlightedPlayer.values box
 
                         cells =
-                            [ td [ classList [ ( "box", True ), ( "party-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
+                            [ td [ classList [ ( "box", True ), ( "partly-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
                             ]
                                 ++ playerBoxes
                     in
@@ -200,7 +200,7 @@ nakedScoreCard markedPlayer game showCountedValues allowInteraction showTotalSum
                             isActiveBoxForPlayer highlightedPlayer.values box
 
                         cells =
-                            [ td [ classList [ ( "box", True ), ( "party-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
+                            [ td [ classList [ ( "box", True ), ( "partly-active", isActiveBoxForHighlightedPlayer && not (isInactiveBoxCategory box) ) ] ] [ renderBox box ]
                             ]
                                 ++ playerBoxes
                     in
