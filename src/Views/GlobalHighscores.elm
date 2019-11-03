@@ -30,8 +30,8 @@ globalHighscores lists activeIndex =
                 List.indexedMap
                     (\index highscore ->
                         div [ classList [ ( "tab-content", True ), ( "active", activeIndex == index ) ] ]
-                            [ globalHighscore highscore.normal ("Global highscore " ++ String.fromInt highscore.year)
-                            , globalHighscore highscore.inverted ("Wall of shame " ++ String.fromInt highscore.year ++ " :)")
+                            [ globalHighscore highscore.normal ("Highscore " ++ String.fromInt highscore.year ++ "")
+                            , globalHighscore highscore.inverted ("Wall of shame " ++ String.fromInt highscore.year ++ "")
                             ]
                     )
                     lists
