@@ -18,7 +18,18 @@ startPage highscores activeHighscoreTabIndex statisticItems finishedGames =
         [ div
             [ class "start-page-select-mode" ]
             [ div [ class "start-page-select-mode-content container" ]
-                [ h1 []
+                [ div []
+                    [ div [ class "start-page-cube" ]
+                        [ div [ class "side side1" ] []
+                        , div [ class "side side2" ] []
+                        , div [ class "side side3" ] []
+                        , div [ class "side side4" ] []
+                        , div [ class "side side5" ] []
+                        , div [ class "side side6" ] []
+                        ]
+                    ]
+                , h1
+                    []
                     [ text "iatzy" ]
                 , p
                     []
