@@ -61,6 +61,6 @@ updateValues dbValues wasPreviousActivePlayer =
                 value =
                     fromDbValueToValue v
             in
-            { value | new = index == 0 }
+            { value | new = index == 0 && wasPreviousActivePlayer }
         )
         sortedByNewest
