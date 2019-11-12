@@ -175,20 +175,6 @@ exports.createValue = functions.https.onRequest((req, res) => {
 
             console.log("createValue(), returning ", game);
 
-            if (game.finished) {
-              onGameFinished(game)
-                .then(() => {
-                  res.end();
-
-                  return false;
-                })
-                .catch(error => {
-                  console.error("Error adding document: ", error);
-
-                  res.end();
-                });
-            }
-
             return false;
           })
           .catch(error => {
@@ -290,18 +276,18 @@ exports.calculateStatisticsOnRequest = functions.https.onRequest((req, res) => {
 });
 
 function onGameFinished(game) {
-  if (!game.finished) {
-    console.log("onGameFinished(), game is not finished.");
-    return false;
-  }
+  return new Promise((resolve, reject) => {
+    if (!game.finished) {
+      console.log("onGameFinished(), game is not finished.");
+      resolve();
+    }
 
-  console.log(
-    "onGameFinished(), Game " +
-      game.id +
-      " is finished, trying to calculate results."
-  );
+    console.log(
+      "onGameFinished(), Game " +
+        game.id +
+        " is finished, trying to calculate results."
+    );
 
-  var resultsPromise = new Promise((resolve, reject) => {
     var users = game.users;
 
     game.users.forEach(user => {
@@ -368,8 +354,6 @@ function onGameFinished(game) {
 
     return false;
   });
-
-  return resultsPromise;
 }
 
 function calculateTotalScore(valueObject) {
@@ -574,8 +558,9 @@ function calculateStatistics() {
           const id = `user-${user.id}`;
 
           var userValues = [];
+          var finishedGames = games.filter(game => game.finished);
 
-          games.forEach(game => {
+          finishedGames.forEach(game => {
             game.users.forEach(gameUser => {
               if (gameUser.userId === user.id) {
                 gameUser.numberOfPlayers = game.users.length;
@@ -593,7 +578,11 @@ function calculateStatistics() {
           }
         });
 
-        console.log("calculateStatistics(),  calculated user statistics");
+        console.log(
+          "calculateStatistics(), calculated user statistics. Calculated statistics for ",
+          promises.length,
+          " users"
+        );
 
         Promise.all(promises)
           .then(() => {
@@ -601,6 +590,10 @@ function calculateStatistics() {
             return false;
           })
           .catch(e => {
+            console.log(
+              "calculateStatistics(),  unable to calculate statistics. Error: ",
+              e
+            );
             reject(e);
           });
 
@@ -664,6 +657,29 @@ function getUsers() {
   });
 }
 
-// exports.onGameFinished = functions.firestore
-//   .document("/games/{gameId}")
-//   .onUpdate((change, context) => {});
+exports.onGameUpdated = functions.firestore
+  .document("/games-v2/{gameId}")
+  .onUpdate((change, context) => {
+    const game = change.after.data();
+    game.id = change.after.ref.id;
+
+    if (game.finished) {
+      console.log(
+        "onGameUpdated(), game is finished. Time to calculate results and statistics."
+      );
+
+      return onGameFinished(game)
+        .then(() => {
+          console.log("onGameUpdated(), calculated results and statistics.");
+          return false;
+        })
+        .catch(error => {
+          console.error(
+            "onGameUpdated(), unable to calculated results and statistics. Error: ",
+            error
+          );
+        });
+    } else {
+      return false;
+    }
+  });
