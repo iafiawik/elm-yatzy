@@ -388,7 +388,7 @@ function calculateTotalScore(valueObject) {
   const reducer = (accumulator, currentValue) =>
     accumulator + currentValue.value;
 
-  var bonusSum = hasBonus(values) ? 63 : 50;
+  var bonusSum = hasBonus(values) ? 50 : 0;
 
   return values.reduce(reducer, 0) + bonusSum;
 }
