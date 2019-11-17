@@ -356,17 +356,7 @@ function onGameFinished(game) {
   });
 }
 
-function calculateTotalScore(valueObject) {
-  var values = Object.keys(valueObject).map(boxId => {
-    return {
-      boxId: boxId,
-      value: valueObject[boxId].v
-    };
-  });
-
-  const reducer = (accumulator, currentValue) =>
-    accumulator + currentValue.value;
-
+function hasBonus(values) {
   var upperSum = values
     .filter(value => {
       if (
@@ -382,13 +372,23 @@ function calculateTotalScore(valueObject) {
         return false;
       }
     })
-    .reduce(reducer, 0);
+    .reduce((accumulator, currentValue) => accumulator + currentValue.value, 0);
 
-  var bonusSum = 0;
+  return upperSum >= 63;
+}
 
-  if (upperSum >= 63) {
-    bonusSum = 50;
-  }
+function calculateTotalScore(valueObject) {
+  var values = Object.keys(valueObject).map(boxId => {
+    return {
+      boxId: boxId,
+      value: valueObject[boxId].v
+    };
+  });
+
+  const reducer = (accumulator, currentValue) =>
+    accumulator + currentValue.value;
+
+  var bonusSum = hasBonus(values) ? 63 : 50;
 
   return values.reduce(reducer, 0) + bonusSum;
 }
