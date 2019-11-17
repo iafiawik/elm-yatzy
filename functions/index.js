@@ -531,6 +531,12 @@ function calculateStatisticsByUser(userValues) {
   };
 }
 
+function isTestUser(user) {
+  return (
+    user.id === "1mSEbTIQiiDCFRIsYCNy" || user.id === "vWAokowhN0XUTHTbyr2n"
+  );
+}
+
 function calculateStatistics() {
   console.log("calculateStatistics(), called");
 
@@ -548,10 +554,7 @@ function calculateStatistics() {
 
         users.forEach(user => {
           //Do not include test users in statistics
-          if (
-            user.id === "1mSEbTIQiiDCFRIsYCNy" ||
-            user.id === "vWAokowhN0XUTHTbyr2n"
-          ) {
+          if (isTestUser(user)) {
             return false;
           }
 
