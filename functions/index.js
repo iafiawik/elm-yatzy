@@ -505,6 +505,19 @@ function calculateStatisticsByUser(userValues) {
     })
     .sort((a, b) => b - a);
 
+  var numberOfGamesWithBonus = userValues
+    .map(values => {
+      return hasBonus(
+        Object.keys(values.values).map(boxId => {
+          return {
+            boxId: boxId,
+            value: values.values[boxId].v
+          };
+        })
+      );
+    })
+    .filter(bonus => bonus === true).length;
+
   var highestScore = totalScores[0];
   var lowestScore = totalScores[totalScores.length - 1];
 
@@ -524,6 +537,7 @@ function calculateStatisticsByUser(userValues) {
   return {
     average: avg,
     numberOfGames: numberOfGames,
+    bonusChance: numberOfGamesWithBonus / numberOfGames,
     yatzyChance: numberOfYatzy / numberOfGames,
     winChance: wonGames / gamesWithMoreThanOnePlayer.length,
     highestScore: highestScore,
