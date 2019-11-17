@@ -492,7 +492,7 @@ function calculateResults(gameId) {
   });
 }
 
-function calculateStatisticsByUser(userValues) {
+function calculateStatisticsByUser(userValues, averageWinningScore) {
   var numberOfGames = userValues.length;
 
   var numberOfYatzy = userValues.filter(
@@ -530,8 +530,9 @@ function calculateStatisticsByUser(userValues) {
   var gamesWithMoreThanOnePlayer = userValues.filter(
     userValue => userValue.numberOfPlayers > 1
   );
-  var wonGames = gamesWithMoreThanOnePlayer.filter(
-    userValue => userValue.rank === 0
+
+  var statisticallyWonGames = gamesWithMoreThanOnePlayer.filter(
+    userValue => userValue.score >= averageWinningScore
   ).length;
 
   return {
@@ -539,7 +540,7 @@ function calculateStatisticsByUser(userValues) {
     numberOfGames: numberOfGames,
     bonusChance: numberOfGamesWithBonus / numberOfGames,
     yatzyChance: numberOfYatzy / numberOfGames,
-    winChance: wonGames / gamesWithMoreThanOnePlayer.length,
+    winChance: statisticallyWonGames / gamesWithMoreThanOnePlayer.length,
     highestScore: highestScore,
     lowestScore: lowestScore
   };
@@ -566,6 +567,18 @@ function calculateStatistics() {
 
         var promises = [];
 
+        var winningGames = games.filter(
+          game => game.finished && game.users.length > 1
+        );
+
+        var winners = winningGames.flatMap(game =>
+          game.users.filter(user => user.rank === 0 && !isTestUser(user))
+        );
+
+        var averageWinningScore =
+          winners.reduce((total, winner) => total + winner.score, 0) /
+          winners.length;
+
         users.forEach(user => {
           //Do not include test users in statistics
           if (isTestUser(user)) {
@@ -588,7 +601,10 @@ function calculateStatistics() {
           });
 
           if (userValues.length > 5) {
-            var statistics = calculateStatisticsByUser(userValues);
+            var statistics = calculateStatisticsByUser(
+              userValues,
+              averageWinningScore
+            );
             statistics.userId = user.id;
 
             promises.push(statisticsRef.doc(id).set(statistics));
