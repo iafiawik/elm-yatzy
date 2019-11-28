@@ -571,9 +571,11 @@ function calculateStatistics() {
           game => game.finished && game.users.length > 1
         );
 
-        var winners = winningGames.flatMap(game =>
+        var winners = winningGames.map(game =>
           game.users.filter(user => user.rank === 0 && !isTestUser(user))
         );
+
+        winners = [].concat.apply([], winners);
 
         var averageWinningScore =
           winners.reduce((total, winner) => total + winner.score, 0) /
