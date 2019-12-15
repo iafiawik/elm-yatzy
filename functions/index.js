@@ -124,44 +124,40 @@ exports.createValue = functions.https.onRequest((req, res) => {
           var oldValue = user.values[boxId].v;
           var isNewValue = oldValue === -1;
 
-          var previousUser = game.users[Math.max(game.activeUserIndex - 1, 0)];
-
-          var previousUserUnassignedValues = Object.keys(
-            previousUser.values
-          ).filter(boxId => {
-            return previousUser.values[boxId].v === -1;
-          }).length;
-
           user.values[boxId].v = value;
 
           if (isNewValue) {
             user.values[boxId].c = new Date().getTime();
           }
 
-          var activeUserUnassignedValues = Object.keys(user.values).filter(
-            boxId => {
-              return user.values[boxId].v === -1;
+          var usersAndNumberOfUnassignedValues = game.users.map(
+            (user, index) => {
+              return {
+                index,
+                numberOfUnassignedValues: Object.keys(user.values).filter(
+                  boxId => user.values[boxId].v === -1
+                ).length
+              };
             }
-          ).length;
+          );
 
-          if (
-            activeUserUnassignedValues < previousUserUnassignedValues ||
-            (game.activeUserIndex === game.users.length - 1 &&
-              activeUserUnassignedValues === previousUserUnassignedValues)
-          ) {
-            game.activeUserIndex =
-              game.activeUserIndex === game.users.length - 1
-                ? 0
-                : game.activeUserIndex + 1;
-          }
+          usersAndNumberOfUnassignedValues.sort(function(vote1, vote2) {
+            if (vote1.numberOfUnassignedValues > vote2.numberOfUnassignedValues)
+              return -1;
+            if (vote1.numberOfUnassignedValues < vote2.numberOfUnassignedValues)
+              return 1;
 
-          var anyValueIsUnassigned = game.users.some(user => {
-            return Object.keys(user.values).some(boxId => {
-              return user.values[boxId].v === -1;
-            });
+            if (vote1.index > vote2.index) return 1;
+            if (vote1.index < vote2.index) return -1;
           });
 
-          if (!anyValueIsUnassigned) {
+          var nextActiveIndex = usersAndNumberOfUnassignedValues[0].index;
+
+          game.activeUserIndex = nextActiveIndex;
+
+          if (
+            usersAndNumberOfUnassignedValues[0].numberOfUnassignedValues === 0
+          ) {
             game.finished = true;
           }
         }
