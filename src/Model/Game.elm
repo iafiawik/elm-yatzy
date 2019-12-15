@@ -52,11 +52,11 @@ fromDbGameToGame : DbGame -> List User -> Game
 fromDbGameToGame dbGame users =
     let
         previousActiveUserIndex =
-            if dbGame.activeUserIndex == (-1 + List.length dbGame.users) then
-                0
+            if dbGame.activeUserIndex == 0 then
+                -1 + List.length dbGame.users
 
             else
-                dbGame.activeUserIndex + 1
+                dbGame.activeUserIndex - 1
 
         players =
             List.indexedMap (\index dbPlayer -> fromDbPlayerToPlayer dbPlayer users (previousActiveUserIndex == index)) dbGame.users
