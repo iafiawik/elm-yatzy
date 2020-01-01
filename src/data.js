@@ -97,6 +97,36 @@ const prepareStatistics = (statistics, users) => {
   });
 };
 
+const getHighscoreForYear = (year, usersPromise) => {
+  var resultsPromise = getResults({ sortOrder: "desc", year: year });
+  var resultsInvertedPromise = getResults({ sortOrder: "asc", year: year });
+
+  return new Promise((resolve, reject) => {
+    Promise.all([resultsPromise, resultsInvertedPromise, usersPromise]).then(
+      values => {
+        const results = values[0];
+        const resultsInverted = values[1];
+        const users = values[2];
+
+        const resultsWithUsers = prepareResults(results, users);
+        const resultsInvertedWithUsers = prepareResults(
+          resultsInverted,
+          users
+        );
+
+        var result = {
+          year: year,
+          normal: resultsWithUsers,
+          inverted: resultsInvertedWithUsers
+        };
+
+        resolve(result);
+      }
+    );
+  });
+}
+
+
 const getHighscore = () => {
   var startYear = 2018;
   var currentYear = 2018;
@@ -108,36 +138,7 @@ const getHighscore = () => {
   });
 
   while (currentYear <= new Date().getFullYear()) {
-    var year = currentYear;
-    var resultsPromise = getResults({ sortOrder: "desc", year: year });
-    var resultsInvertedPromise = getResults({ sortOrder: "asc", year: year });
-
-    var yearPromise = new Promise((resolve, reject) => {
-      Promise.all([resultsPromise, resultsInvertedPromise, usersPromise]).then(
-        values => {
-          const results = values[0];
-          const resultsInverted = values[1];
-          const users = values[2];
-
-          const resultsWithUsers = prepareResults(results, users);
-          const resultsInvertedWithUsers = prepareResults(
-            resultsInverted,
-            users
-          );
-
-          var result = {
-            year: results[0] ? results[0].year : startYear,
-            normal: resultsWithUsers,
-            inverted: resultsInvertedWithUsers
-          };
-
-
-          resolve(result);
-        }
-      );
-    });
-
-    yearPromises.push(yearPromise);
+    yearPromises.push(getHighscoreForYear(currentYear, usersPromise));
     currentYear++;
   }
 
