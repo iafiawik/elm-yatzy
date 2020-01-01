@@ -5,7 +5,7 @@ import Data from "./data";
 import "./styles/app.scss";
 
 window.config = {
-  devMode: true
+  devMode: false
 };
 
 window.isAdmin = isUserAdmin();
